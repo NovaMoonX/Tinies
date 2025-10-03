@@ -22,5 +22,8 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1000, // in KB. 1000 - 1500 is good for most apps.
+  },
+  server: {
+    port: 3844, // moon is ~384,400 km from earth
   }
 });

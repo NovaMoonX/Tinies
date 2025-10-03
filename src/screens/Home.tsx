@@ -1,5 +1,5 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
-import { APP_TITLE, APP_DESCRIPTION } from '@lib';
+import { APP_TITLE, APP_DESCRIPTION } from '@lib/app';
 
 function Home() {
 	return (
