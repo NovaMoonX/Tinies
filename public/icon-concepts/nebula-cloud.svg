@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Abstract nebula cloud formation -->
+  <defs>
+    <radialGradient id="nebulaGradient1" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#A855F7" stop-opacity="0.8"/>
+      <stop offset="50%" style="stop-color:#6366F1" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#1E1B4B" stop-opacity="0.3"/>
+    </radialGradient>
+    <radialGradient id="nebulaGradient2" cx="70%" cy="70%" r="60%">
+      <stop offset="0%" style="stop-color:#C084FC" stop-opacity="0.7"/>
+      <stop offset="50%" style="stop-color:#8B5CF6" stop-opacity="0.5"/>
+      <stop offset="100%" style="stop-color:#4C1D95" stop-opacity="0.2"/>
+    </radialGradient>
+  </defs>
+  
+  <ellipse cx="10.4" cy="10.4" rx="12" ry="9.6" fill="url(#nebulaGradient1)" transform="rotate(-20 10.4 10.4)"/>
+  <ellipse cx="21.6" cy="21.6" rx="9.6" ry="12" fill="url(#nebulaGradient2)" transform="rotate(30 21.6 21.6)"/>
+  <ellipse cx="16" cy="16" rx="14.4" ry="7.2" fill="#DDD6FE" opacity="0.3" transform="rotate(45 16 16)"/>
+  
+  <!-- Scattered star particles -->
+  <circle cx="4.8" cy="4.8" r="1.2" fill="#F3E8FF"/>
+  <circle cx="27.2" cy="6.4" r="1.8" fill="#E0E7FF"/>
+  <circle cx="6.4" cy="27.2" r="1.2" fill="#DDD6FE"/>
+  <circle cx="25.6" cy="25.6" r="1.2" fill="#C084FC"/>
+  <circle cx="16" cy="1.6" r="0.8" fill="#A855F7"/>
+  <circle cx="30.4" cy="16" r="0.8" fill="#8B5CF6"/>
+</svg>

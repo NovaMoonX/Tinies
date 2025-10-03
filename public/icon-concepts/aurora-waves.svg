@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Abstract aurora waves -->
+  <defs>
+    <linearGradient id="aurora1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E1B4B"/>
+      <stop offset="30%" style="stop-color:#4C1D95"/>
+      <stop offset="60%" style="stop-color:#8B5CF6"/>
+      <stop offset="100%" style="stop-color:#DDD6FE"/>
+    </linearGradient>
+    <linearGradient id="aurora2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3730A3"/>
+      <stop offset="50%" style="stop-color:#A855F7"/>
+      <stop offset="100%" style="stop-color:#F3E8FF"/>
+    </linearGradient>
+  </defs>
+  
+  <path d="M0.8 31.2Q7.2 19.2 11.2 23.2Q15.2 27.2 19.2 21.2Q23.2 15.2 27.2 19.2Q29.2 21.2 31.2 32H0.8Z" fill="url(#aurora1)" opacity="0.8"/>
+  <path d="M0.8 29.2Q5.2 17.2 9.2 21.2Q13.2 25.2 17.2 19.2Q21.2 13.2 25.2 17.2Q29.2 19.2 31.2 30H0.8Z" fill="url(#aurora2)" opacity="0.6"/>
+  <path d="M0.8 27.2Q3.2 15.2 7.2 19.2Q11.2 23.2 15.2 17.2Q19.2 11.2 23.2 15.2Q27.2 17.2 31.2 28H0.8Z" fill="url(#aurora1)" opacity="0.4"/>
+  
+  <!-- Shimmering particles -->
+  <circle cx="7.2" cy="6.4" r="1.2" fill="#C084FC" opacity="0.8"/>
+  <circle cx="15.2" cy="4.8" r="1.8" fill="#A855F7" opacity="0.6"/>
+  <circle cx="23.2" cy="8.8" r="1.2" fill="#DDD6FE" opacity="0.9"/>
+  <circle cx="11.2" cy="10.4" r="0.8" fill="#F3E8FF" opacity="0.7"/>
+  <circle cx="19.2" cy="2.4" r="1" fill="#E0E7FF" opacity="0.5"/>
+</svg>

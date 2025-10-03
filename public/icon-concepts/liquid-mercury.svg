@@ -1,0 +1,23 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Abstract liquid mercury drops -->
+  <defs>
+    <linearGradient id="mercuryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4C1D95"/>
+      <stop offset="30%" style="stop-color:#6366F1"/>
+      <stop offset="70%" style="stop-color:#A855F7"/>
+      <stop offset="100%" style="stop-color:#DDD6FE"/>
+    </linearGradient>
+  </defs>
+  
+  <path d="M16 0.8C20.8 0.8 25.6 5.2 25.6 9.6C25.6 12 23.2 14.4 20.8 15.2C23.2 16 25.6 18.4 25.6 22.4C25.6 26.8 20.8 31.2 16 31.2C11.2 31.2 6.4 26.8 6.4 22.4C6.4 18.4 8.8 16 11.2 15.2C8.8 14.4 6.4 12 6.4 9.6C6.4 5.2 11.2 0.8 16 0.8Z" fill="url(#mercuryGradient)"/>
+  
+  <!-- Surface tension highlights -->
+  <ellipse cx="16" cy="6.4" rx="4.8" ry="2.4" fill="#F3E8FF" opacity="0.6"/>
+  <ellipse cx="16" cy="25.6" rx="7.2" ry="3.6" fill="#E0E7FF" opacity="0.4"/>
+  <ellipse cx="16" cy="15.2" rx="2.4" ry="1.2" fill="#DDD6FE" opacity="0.8"/>
+  
+  <!-- Floating droplets -->
+  <circle cx="2.4" cy="10.4" r="2.4" fill="url(#mercuryGradient)" opacity="0.7"/>
+  <circle cx="29.6" cy="19.2" r="1.8" fill="url(#mercuryGradient)" opacity="0.8"/>
+  <circle cx="4.8" cy="26.4" r="1.2" fill="url(#mercuryGradient)" opacity="0.6"/>
+</svg>

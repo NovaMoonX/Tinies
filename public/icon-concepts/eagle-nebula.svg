@@ -1,0 +1,36 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Eagle nebula pillars of creation -->
+  <defs>
+    <linearGradient id="pillarGradient1" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#1E1B4B"/>
+      <stop offset="40%" style="stop-color:#4C1D95"/>
+      <stop offset="70%" style="stop-color:#6366F1"/>
+      <stop offset="100%" style="stop-color:#A855F7"/>
+    </linearGradient>
+    <linearGradient id="pillarGradient2" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#3730A3"/>
+      <stop offset="50%" style="stop-color:#8B5CF6"/>
+      <stop offset="100%" style="stop-color:#DDD6FE"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Three pillars -->
+  <path d="M4.8 31.2Q2.4 26.4 4.8 19.2Q6.4 13.6 4.8 6.4Q6.4 4.8 8 6.4Q9.6 13.6 8 19.2Q9.6 26.4 8 31.2Z" fill="url(#pillarGradient1)"/>
+  <path d="M15.2 31.2Q13.6 24 15.2 15.2Q17.6 6.4 15.2 1.6Q17.6 0.8 19.2 1.6Q20.8 6.4 19.2 15.2Q20.8 24 19.2 31.2Z" fill="url(#pillarGradient2)"/>
+  <path d="M25.6 31.2Q24 28 25.6 21.6Q27.2 15.2 25.6 10.4Q27.2 8.8 28.8 10.4Q30.4 15.2 28.8 21.6Q30.4 28 28.8 31.2Z" fill="url(#pillarGradient1)" opacity="0.8"/>
+  
+  <!-- Star formation regions -->
+  <ellipse cx="6.4" cy="10.4" rx="2.4" ry="3.6" fill="#C084FC" opacity="0.6"/>
+  <ellipse cx="17.6" cy="6.4" rx="3.6" ry="2.4" fill="#A855F7" opacity="0.7"/>
+  <ellipse cx="27.2" cy="14.4" rx="2.4" ry="2.4" fill="#DDD6FE" opacity="0.8"/>
+  
+  <!-- Illuminating stars -->
+  <circle cx="2.4" cy="2.4" r="1.8" fill="#F3E8FF"/>
+  <circle cx="10.4" cy="0.8" r="1.2" fill="#E0E7FF"/>
+  <circle cx="21.6" cy="4.8" r="1.4" fill="#DDD6FE"/>
+  <circle cx="29.6" cy="6.4" r="1.2" fill="#C084FC"/>
+  
+  <!-- Dust wisps -->
+  <path d="M0.8 12.8Q4.8 8.8 6.4 12.8Q4.8 16.8 0.8 12.8" fill="#4C1D95" opacity="0.4"/>
+  <path d="M12.8 10.4Q16.8 6.4 19.2 10.4Q16.8 14.4 12.8 10.4" fill="#6366F1" opacity="0.3"/>
+</svg>
