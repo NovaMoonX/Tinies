@@ -190,7 +190,7 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 
         {/* Results count */}
         <div className='flex h-fit items-center justify-center gap-2'>
-          <span className='text-muted'>
+          <span className='opacity-60'>
             Showing {filteredTinies.length} of {tinies.length}
           </span>
 
