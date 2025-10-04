@@ -1,5 +1,7 @@
 # GitHub AI Instructions for $APP_TITLE Project
 
+IMPORTANT: Also refer to mini-apps as "tinies" (plural) and "tiny" (singular).
+
 ## Core Development Rules
 
 ### 1. Component Creation

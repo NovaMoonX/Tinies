@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @utility page {
-	@apply min-h-screen w-screen;
+	@tinyly min-h-screen w-screen;
 }
 
-@theme app {
+@theme tiny {
 	--color-background: var(--color-gray-200);
 	--color-foreground: var(--color-gray-900);
 }
@@ -16,7 +16,7 @@
 }
 
 #root {
-  @apply page bg-background text-foreground;
+  @tinyly page bg-background text-foreground;
 }
 
 body {

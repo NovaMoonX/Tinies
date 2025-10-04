@@ -1,19 +1,19 @@
-# Adding New Apps to Tinies
+# Adding New Tinies to Tinies
 
 ## Quick Guide
 
-To add a new mini app to the gallery, simply add a new entry to the `MINI_APPS` array in `src/lib/apps/apps.data.ts`:
+To add a new mini tiny to the gallery, simply add a new entry to the `TINIES` array in `src/lib/tinies/tinies.data.ts`:
 
 ```typescript
 {
-  id: 'your-app-id',
+  id: 'your-tiny-id',
   title: 'Your App Title',
-  description: 'A brief description of what your app does.',
+  description: 'A brief description of what your tiny does.',
   startDate: '2025-01-20', // ISO date format
   tags: ['tag1', 'tag2'], // Lowercase tags for filtering
   categories: ['Category Name'], // Categories for filtering
   status: 'active', // or 'in-progress' or 'archived'
-  route: '/your-app-route', // Optional: if app has a dedicated route
+  route: '/your-tiny-route', // Optional: if tiny has a dedicated route
 }
 ```
 
@@ -34,13 +34,13 @@ To add a new mini app to the gallery, simply add a new entry to the `MINI_APPS` 
 
 ## Status Colors
 
-- `active`: Green badge - app is live and working
-- `in-progress`: Yellow badge - app is under development
-- `archived`: Gray badge - app is no longer maintained
+- `active`: Green badge - tiny is live and working
+- `in-progress`: Yellow badge - tiny is under development
+- `archived`: Gray badge - tiny is no longer maintained
 
 ## Features
 
-The app gallery automatically provides:
+The tiny gallery automatically provides:
 - Search by title, description, tags, or categories
 - Filter by categories and tags
 - Responsive card layout

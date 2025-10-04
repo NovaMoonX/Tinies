@@ -1,10 +1,10 @@
-import { MiniApp } from './apps.types';
+import { Tiny } from './tinies.types';
 
-export const MINI_APPS: MiniApp[] = [
+export const MINI_APPS: Tiny[] = [
 	{
 		id: 'about',
 		title: 'About',
-		description: 'Learn more about Tinies and the philosophy behind this collection of mini apps.',
+		description: 'Learn more about Tinies and the philosophy behind this collection of mini tinies.',
 		startDate: '2025-01-15',
 		tags: ['informational', 'documentation'],
 		categories: ['Core'],
@@ -14,7 +14,7 @@ export const MINI_APPS: MiniApp[] = [
 	{
 		id: 'task-tracker',
 		title: 'Task Tracker',
-		description: 'A simple and elegant task management app to keep track of your daily to-dos.',
+		description: 'A simple and elegant task management tiny to keep track of your daily to-dos.',
 		startDate: '2025-01-20',
 		tags: ['productivity', 'tools'],
 		categories: ['Productivity'],
@@ -59,9 +59,9 @@ export const MINI_APPS: MiniApp[] = [
 ];
 
 export const ALL_TAGS = Array.from(
-	new Set(MINI_APPS.flatMap(app => app.tags))
+	new Set(MINI_APPS.flatMap(tiny => tiny.tags))
 ).sort();
 
 export const ALL_CATEGORIES = Array.from(
-	new Set(MINI_APPS.flatMap(app => app.categories))
+	new Set(MINI_APPS.flatMap(tiny => tiny.categories))
 ).sort();

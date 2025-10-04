@@ -1,4 +1,4 @@
-export interface MiniApp {
+export interface Tiny {
 	id: string;
 	title: string;
 	description: string;
@@ -6,5 +6,5 @@ export interface MiniApp {
 	tags: string[];
 	categories: string[];
 	status: 'active' | 'archived' | 'in-progress';
-	route?: string; // optional route for the app
+	route?: string; // optional route for the tiny
 }

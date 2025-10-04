@@ -1,53 +1,53 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Input, Badge } from '@moondreamsdev/dreamer-ui/components';
-import { MiniApp, ALL_TAGS, ALL_CATEGORIES } from '@lib/apps';
+import { Tiny, ALL_TAGS, ALL_CATEGORIES } from '@/lib/tinies';
 
 interface AppFiltersProps {
-	apps: MiniApp[];
-	onFilteredAppsChange: (apps: MiniApp[]) => void;
+	tinies: Tiny[];
+	onFilteredTiniesChange: (tinies: Tiny[]) => void;
 }
 
-function AppFilters({ apps, onFilteredAppsChange }: AppFiltersProps) {
+function AppFilters({ tinies, onFilteredTiniesChange }: AppFiltersProps) {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 	const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
-	const filteredApps = useMemo(() => {
-		let filtered = apps;
+	const filteredTinies = useMemo(() => {
+		let filtered = tinies;
 
 		// Filter by search query
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase();
 			filtered = filtered.filter(
-				app =>
-					app.title.toLowerCase().includes(query) ||
-					app.description.toLowerCase().includes(query) ||
-					app.tags.some(tag => tag.toLowerCase().includes(query)) ||
-					app.categories.some(cat => cat.toLowerCase().includes(query))
+				tiny =>
+					tiny.title.toLowerCase().includes(query) ||
+					tiny.description.toLowerCase().includes(query) ||
+					tiny.tags.some(tag => tag.toLowerCase().includes(query)) ||
+					tiny.categories.some(cat => cat.toLowerCase().includes(query))
 			);
 		}
 
 		// Filter by selected tags
 		if (selectedTags.size > 0) {
-			filtered = filtered.filter(app =>
-				app.tags.some(tag => selectedTags.has(tag))
+			filtered = filtered.filter(tiny =>
+				tiny.tags.some(tag => selectedTags.has(tag))
 			);
 		}
 
 		// Filter by selected categories
 		if (selectedCategories.size > 0) {
-			filtered = filtered.filter(app =>
-				app.categories.some(cat => selectedCategories.has(cat))
+			filtered = filtered.filter(tiny =>
+				tiny.categories.some(cat => selectedCategories.has(cat))
 			);
 		}
 
 		return filtered;
-	}, [apps, searchQuery, selectedTags, selectedCategories]);
+	}, [tinies, searchQuery, selectedTags, selectedCategories]);
 
-	// Update parent component when filtered apps change
+	// Update parent component when filtered tinies change
 	useEffect(() => {
-		onFilteredAppsChange(filteredApps);
-	}, [filteredApps, onFilteredAppsChange]);
+		onFilteredTiniesChange(filteredTinies);
+	}, [filteredTinies, onFilteredTiniesChange]);
 
 	const toggleTag = (tag: string) => {
 		setSelectedTags(prev => {
@@ -88,7 +88,7 @@ function AppFilters({ apps, onFilteredAppsChange }: AppFiltersProps) {
 			<div>
 				<Input
 					type='text'
-					placeholder='Search apps by title, description, tags, or categories...'
+					placeholder='Search tinies by title, description, tags, or categories...'
 					value={searchQuery}
 					onChange={e => setSearchQuery(e.target.value)}
 					className='w-full'
@@ -163,7 +163,7 @@ function AppFilters({ apps, onFilteredAppsChange }: AppFiltersProps) {
 
 			{/* Results count */}
 			<div className='text-sm text-foreground/60 pt-2 border-t border-border'>
-				Showing {filteredApps.length} of {apps.length} apps
+				Showing {filteredTinies.length} of {tinies.length} tinies
 			</div>
 		</div>
 	);
