@@ -1,13 +1,42 @@
-import { Button } from '@moondreamsdev/dreamer-ui/components';
+import { useState } from 'react';
 import { APP_TITLE, APP_DESCRIPTION } from '@lib/app';
+import { MINI_APPS, Tiny } from '@/lib/tinies';
+import TinyCard from '@components/TinyCard';
+import TiniesFilters from '@components/TiniesFilters';
 
 function Home() {
+	const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(MINI_APPS);
+
 	return (
-		<div className='page flex flex-col items-center justify-center'>
-			<div className='text-center space-y-6 max-w-2xl px-4'>
-				<h1 className='text-5xl md:text-6xl font-bold'>{APP_TITLE}</h1>
-				<p className='text-lg md:text-xl text-foreground/80'>{APP_DESCRIPTION}</p>
-				<Button href='/about'>Learn More</Button>
+		<div className='min-h-screen w-screen p-4 md:p-8'>
+			<div className='max-w-7xl mx-auto space-y-8'>
+				{/* Header */}
+				<div className='text-center space-y-4'>
+					<h1 className='text-4xl md:text-5xl font-bold'>{APP_TITLE}</h1>
+					<p className='text-base md:text-lg text-foreground/70 max-w-3xl mx-auto'>
+						{APP_DESCRIPTION}
+					</p>
+				</div>
+
+				{/* Filters */}
+				<TiniesFilters tinies={MINI_APPS} onFilteredTiniesChange={setFilteredTinies} />
+
+				{/* App Grid */}
+				<div>
+					{filteredTinies.length === 0 ? (
+						<div className='text-center py-12'>
+							<p className='text-lg text-foreground/60'>
+								No tinies match your filters. Try adjusting your search or filters.
+							</p>
+						</div>
+					) : (
+						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+							{filteredTinies.map(tiny => (
+								<TinyCard key={tiny.id} tiny={tiny} />
+							))}
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);

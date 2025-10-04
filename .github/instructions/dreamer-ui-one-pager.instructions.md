@@ -1,3 +1,7 @@
+---
+applyTo: 'src/**/*'
+---
+
 # Dreamer UI Components
 
 All components are imported from `@moondreamsdev/dreamer-ui/components`.

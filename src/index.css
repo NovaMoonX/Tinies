@@ -4,7 +4,7 @@
 	@apply min-h-screen w-screen;
 }
 
-@theme app {
+@theme tiny {
 	--color-background: var(--color-gray-200);
 	--color-foreground: var(--color-gray-900);
 }
@@ -23,6 +23,10 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+	@apply bg-background
 }
 
 
