@@ -1,9 +1,9 @@
 function Loading() {
   return (
     <div className='page flex items-center justify-center'>
-      <div className='text-center space-y-4'>
-        <div className='w-16 h-16 border-4 border-foreground/20 border-t-accent rounded-full animate-spin mx-auto'></div>
-        <p className='text-lg text-foreground/60'>Loading...</p>
+      <div className='space-y-4 text-center'>
+        <div className='border-foreground/20 border-t-accent mx-auto h-16 w-16 animate-spin rounded-full border-4'></div>
+        <p className='text-foreground/60 text-lg'>Loading...</p>
       </div>
     </div>
   );
