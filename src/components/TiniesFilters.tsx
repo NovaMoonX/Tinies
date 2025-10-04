@@ -2,12 +2,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { Input, Badge } from '@moondreamsdev/dreamer-ui/components';
 import { Tiny, ALL_TAGS, ALL_CATEGORIES } from '@/lib/tinies';
 
-interface AppFiltersProps {
+interface TiniesFiltersProps {
 	tinies: Tiny[];
 	onFilteredTiniesChange: (tinies: Tiny[]) => void;
 }
 
-function AppFilters({ tinies, onFilteredTiniesChange }: AppFiltersProps) {
+function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 	const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -169,4 +169,4 @@ function AppFilters({ tinies, onFilteredTiniesChange }: AppFiltersProps) {
 	);
 }
 
-export default AppFilters;
+export default TiniesFilters;

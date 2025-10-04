@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { APP_TITLE, APP_DESCRIPTION } from '@lib/app';
 import { MINI_APPS, Tiny } from '@/lib/tinies';
-import AppCard from '@components/AppCard';
-import AppFilters from '@components/AppFilters';
+import TinyCard from '@components/TinyCard';
+import TiniesFilters from '@components/TiniesFilters';
 
 function Home() {
 	const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(MINI_APPS);
@@ -19,7 +19,7 @@ function Home() {
 				</div>
 
 				{/* Filters */}
-				<AppFilters tinies={MINI_APPS} onFilteredTiniesChange={setFilteredTinies} />
+				<TiniesFilters tinies={MINI_APPS} onFilteredTiniesChange={setFilteredTinies} />
 
 				{/* App Grid */}
 				<div>
@@ -32,7 +32,7 @@ function Home() {
 					) : (
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 							{filteredTinies.map(tiny => (
-								<AppCard key={tiny.id} tiny={tiny} />
+								<TinyCard key={tiny.id} tiny={tiny} />
 							))}
 						</div>
 					)}

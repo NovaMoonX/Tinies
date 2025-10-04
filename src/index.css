@@ -25,6 +25,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+	@apply bg-background
+}
+
 
 /* Dreamer UI styles */
 @import "@moondreamsdev/dreamer-ui/styles"; /* non-TailwindCSS styles */

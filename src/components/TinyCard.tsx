@@ -2,11 +2,11 @@ import { Tiny } from '@/lib/tinies';
 import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
 import { BadgeVariant } from 'node_modules/@moondreamsdev/dreamer-ui/dist/src/components/badge/variants';
 
-interface AppCardProps {
+interface TinyCardProps {
 	tiny: Tiny;
 }
 
-function AppCard({ tiny }: AppCardProps) {
+function TinyCard({ tiny }: TinyCardProps) {
 	const formattedDate = new Date(tiny.startDate).toLocaleDateString('en-US', {
 		year: 'numeric',
 		month: 'short',
@@ -18,11 +18,20 @@ function AppCard({ tiny }: AppCardProps) {
 			case 'active':
 				return 'success';
 			case 'in-progress':
-				return 'accent';
+				return 'base';
 			case 'archived':
 				return 'muted';
 			default:
 				return 'base';
+		}
+	};
+
+	const getBadgeClass = (status: Tiny['status']): string => {
+		switch (status) {
+			case 'in-progress':
+				return 'bg-yellow-500 dark:bg-yellow-700 text-foreground';
+			default:
+				return '';
 		}
 	};
 
@@ -31,7 +40,9 @@ function AppCard({ tiny }: AppCardProps) {
 			<div className='flex-1 space-y-3'>
 				<div className='flex items-start justify-between gap-2'>
 					<h3 className='text-xl font-semibold text-foreground'>{tiny.title}</h3>
-					<Badge variant={getBadgeVariant(tiny.status)}>{tiny.status}</Badge>
+					<Badge variant={getBadgeVariant(tiny.status)} className={getBadgeClass(tiny.status)}>
+						{tiny.status}
+					</Badge>
 				</div>
 
 				<p className='text-foreground/70 text-sm'>{tiny.description}</p>
@@ -72,4 +83,4 @@ function AppCard({ tiny }: AppCardProps) {
 	);
 }
 
-export default AppCard;
+export default TinyCard;
