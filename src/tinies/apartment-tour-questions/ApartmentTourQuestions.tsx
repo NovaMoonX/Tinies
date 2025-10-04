@@ -1,15 +1,44 @@
-import { Button, Card, Checkbox } from '@moondreamsdev/dreamer-ui/components';
-import { useMemo, useState } from 'react';
+import { Button, Card, Checkbox, Input, Select } from '@moondreamsdev/dreamer-ui/components';
+import { useEffect, useMemo, useState } from 'react';
 import { QUESTIONS } from './ApartmentTourQuestions.data';
+import { Question } from './ApartmentTourQuestions.types';
 
 export function ApartmentTourQuestions() {
   const [checkedQuestions, setCheckedQuestions] = useState<Set<string>>(
     new Set(),
   );
+  const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [newQuestionCategory, setNewQuestionCategory] = useState('');
+
+  // Load custom questions from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('apartment-tour-custom-questions');
+    if (stored) {
+      try {
+        setCustomQuestions(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to load custom questions', e);
+      }
+    }
+  }, []);
+
+  // Save custom questions to localStorage whenever they change
+  useEffect(() => {
+    if (customQuestions.length > 0 || localStorage.getItem('apartment-tour-custom-questions')) {
+      localStorage.setItem('apartment-tour-custom-questions', JSON.stringify(customQuestions));
+    }
+  }, [customQuestions]);
+
+  // Combine predefined and custom questions
+  const allQuestions = useMemo(
+    () => [...QUESTIONS, ...customQuestions],
+    [customQuestions]
+  );
 
   const questionsByCategory = useMemo(
     () =>
-      QUESTIONS.reduce(
+      allQuestions.reduce(
         (acc, question) => {
           if (!acc[question.category]) {
             acc[question.category] = [];
@@ -17,9 +46,9 @@ export function ApartmentTourQuestions() {
           acc[question.category].push(question);
           return acc;
         },
-        {} as Record<string, typeof QUESTIONS>,
+        {} as Record<string, typeof allQuestions>,
       ),
-    [],
+    [allQuestions],
   );
 
   const categories = useMemo(
@@ -43,8 +72,31 @@ export function ApartmentTourQuestions() {
     setCheckedQuestions(new Set());
   };
 
+  const addCustomQuestion = () => {
+    if (newQuestion.trim() && newQuestionCategory.trim()) {
+      const customQuestion: Question = {
+        id: `custom-${Date.now()}`,
+        category: newQuestionCategory,
+        question: newQuestion.trim(),
+        isCustom: true,
+      };
+      setCustomQuestions((prev) => [...prev, customQuestion]);
+      setNewQuestion('');
+      setNewQuestionCategory('');
+    }
+  };
+
+  const deleteCustomQuestion = (questionId: string) => {
+    setCustomQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    setCheckedQuestions((prev) => {
+      const next = new Set(prev);
+      next.delete(questionId);
+      return next;
+    });
+  };
+
   const checkedCount = checkedQuestions.size;
-  const totalCount = QUESTIONS.length;
+  const totalCount = allQuestions.length;
 
   return (
     <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
@@ -77,6 +129,42 @@ export function ApartmentTourQuestions() {
             >
               Clear All
             </Button>
+          </div>
+        </Card>
+
+        {/* Add Custom Question */}
+        <Card>
+          <div className='space-y-4'>
+            <h2 className='text-lg font-semibold'>Add Your Own Question</h2>
+            <div className='flex flex-col gap-3 sm:flex-row'>
+              <div className='flex-1'>
+                <Input
+                  type='text'
+                  placeholder='Enter your question...'
+                  value={newQuestion}
+                  onChange={(e) => setNewQuestion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      addCustomQuestion();
+                    }
+                  }}
+                />
+              </div>
+              <div className='w-full sm:w-64'>
+                <Select
+                  value={newQuestionCategory}
+                  onChange={(value) => setNewQuestionCategory(value)}
+                  placeholder='Select category...'
+                  options={categories.map((cat) => ({ value: cat, text: cat }))}
+                />
+              </div>
+              <Button
+                onClick={addCustomQuestion}
+                disabled={!newQuestion.trim() || !newQuestionCategory.trim()}
+              >
+                Add Question
+              </Button>
+            </div>
           </div>
         </Card>
 
@@ -114,6 +202,15 @@ export function ApartmentTourQuestions() {
                         >
                           {question.question}
                         </label>
+                        {question.isCustom && (
+                          <Button
+                            variant='tertiary'
+                            onClick={() => deleteCustomQuestion(question.id)}
+                            className='text-xs'
+                          >
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
