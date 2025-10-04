@@ -1,15 +1,34 @@
-import { Button, Card, Checkbox } from '@moondreamsdev/dreamer-ui/components';
+import { Button, Card } from '@moondreamsdev/dreamer-ui/components';
+import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { useMemo, useState } from 'react';
-import { QUESTIONS } from './ApartmentTourQuestions.data';
+import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
+import {
+  ApartmentSelector,
+  AddQuestionForm,
+  AnswerInput,
+} from './ApartmentTourQuestions.components';
 
 export function ApartmentTourQuestions() {
-  const [checkedQuestions, setCheckedQuestions] = useState<Set<string>>(
+  const {
+    allQuestions,
+    apartments,
+    selectedApartment,
+    addCustomQuestion,
+    deleteCustomQuestion,
+    addApartment,
+    deleteApartment,
+    updateAnswer,
+    getAnswer,
+    setSelectedApartment,
+  } = useApartmentTourData();
+
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     new Set(),
   );
 
   const questionsByCategory = useMemo(
     () =>
-      QUESTIONS.reduce(
+      allQuestions.reduce(
         (acc, question) => {
           if (!acc[question.category]) {
             acc[question.category] = [];
@@ -17,9 +36,9 @@ export function ApartmentTourQuestions() {
           acc[question.category].push(question);
           return acc;
         },
-        {} as Record<string, typeof QUESTIONS>,
+        {} as Record<string, typeof allQuestions>,
       ),
-    [],
+    [allQuestions],
   );
 
   const categories = useMemo(
@@ -27,8 +46,8 @@ export function ApartmentTourQuestions() {
     [questionsByCategory],
   );
 
-  const toggleQuestion = (questionId: string) => {
-    setCheckedQuestions((prev) => {
+  const toggleExpanded = (questionId: string) => {
+    setExpandedQuestions((prev) => {
       const next = new Set(prev);
       if (next.has(questionId)) {
         next.delete(questionId);
@@ -39,12 +58,14 @@ export function ApartmentTourQuestions() {
     });
   };
 
-  const clearAll = () => {
-    setCheckedQuestions(new Set());
-  };
+  const answeredCount = useMemo(() => {
+    if (!selectedApartment) return 0;
+    return allQuestions.filter(
+      (q) => getAnswer(q.id, selectedApartment) !== '',
+    ).length;
+  }, [allQuestions, selectedApartment, getAnswer]);
 
-  const checkedCount = checkedQuestions.size;
-  const totalCount = QUESTIONS.length;
+  const totalCount = allQuestions.length;
 
   return (
     <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
@@ -55,73 +76,132 @@ export function ApartmentTourQuestions() {
             Apartment Tour Questions
           </h1>
           <p className='text-foreground/70 mx-auto max-w-2xl text-sm md:text-base'>
-            Use this comprehensive checklist to ensure you ask all the important
-            questions during your apartment tour. Check off questions as you get
-            answers.
+            Track questions and answers for different apartments. Add your own
+            custom questions and compare answers across multiple properties.
           </p>
         </div>
 
+        {/* Apartment Management */}
+        <ApartmentSelector
+          apartments={apartments}
+          selectedApartment={selectedApartment}
+          onSelectApartment={setSelectedApartment}
+          onAddApartment={addApartment}
+          onDeleteApartment={deleteApartment}
+        />
+
         {/* Progress Card */}
-        <Card>
-          <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
-            <div className='text-center sm:text-left'>
-              <div className='text-2xl font-bold'>
-                {checkedCount} / {totalCount}
+        {selectedApartment && (
+          <Card>
+            <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
+              <div className='text-center sm:text-left'>
+                <div className='text-2xl font-bold'>
+                  {answeredCount} / {totalCount}
+                </div>
+                <div className='text-foreground/60 text-sm'>
+                  Questions Answered for{' '}
+                  {apartments.find((a) => a.id === selectedApartment)?.name}
+                </div>
               </div>
-              <div className='text-foreground/60 text-sm'>Questions Asked</div>
             </div>
-            <Button
-              onClick={clearAll}
-              variant='outline'
-              disabled={checkedCount === 0}
-            >
-              Clear All
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        {/* Add Custom Question */}
+        <AddQuestionForm
+          categories={categories}
+          onAdd={addCustomQuestion}
+        />
 
         {/* Questions by Category */}
-        <div className='space-y-6'>
-          {categories.map((category) => {
-            const categoryQuestions = questionsByCategory[category] || [];
-            const categoryChecked = categoryQuestions.filter((q) =>
-              checkedQuestions.has(q.id),
-            ).length;
+        {selectedApartment ? (
+          <div className='space-y-6'>
+            {categories.map((category) => {
+              const categoryQuestions = questionsByCategory[category] || [];
+              const categoryAnswered = categoryQuestions.filter(
+                (q) => getAnswer(q.id, selectedApartment) !== '',
+              ).length;
 
-            return (
-              <Card key={category}>
-                <div className='space-y-4'>
-                  <div className='flex items-center justify-between'>
-                    <h2 className='text-lg font-semibold'>{category}</h2>
-                    <span className='text-foreground/60 text-sm'>
-                      {categoryChecked} / {categoryQuestions.length}
-                    </span>
+              return (
+                <Card key={category}>
+                  <div className='space-y-4'>
+                    <div className='flex items-center justify-between'>
+                      <h2 className='text-lg font-semibold'>{category}</h2>
+                      <span className='text-foreground/60 text-sm'>
+                        {categoryAnswered} / {categoryQuestions.length}
+                      </span>
+                    </div>
+                    <div className='space-y-3'>
+                      {categoryQuestions.map((question) => {
+                        const isExpanded = expandedQuestions.has(question.id);
+                        const hasAnswer =
+                          getAnswer(question.id, selectedApartment) !== '';
+
+                        return (
+                          <div
+                            key={question.id}
+                            className='hover:bg-muted/50 rounded-lg border border-border p-3 transition-colors'
+                          >
+                            <div className='flex items-start justify-between gap-2'>
+                              <button
+                                onClick={() => toggleExpanded(question.id)}
+                                className='flex-1 text-left'
+                              >
+                                <div
+                                  className={`text-sm leading-relaxed ${
+                                    hasAnswer
+                                      ? 'font-medium text-primary'
+                                      : ''
+                                  }`}
+                                >
+                                  {question.question}
+                                </div>
+                              </button>
+                              {question.isCustom && (
+                                <Button
+                                  onClick={() =>
+                                    deleteCustomQuestion(question.id)
+                                  }
+                                  variant='destructive'
+                                  size='sm'
+                                >
+                                  <Trash className='h-4 w-4' />
+                                </Button>
+                              )}
+                            </div>
+                            {isExpanded && (
+                              <div className='mt-3 pt-3 border-t border-border'>
+                                <AnswerInput
+                                  value={getAnswer(
+                                    question.id,
+                                    selectedApartment,
+                                  )}
+                                  onChange={(value) =>
+                                    updateAnswer(
+                                      question.id,
+                                      selectedApartment,
+                                      value,
+                                    )
+                                  }
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className='space-y-3'>
-                    {categoryQuestions.map((question) => (
-                      <div
-                        key={question.id}
-                        className='hover:bg-muted/50 flex items-start gap-3 rounded-lg p-2 transition-colors'
-                      >
-                        <Checkbox
-                          checked={checkedQuestions.has(question.id)}
-                          onCheckedChange={() => toggleQuestion(question.id)}
-                          size={20}
-                        />
-                        <label
-                          className='flex-1 cursor-pointer text-sm leading-relaxed'
-                          onClick={() => toggleQuestion(question.id)}
-                        >
-                          {question.question}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <Card>
+            <div className='text-foreground/60 text-center'>
+              <p>Add an apartment to get started tracking your questions and answers.</p>
+            </div>
+          </Card>
+        )}
 
         {/* Footer */}
         <div className='pt-4 pb-8 text-center'>
