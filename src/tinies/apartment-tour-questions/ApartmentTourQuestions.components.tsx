@@ -152,7 +152,7 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
     return (
       <Button onClick={() => setIsAdding(true)} variant='outline' size='sm' className='inline-flex items-center'>
         <Plus className='mr-1 h-4 w-4' />
-        Add Custom Question
+        Add question
       </Button>
     );
   }
@@ -161,7 +161,7 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
     <Card>
       <div className='space-y-3'>
         <div className='flex items-center justify-between'>
-          <h3 className='font-semibold'>Add Custom Question</h3>
+          <h3 className='font-semibold'>Add question</h3>
           <Button
             onClick={() => {
               setIsAdding(false);
@@ -185,7 +185,7 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
               placeholder="Select a category..."
               options={[
                 ...categories.map((cat) => ({ value: cat, text: cat })),
-                { value: 'Custom', text: 'Custom' }
+                { value: 'Other', text: 'Other' }
               ]}
             />
           </div>
