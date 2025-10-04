@@ -49,6 +49,7 @@ src/
 ├── screens/    # Page/route components
 ├── store/      # State management (i.e. Redux store)
 ├── styles/     # Additional CSS/styling files
+├── tinies/     # Mini-apps (tinies)
 ├── ui/         # Layout and core UI components
 ├── utils/      # Utility functions
 \`\`\`
@@ -81,6 +82,7 @@ import { helper } from '@utils/helper';
 - \`@routes/\` → \`src/routes/\`
 - \`@screens/\` → \`src/screens/\`
 - \`@store/\` → \`src/store/\`
+- \`@tinies/\` → \`src/tinies/\`
 - \`@styles/\` → \`src/styles/\`
 - \`@ui/\` → \`src/ui/\`
 - \`@utils/\` → \`src/utils/\`
