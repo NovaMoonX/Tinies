@@ -1,15 +1,31 @@
-import {
-  Button,
-  Card,
-  Checkbox,
-} from '@moondreamsdev/dreamer-ui/components';
-import { useState } from 'react';
+import { Button, Card, Checkbox } from '@moondreamsdev/dreamer-ui/components';
+import { useMemo, useState } from 'react';
 import { QUESTIONS } from './ApartmentTourQuestions.data';
 
 export function ApartmentTourQuestions() {
-  const [checkedQuestions, setCheckedQuestions] = useState<Set<string>>(new Set());
+  const [checkedQuestions, setCheckedQuestions] = useState<Set<string>>(
+    new Set(),
+  );
 
-  const categories = Array.from(new Set(QUESTIONS.map((q) => q.category)));
+  const questionsByCategory = useMemo(
+    () =>
+      QUESTIONS.reduce(
+        (acc, question) => {
+          if (!acc[question.category]) {
+            acc[question.category] = [];
+          }
+          acc[question.category].push(question);
+          return acc;
+        },
+        {} as Record<string, typeof QUESTIONS>,
+      ),
+    [],
+  );
+
+  const categories = useMemo(
+    () => Object.keys(questionsByCategory),
+    [questionsByCategory],
+  );
 
   const toggleQuestion = (questionId: string) => {
     setCheckedQuestions((prev) => {
@@ -46,7 +62,7 @@ export function ApartmentTourQuestions() {
         </div>
 
         {/* Progress Card */}
-        <Card padding={16}>
+        <Card>
           <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
             <div className='text-center sm:text-left'>
               <div className='text-2xl font-bold'>
@@ -54,7 +70,11 @@ export function ApartmentTourQuestions() {
               </div>
               <div className='text-foreground/60 text-sm'>Questions Asked</div>
             </div>
-            <Button onClick={clearAll} variant='outline' disabled={checkedCount === 0}>
+            <Button
+              onClick={clearAll}
+              variant='outline'
+              disabled={checkedCount === 0}
+            >
               Clear All
             </Button>
           </div>
@@ -63,15 +83,13 @@ export function ApartmentTourQuestions() {
         {/* Questions by Category */}
         <div className='space-y-6'>
           {categories.map((category) => {
-            const categoryQuestions = QUESTIONS.filter(
-              (q) => q.category === category,
-            );
+            const categoryQuestions = questionsByCategory[category] || [];
             const categoryChecked = categoryQuestions.filter((q) =>
               checkedQuestions.has(q.id),
             ).length;
 
             return (
-              <Card key={category} padding={16}>
+              <Card key={category}>
                 <div className='space-y-4'>
                   <div className='flex items-center justify-between'>
                     <h2 className='text-lg font-semibold'>{category}</h2>
@@ -83,7 +101,7 @@ export function ApartmentTourQuestions() {
                     {categoryQuestions.map((question) => (
                       <div
                         key={question.id}
-                        className='flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50'
+                        className='hover:bg-muted/50 flex items-start gap-3 rounded-lg p-2 transition-colors'
                       >
                         <Checkbox
                           checked={checkedQuestions.has(question.id)}
@@ -106,7 +124,7 @@ export function ApartmentTourQuestions() {
         </div>
 
         {/* Footer */}
-        <div className='pb-8 pt-4 text-center'>
+        <div className='pt-4 pb-8 text-center'>
           <Button href='/' variant='outline'>
             ← Back to Gallery
           </Button>
