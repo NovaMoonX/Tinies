@@ -166,12 +166,10 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 				</div>
 
 				{/* Results count */}
-				<div className='flex justify-center gap-2'>
-					<div className='text-center text-sm text-foreground/60 pt-2'>
-						<span className='bg-muted/50 px-4 py-2 rounded-full'>
-							Showing {filteredTinies.length} of {tinies.length}
-						</span>
-					</div>
+				<div className='flex items-center justify-center gap-2 h-fit'>
+					<span className='text-muted'>
+						Showing {filteredTinies.length} of {tinies.length}
+					</span>
 
 					{/* Clear filters button for desktop */}
 					{hasActiveFilters && (
