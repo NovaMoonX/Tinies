@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @utility page {
-	@tinyly min-h-screen w-screen;
+	@apply min-h-screen w-screen;
 }
 
 @theme tiny {
@@ -16,7 +16,7 @@
 }
 
 #root {
-  @tinyly page bg-background text-foreground;
+  @apply page bg-background text-foreground;
 }
 
 body {

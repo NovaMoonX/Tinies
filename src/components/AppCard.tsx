@@ -1,5 +1,6 @@
-import { Card, Badge, Button } from '@moondreamsdev/dreamer-ui/components';
 import { Tiny } from '@/lib/tinies';
+import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
+import { BadgeVariant } from 'node_modules/@moondreamsdev/dreamer-ui/dist/src/components/badge/variants';
 
 interface AppCardProps {
 	tiny: Tiny;
@@ -12,10 +13,17 @@ function AppCard({ tiny }: AppCardProps) {
 		day: 'numeric',
 	});
 
-	const statusColors: Record<Tiny['status'], string> = {
-		active: 'bg-green-500 text-white',
-		'in-progress': 'bg-yellow-500 text-black',
-		archived: 'bg-gray-500 text-white',
+	const getBadgeVariant = (status: Tiny['status']): BadgeVariant => {
+		switch (status) {
+			case 'active':
+				return 'success';
+			case 'in-progress':
+				return 'accent';
+			case 'archived':
+				return 'muted';
+			default:
+				return 'base';
+		}
 	};
 
 	return (
@@ -23,25 +31,18 @@ function AppCard({ tiny }: AppCardProps) {
 			<div className='flex-1 space-y-3'>
 				<div className='flex items-start justify-between gap-2'>
 					<h3 className='text-xl font-semibold text-foreground'>{tiny.title}</h3>
-					<Badge className={statusColors[tiny.status]}>
-						{tiny.status}
-					</Badge>
+					<Badge variant={getBadgeVariant(tiny.status)}>{tiny.status}</Badge>
 				</div>
 
 				<p className='text-foreground/70 text-sm'>{tiny.description}</p>
 
 				<div className='space-y-2'>
-					<div className='text-xs text-foreground/60'>
-						Started: {formattedDate}
-					</div>
+					<div className='text-xs text-foreground/60'>Started: {formattedDate}</div>
 
 					{tiny.categories.length > 0 && (
 						<div className='flex flex-wrap gap-1'>
-							{tiny.categories.map(category => (
-								<Badge
-									key={category}
-									className='bg-primary/10 text-primary text-xs'
-								>
+							{tiny.categories.map((category) => (
+								<Badge key={category} className='bg-primary/10 text-primary text-xs'>
 									{category}
 								</Badge>
 							))}
@@ -50,11 +51,8 @@ function AppCard({ tiny }: AppCardProps) {
 
 					{tiny.tags.length > 0 && (
 						<div className='flex flex-wrap gap-1'>
-							{tiny.tags.map(tag => (
-								<Badge
-									key={tag}
-									className='bg-secondary text-secondary-foreground text-xs'
-								>
+							{tiny.tags.map((tag) => (
+								<Badge key={tag} className='bg-secondary text-secondary-foreground text-xs'>
 									#{tag}
 								</Badge>
 							))}
