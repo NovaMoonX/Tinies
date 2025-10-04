@@ -8,7 +8,7 @@ function Home() {
 	const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(MINI_APPS);
 
 	return (
-		<div className='min-h-screen w-screen p-4 md:p-8'>
+		<div className='min-h-screen w-screen p-4 md:p-8 pt-16 md:pt-32'>
 			<div className='max-w-7xl mx-auto space-y-8'>
 				{/* Header */}
 				<div className='text-center space-y-4'>
