@@ -5,41 +5,45 @@ import { APP_TITLE } from '@lib/app';
 import { useState } from 'react';
 
 function Home() {
-	const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(ALL_TINIES);
+  const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(ALL_TINIES);
 
-	return (
-		<div className='min-h-screen w-screen p-4 md:p-8 pt-16 md:pt-32'>
-			<div className='max-w-7xl mx-auto space-y-8'>
-				{/* Header */}
-				<div className='text-center space-y-2'>
-					<h1 className='text-4xl md:text-5xl font-bold'>{APP_TITLE}</h1>
-					<p className='text-base md:text-lg text-foreground/70 max-w-3xl mx-auto'>
-						Where dreams take their first breath
-					</p>
-				</div>
+  return (
+    <div className='min-h-screen w-screen p-4 pt-16 md:p-8 md:pt-32'>
+      <div className='mx-auto max-w-7xl space-y-8'>
+        {/* Header */}
+        <div className='space-y-2 text-center'>
+          <h1 className='text-4xl font-bold md:text-5xl'>{APP_TITLE}</h1>
+          <p className='text-foreground/70 mx-auto max-w-3xl text-base md:text-lg'>
+            Where dreams take their first breath
+          </p>
+        </div>
 
-				{/* Filters */}
-				<TiniesFilters tinies={ALL_TINIES} onFilteredTiniesChange={setFilteredTinies} />
+        {/* Filters */}
+        <TiniesFilters
+          tinies={ALL_TINIES}
+          onFilteredTiniesChange={setFilteredTinies}
+        />
 
-				{/* App Grid */}
-				<div>
-					{filteredTinies.length === 0 ? (
-						<div className='text-center py-12'>
-							<p className='text-lg text-foreground/60'>
-								No tinies match your filters. Try adjusting your search or filters.
-							</p>
-						</div>
-					) : (
-						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-							{filteredTinies.map((tiny) => (
-								<TinyCard key={tiny.id} tiny={tiny} />
-							))}
-						</div>
-					)}
-				</div>
-			</div>
-		</div>
-	);
+        {/* App Grid */}
+        <div>
+          {filteredTinies.length === 0 ? (
+            <div className='py-12 text-center'>
+              <p className='text-foreground/60 text-lg'>
+                No tinies match your filters. Try adjusting your search or
+                filters.
+              </p>
+            </div>
+          ) : (
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+              {filteredTinies.map((tiny) => (
+                <TinyCard key={tiny.id} tiny={tiny} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default Home;
