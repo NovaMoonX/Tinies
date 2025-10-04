@@ -1,6 +1,8 @@
 # GitHub AI Instructions for $APP_TITLE Project
 
-IMPORTANT: Also refer to mini-apps as "tinies" (plural) and "tiny" (singular).
+2 IMPORTANT THINGS TO ALWAYS KEEP IN MIND: 
+- Always refer to mini-apps as "tinies" (plural) and "tiny" (singular)
+- Always optimize for smaller screens first by using mobile-first responsive design principles (i.e. using a modal for filters on mobile instead of a sidebar)
 
 ## Core Development Rules
 

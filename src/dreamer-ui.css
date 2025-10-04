@@ -16,12 +16,12 @@
 	--color-destructive: var(--color-red-500);
 	--color-destructive-foreground: var(--color-white);
 
-	--color-border: var(--color-slate-600); /* for input/textarea borders and dividers */
-	--color-popover: var(--color-slate-900); /* for popover backgrounds (popover, dropdowns, modals, etc) */
+	--color-border: var(--color-gray-600); /* for input/textarea borders and dividers */
+	--color-popover: var(--color-gray-900); /* for popover backgrounds (popover, dropdowns, modals, etc) */
 	--color-popover-foreground: var(--color-white); /* for popover text */
 
-	--color-tooltip: var(--color-slate-100);
-	--color-tooltip-foreground: var(--color-slate-900);
+	--color-tooltip: var(--color-gray-100);
+	--color-tooltip-foreground: var(--color-gray-900);
 }
 
 .dark {
