@@ -6,9 +6,9 @@ applyTo: 'src/**/*'
 
 Instructions for adding and updating a new mini app (aka "tiny") to the repo.
 
-## 1. Add to data
+## Step 1: Add to Data
 
-To add a new mini tiny to the gallery, simply add a new entry to the `TINIES` array in `src/lib/tinies/tinies.data.ts`:
+Add a new entry to the `ALL_TINIES` array in `src/lib/tinies/tinies.data.ts`:
 
 ```typescript
 {
@@ -23,8 +23,7 @@ To add a new mini tiny to the gallery, simply add a new entry to the `TINIES` ar
 }
 ```
 
-## Example
-
+### Example Entry
 ```typescript
 {
   id: 'calculator',
@@ -40,23 +39,212 @@ To add a new mini tiny to the gallery, simply add a new entry to the `TINIES` ar
 
 All tags and categories are automatically extracted and made available for filtering.
 
-## 2. Create the Tiny
+## Step 2: Create the Tiny Structure
 
-Below are the steps to create the actual tiny:
+### 2.1 Create Folder Structure
+Create a new folder in `src/tinies/` with the **exact same name** as the `id` you used in the data file:
 
+```
+src/tinies/calculator/
+```
 
-- Create a new folder in `src/tinies/` with the same name as the `id` you used in the data file (e.g., `calculator`).
-- Inside that folder, create a main page component using the title-cased version of the tiny ID (e.g., `Calculator.tsx`).
-  - This component should be the default export of the file.
-- You can also create additional files as needed for types, utilities, hooks, data, components, etc.
-  - These should use file qualifiers like `.types.ts`, `.utils.ts`, `.hooks.ts`, `.data.ts`, `.components.tsx`, etc.
-  - Only one of each qualifier is allowed per tiny.
-  - Example: `Calculator.tsx`, `Calculator.utils.ts`, `Calculator.hooks.ts`, `Calculator.types.ts`, `Calculator.data.ts`, `Calculator.components.tsx`.
+### 2.2 Create Main Component
+Inside that folder, create a main component using the **title-cased version** of the tiny ID:
 
-## 3. Import and Use the Tiny
+**File:** `src/tinies/calculator/Calculator.tsx`
+```typescript
+import { Button } from '@moondreamsdev/dreamer-ui/components';
 
-Add a new lazy-loaded route in `src/routes/AppRoutes.tsx` for the tiny by importing the main component: 
+export function Calculator() {
+  return (
+    <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
+      <div className='mx-auto max-w-4xl space-y-6'>
+        <h1 className='text-3xl font-bold text-center'>Calculator</h1>
+        {/* Your calculator UI here */}
+      </div>
+    </div>
+  );
+}
+
+export default Calculator;
+```
+
+### 2.3 Organize Additional Files (Optional)
+Create additional files as needed using the **exact file naming pattern**:
+
+#### Types File
+**File:** `Calculator.types.ts`
+```typescript
+export interface CalculatorOperation {
+  type: 'add' | 'subtract' | 'multiply' | 'divide';
+  value: number;
+}
+
+export interface CalculatorState {
+  display: string;
+  previousValue: number | null;
+  operation: CalculatorOperation['type'] | null;
+}
+```
+
+#### Data File
+**File:** `Calculator.data.ts`
+```typescript
+import { CalculatorOperation } from './Calculator.types';
+
+export const CALCULATOR_BUTTONS = [
+  '7', '8', '9', '/',
+  '4', '5', '6', '*',
+  '1', '2', '3', '-',
+  '0', '.', '=', '+'
+];
+
+export const OPERATIONS: CalculatorOperation['type'][] = [
+  'add', 'subtract', 'multiply', 'divide'
+];
+```
+
+#### Utils File
+**File:** `Calculator.utils.ts`
+```typescript
+import { CalculatorOperation } from './Calculator.types';
+
+export function performCalculation(
+  prev: number,
+  current: number,
+  operation: CalculatorOperation['type']
+): number {
+  switch (operation) {
+    case 'add': return prev + current;
+    case 'subtract': return prev - current;
+    case 'multiply': return prev * current;
+    case 'divide': return prev / current;
+    default: return current;
+  }
+}
+
+export function formatDisplay(value: string): string {
+  return parseFloat(value).toLocaleString();
+}
+```
+
+#### Hooks File
+**File:** `Calculator.hooks.ts`
+```typescript
+import { useState } from 'react';
+import { CalculatorState } from './Calculator.types';
+import { performCalculation } from './Calculator.utils';
+
+export function useCalculator() {
+  const [state, setState] = useState<CalculatorState>({
+    display: '0',
+    previousValue: null,
+    operation: null
+  });
+
+  const handleNumber = (num: string) => {
+    // Calculator logic here
+  };
+
+  return { state, handleNumber };
+}
+```
+
+#### Components File
+**File:** `Calculator.components.tsx`
+```typescript
+import { Button } from '@moondreamsdev/dreamer-ui/components';
+
+interface CalculatorButtonProps {
+  value: string;
+  onClick: (value: string) => void;
+  variant?: 'default' | 'operation';
+}
+
+export function CalculatorButton({ value, onClick, variant = 'default' }: CalculatorButtonProps) {
+  return (
+    <Button
+      onClick={() => onClick(value)}
+      variant={variant === 'operation' ? 'secondary' : 'outline'}
+      className='h-12 text-lg'
+    >
+      {value}
+    </Button>
+  );
+}
+```
+
+### 2.4 Import Structure in Main Component
+Update your main component to import from the additional files:
 
 ```typescript
-import Calculator from '@tinies/calculator/Calculator';
+import { Button } from '@moondreamsdev/dreamer-ui/components';
+import { CALCULATOR_BUTTONS } from './Calculator.data';
+import { useCalculator } from './Calculator.hooks';
+import { CalculatorButton } from './Calculator.components';
+
+export function Calculator() {
+  const { state, handleNumber } = useCalculator();
+  
+  return (
+    <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
+      {/* Component JSX */}
+    </div>
+  );
+}
+
+export default Calculator;
 ```
+
+## Step 3: Add Route
+
+Add a new lazy-loaded route in `src/routes/AppRoutes.tsx`:
+
+```typescript
+// Calculator (lazy loaded)
+{
+  path: 'calculator',
+  HydrateFallback: Loading,
+  lazy: async () => {
+    const { default: Calculator } = await import('@tinies/calculator/Calculator');
+    return { Component: Calculator };
+  },
+},
+```
+
+## File Naming Rules
+
+### ✅ Allowed File Qualifiers
+- `.types.ts` - TypeScript interfaces and types
+- `.data.ts` - Static data, constants, and arrays
+- `.utils.ts` - Pure utility functions
+- `.hooks.ts` - Custom React hooks
+- `.components.tsx` - Reusable React components
+
+### ❌ Restrictions
+- Only **one file of each qualifier** per tiny
+- File names must match the **exact pattern**: `TinyName.qualifier.extension`
+- Main component must be **title-cased** and match the folder name
+
+### Example File Structure
+```
+src/tinies/calculator/
+├── Calculator.tsx          # Main component (required)
+├── Calculator.types.ts     # Types and interfaces
+├── Calculator.data.ts      # Static data
+├── Calculator.utils.ts     # Utility functions
+├── Calculator.hooks.ts     # Custom hooks
+└── Calculator.components.tsx # Reusable components
+```
+
+## Complete Example
+
+For a tiny with ID `calculator`, you would have:
+
+1. **Data entry** in `tinies.data.ts` with `id: 'calculator'`
+2. **Folder** at `src/tinies/calculator/`
+3. **Main component** at `Calculator.tsx`
+4. **Route** importing `@tinies/calculator/Calculator`
+5. **Additional files** following the naming pattern (optional)
+
+This structure ensures consistency, maintainability, and follows the established patterns across all tinies.

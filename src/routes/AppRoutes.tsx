@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
         path: 'apartment-tour-questions',
         HydrateFallback: Loading,
         lazy: async () => {
-          const { default: ApartmentTourQuestions } = await import('@screens/ApartmentTourQuestions');
+          const { default: ApartmentTourQuestions } = await import('@tinies/apartment-tour-questions/ApartmentTourQuestions');
           return { Component: ApartmentTourQuestions };
         },
       },
