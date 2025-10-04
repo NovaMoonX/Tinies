@@ -1,5 +1,6 @@
 import { Tiny } from '@/lib/tinies';
 import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
+import { BadgeVariant } from 'node_modules/@moondreamsdev/dreamer-ui/dist/src/components/badge/variants';
 
 interface TinyCardProps {
   tiny: Tiny;
@@ -12,25 +13,23 @@ function TinyCard({ tiny }: TinyCardProps) {
     day: 'numeric',
   });
 
-  const getBadgeClass = (status: Tiny['status']): string => {
+  const getBadgeVariant = (status: Tiny['status']): BadgeVariant => {
     switch (status) {
       case 'active':
-        return 'bg-green-300 dark:bg-green-700';
+        return 'success';
       case 'in-progress':
-        return 'bg-yellow-300 dark:bg-yellow-700';
+        return 'warning';
       case 'archived':
-        return 'bg-muted text-muted-foreground';
+        return 'muted';
       default:
-        return '';
+        return 'base';
     }
   };
 
   const header = (
     <div className='flex items-start justify-between gap-2'>
       <h3 className='text-foreground text-xl font-semibold'>{tiny.title}</h3>
-      <Badge variant='base' className={getBadgeClass(tiny.status)}>
-        {tiny.status}
-      </Badge>
+      <Badge variant={getBadgeVariant(tiny.status)}>{tiny.status}</Badge>
     </div>
   );
 
