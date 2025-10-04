@@ -6,7 +6,7 @@ export const MINI_APPS: Tiny[] = [
 		title: 'About',
 		description: 'Learn more about Tinies and the philosophy behind this collection of mini tinies.',
 		startDate: '2025-01-15',
-		tags: [],
+		tags: ['informational', 'documentation'],
 		categories: [],
 		status: 'active',
 		route: '/about',

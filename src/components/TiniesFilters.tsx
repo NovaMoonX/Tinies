@@ -88,8 +88,7 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 
 	return (
 		<>
-			{/* Modern Centered Layout */}
-			<div className='space-y-6 p-4 sm:p-8'>
+			<div className='space-y-6 p-2 sm:p-6'>
 				{/* Large Centered Search */}
 				<div className='flex flex-col items-center space-y-4'>
 					<div className='w-full max-w-2xl'>
@@ -106,9 +105,17 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 
 					{/* Filters Button - Mobile Only */}
 					{canFilter && (
-						<Button variant='outline' onClick={() => setIsFiltersModalOpen(true)} className='sm:hidden flex items-center'>
+						<Button
+							variant='outline'
+							onClick={() => setIsFiltersModalOpen(true)}
+							className='sm:hidden flex items-center'
+						>
 							Filters
-							{hasAdvancedFilters && <Badge variant='primary' className='ml-2'>{selectedTags.size + selectedCategories.size}</Badge>}
+							{hasAdvancedFilters && (
+								<Badge variant='primary' className='ml-2'>
+									{selectedTags.size + selectedCategories.size}
+								</Badge>
+							)}
 						</Button>
 					)}
 				</div>
@@ -156,22 +163,24 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 							</div>
 						</div>
 					)}
+				</div>
 
-					{/* Clear filters button */}
+				{/* Results count */}
+				<div className='flex justify-center gap-2'>
+					<div className='text-center text-sm text-foreground/60 pt-2'>
+						<span className='bg-muted/50 px-4 py-2 rounded-full'>
+							Showing {filteredTinies.length} of {tinies.length}
+						</span>
+					</div>
+
+					{/* Clear filters button for desktop */}
 					{hasActiveFilters && (
-						<div className='text-center'>
+						<div className='hidden sm:block text-center'>
 							<Button variant='tertiary' onClick={clearFilters}>
 								Clear all filters
 							</Button>
 						</div>
 					)}
-				</div>
-
-				{/* Results count */}
-				<div className='text-center text-sm text-foreground/60 pt-6 border-t border-border/50'>
-					<span className='bg-muted/50 px-4 py-2 rounded-full'>
-						Showing {filteredTinies.length} of {tinies.length}
-					</span>
 				</div>
 			</div>
 
