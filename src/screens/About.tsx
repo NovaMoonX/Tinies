@@ -11,7 +11,7 @@ function About() {
 				<div className='pt-4'>
 					<Button
 						href='/'
-						className='inline-block px-6 py-3 bg-accent hover:bg-accent-hover text-white font-medium rounded-lg transition-colors'
+						className='inline-block px-6 py-3 bg-accent hover:bg-accent/80 text-white font-medium rounded-lg transition-colors'
 					>
 						← Back to Home
 					</Button>

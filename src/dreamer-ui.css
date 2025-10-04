@@ -1,7 +1,7 @@
 /** Necessary theme styles for Dreamer UI library - Customize as desired! */
 
 @theme dreamer-ui {
-  --color-primary: var(--color-violet-400);
+  --color-primary: var(--color-violet-500);
   --color-primary-foreground: var(--color-white);
   --color-secondary: var(--color-violet-200);
   --color-secondary-foreground: var(--color-black);

@@ -5,20 +5,14 @@
 }
 
 @theme app {
-	--color-background: var(--color-slate-100);
-	--color-foreground: var(--color-slate-900);
-
-	--color-accent: var(--color-violet-500);
-	--color-accent-hover: var(--color-violet-600);
+	--color-background: var(--color-gray-200);
+	--color-foreground: var(--color-gray-900);
 }
 
 /* Override the variables to create a dark theme */
 .dark {
-	--color-background: var(--color-slate-900);
-	--color-foreground: var(--color-slate-100);
-
-	--color-accent: var(--color-violet-500);
-	--color-accent-hover: var(--color-violet-400);
+	--color-background: var(--color-gray-950);
+	--color-foreground: var(--color-gray-100);
 }
 
 #root {
