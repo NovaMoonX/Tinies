@@ -1,6 +1,6 @@
 import { Tiny } from './tinies.types';
 
-export const MINI_APPS: Tiny[] = [
+export const ALL_TINIES: Tiny[] = [
 	{
 		id: 'about',
 		title: 'About',
@@ -14,9 +14,9 @@ export const MINI_APPS: Tiny[] = [
 ];
 
 export const ALL_TAGS = Array.from(
-	new Set(MINI_APPS.flatMap(tiny => tiny.tags))
+	new Set(ALL_TINIES.flatMap(tiny => tiny.tags))
 ).sort();
 
 export const ALL_CATEGORIES = Array.from(
-	new Set(MINI_APPS.flatMap(tiny => tiny.categories))
+	new Set(ALL_TINIES.flatMap(tiny => tiny.categories))
 ).sort();

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { APP_TITLE, APP_DESCRIPTION } from '@lib/app';
-import { MINI_APPS, Tiny } from '@/lib/tinies';
+import { ALL_TINIES, Tiny } from '@/lib/tinies';
 import TinyCard from '@components/TinyCard';
 import TiniesFilters from '@components/TiniesFilters';
 
 function Home() {
-	const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(MINI_APPS);
+	const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(ALL_TINIES);
 
 	return (
 		<div className='min-h-screen w-screen p-4 md:p-8 pt-16 md:pt-32'>
@@ -19,7 +19,7 @@ function Home() {
 				</div>
 
 				{/* Filters */}
-				<TiniesFilters tinies={MINI_APPS} onFilteredTiniesChange={setFilteredTinies} />
+				<TiniesFilters tinies={ALL_TINIES} onFilteredTiniesChange={setFilteredTinies} />
 
 				{/* App Grid */}
 				<div>
