@@ -22,6 +22,15 @@ export const router = createBrowserRouter([
           return { Component: About };
         },
       },
+      // Apartment Tour Questions (lazy loaded)
+      {
+        path: 'apartment-tour-questions',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: ApartmentTourQuestions } = await import('@screens/ApartmentTourQuestions');
+          return { Component: ApartmentTourQuestions };
+        },
+      },
     ],
   },
 ]);

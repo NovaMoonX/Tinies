@@ -56,6 +56,16 @@ export const ALL_TINIES: Tiny[] = [
 		categories: [],
 		status: 'in-progress',
 	},
+	{
+		id: 'apartment-tour-questions',
+		title: 'Apartment Tour Questions',
+		description: 'A handy checklist of important questions to ask during apartment tours to help you make informed rental decisions.',
+		startDate: '2025-02-04',
+		tags: ['lifestyle', 'tools', 'checklist'],
+		categories: ['lifestyle', 'utility'],
+		status: 'active',
+		route: '/apartment-tour-questions',
+	},
 ];
 
 export const ALL_TAGS = Array.from(
