@@ -1,61 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Question, Apartment, Answer } from './ApartmentTourQuestions.types';
 import { QUESTIONS } from './ApartmentTourQuestions.data';
 
-const STORAGE_KEYS = {
-  CUSTOM_QUESTIONS: 'apartment-tour-custom-questions',
-  APARTMENTS: 'apartment-tour-apartments',
-  ANSWERS: 'apartment-tour-answers',
-  SELECTED_APARTMENT: 'apartment-tour-selected-apartment',
-};
-
 export function useApartmentTourData() {
   // Custom questions
-  const [customQuestions, setCustomQuestions] = useState<Question[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_QUESTIONS);
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
 
   // Apartments
-  const [apartments, setApartments] = useState<Apartment[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.APARTMENTS);
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [apartments, setApartments] = useState<Apartment[]>([]);
 
   // Selected apartment
-  const [selectedApartment, setSelectedApartment] = useState<string | null>(() => {
-    return localStorage.getItem(STORAGE_KEYS.SELECTED_APARTMENT);
-  });
+  const [selectedApartment, setSelectedApartment] = useState<string | null>(null);
 
   // Answers
-  const [answers, setAnswers] = useState<Answer[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.ANSWERS);
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [answers, setAnswers] = useState<Answer[]>([]);
 
   // All questions (predefined + custom)
   const allQuestions = [...QUESTIONS, ...customQuestions];
-
-  // Persist to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_QUESTIONS, JSON.stringify(customQuestions));
-  }, [customQuestions]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.APARTMENTS, JSON.stringify(apartments));
-  }, [apartments]);
-
-  useEffect(() => {
-    if (selectedApartment) {
-      localStorage.setItem(STORAGE_KEYS.SELECTED_APARTMENT, selectedApartment);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.SELECTED_APARTMENT);
-    }
-  }, [selectedApartment]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ANSWERS, JSON.stringify(answers));
-  }, [answers]);
 
   // Helper functions
   const addCustomQuestion = (question: string, category: string) => {

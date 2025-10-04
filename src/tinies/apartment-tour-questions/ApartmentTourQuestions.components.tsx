@@ -1,4 +1,4 @@
-import { Button, Input, Card, Textarea } from '@moondreamsdev/dreamer-ui/components';
+import { Button, Input, Card, Textarea, Select } from '@moondreamsdev/dreamer-ui/components';
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import { Apartment } from './ApartmentTourQuestions.types';
@@ -41,6 +41,7 @@ export function ApartmentSelector({
               onClick={() => setIsAdding(true)}
               variant='outline'
               size='sm'
+              className='inline-flex items-center'
             >
               <Plus className='mr-1 h-4 w-4' />
               Add Apartment
@@ -149,7 +150,7 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
 
   if (!isAdding) {
     return (
-      <Button onClick={() => setIsAdding(true)} variant='outline' size='sm'>
+      <Button onClick={() => setIsAdding(true)} variant='outline' size='sm' className='inline-flex items-center'>
         <Plus className='mr-1 h-4 w-4' />
         Add Custom Question
       </Button>
@@ -178,19 +179,15 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
             <label className='text-foreground/80 mb-1 block text-sm font-medium'>
               Category
             </label>
-            <select
+            <Select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className='bg-background border-border text-foreground focus:border-primary w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary'
-            >
-              <option value=''>Select a category...</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-              <option value='Custom'>Custom</option>
-            </select>
+              onChange={setSelectedCategory}
+              placeholder="Select a category..."
+              options={[
+                ...categories.map((cat) => ({ value: cat, text: cat })),
+                { value: 'Custom', text: 'Custom' }
+              ]}
+            />
           </div>
           <div>
             <label className='text-foreground/80 mb-1 block text-sm font-medium'>

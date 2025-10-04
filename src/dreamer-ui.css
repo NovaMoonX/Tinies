@@ -34,6 +34,8 @@
 	--color-success-foreground: var(--color-white);
 	--color-warning: var(--color-yellow-700);
 	--color-warning-foreground: var(--color-white);
+	--color-destructive: var(--color-red-700);
+	--color-destructive-foreground: var(--color-white);
 
 	--color-popover: var(--color-gray-800);
 	--color-popover-foreground: var(--color-gray-100);
