@@ -1,6 +1,5 @@
 import { Tiny } from '@/lib/tinies';
 import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
-import { BadgeVariant } from 'node_modules/@moondreamsdev/dreamer-ui/dist/src/components/badge/variants';
 
 interface TinyCardProps {
 	tiny: Tiny;
@@ -13,47 +12,46 @@ function TinyCard({ tiny }: TinyCardProps) {
 		day: 'numeric',
 	});
 
-	const getBadgeVariant = (status: Tiny['status']): BadgeVariant => {
-		switch (status) {
-			case 'active':
-				return 'success';
-			case 'in-progress':
-				return 'base';
-			case 'archived':
-				return 'muted';
-			default:
-				return 'base';
-		}
-	};
-
 	const getBadgeClass = (status: Tiny['status']): string => {
 		switch (status) {
+			case 'active':
+				return 'bg-green-300 dark:bg-green-700';
 			case 'in-progress':
-				return 'bg-yellow-500 dark:bg-yellow-700 text-foreground';
+				return 'bg-yellow-300 dark:bg-yellow-700';
+			case 'archived':
+				return 'bg-muted text-muted-foreground';
 			default:
 				return '';
 		}
 	};
 
-	return (
-		<Card className='flex flex-col h-full hover:shadow-lg transition-shadow'>
-			<div className='flex-1 space-y-3'>
-				<div className='flex items-start justify-between gap-2'>
-					<h3 className='text-xl font-semibold text-foreground'>{tiny.title}</h3>
-					<Badge variant={getBadgeVariant(tiny.status)} className={getBadgeClass(tiny.status)}>
-						{tiny.status}
-					</Badge>
-				</div>
+	const header = (
+		<div className='flex items-start justify-between gap-2'>
+			<h3 className='text-xl font-semibold text-foreground'>{tiny.title}</h3>
+			<Badge variant='base' className={getBadgeClass(tiny.status)}>
+				{tiny.status}
+			</Badge>
+		</div>
+	);
 
+	const footer = tiny.route ? (
+		<Button href={tiny.route} variant='link'>
+			Check it out →
+		</Button>
+	) : undefined;
+
+	return (
+		<Card className='h-full hover:shadow-lg transition-shadow' header={header} footer={footer} padding={20}>
+			<div className='space-y-3'>
 				<p className='text-foreground/70 text-sm'>{tiny.description}</p>
 
-				<div className='space-y-2'>
+				<div className='space-y-2 pb-1'>
 					<div className='text-xs text-foreground/60'>Started: {formattedDate}</div>
 
 					{tiny.categories.length > 0 && (
 						<div className='flex flex-wrap gap-1'>
 							{tiny.categories.map((category) => (
-								<Badge key={category} className='bg-primary/10 text-primary text-xs'>
+								<Badge key={category} variant='primary'>
 									{category}
 								</Badge>
 							))}
@@ -63,7 +61,7 @@ function TinyCard({ tiny }: TinyCardProps) {
 					{tiny.tags.length > 0 && (
 						<div className='flex flex-wrap gap-1'>
 							{tiny.tags.map((tag) => (
-								<Badge key={tag} className='bg-secondary text-secondary-foreground text-xs'>
+								<Badge key={tag} variant='secondary'>
 									#{tag}
 								</Badge>
 							))}
@@ -71,14 +69,6 @@ function TinyCard({ tiny }: TinyCardProps) {
 					)}
 				</div>
 			</div>
-
-			{tiny.route && (
-				<div className='mt-4 pt-4 border-t border-border'>
-					<Button href={tiny.route} className='w-full'>
-						Open App
-					</Button>
-				</div>
-			)}
 		</Card>
 	);
 }

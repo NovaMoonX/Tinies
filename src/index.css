@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @utility page {
 	@apply min-h-screen w-screen;
 }
 
 @theme tiny {
 	--color-background: var(--color-gray-200);
-	--color-foreground: var(--color-gray-900);
+	--color-foreground: var(--color-gray-950);
 }
 
 /* Override the variables to create a dark theme */
 .dark {
 	--color-background: var(--color-gray-950);
-	--color-foreground: var(--color-gray-100);
+	--color-foreground: var(--color-gray-200);
 }
 
 #root {

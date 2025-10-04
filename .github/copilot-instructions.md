@@ -17,9 +17,9 @@
 \`\`\`tsx
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 
-export function Button({ variant, className }: ButtonProps) {
+export function Test({ variant, className }: TestProps) {
   return (
-    <button 
+    <div 
       className={join(
         'px-4 py-2 rounded',
         variant === 'primary' ? 'bg-primary text-primary-foreground' : 'bg-secondary',
@@ -27,7 +27,7 @@ export function Button({ variant, className }: ButtonProps) {
       )}
     >
       Click me
-    </button>
+    </div>
   );
 }
 \`\`\`
@@ -35,6 +35,7 @@ export function Button({ variant, className }: ButtonProps) {
 ### 3. Component Library Priority
 - Always check Dreamer UI first before creating custom components
 - Import from \`@moondreamsdev/dreamer-ui/components\`, \`/hooks\`, \`/symbols\`, \`/utils\`
+- Always check existing props of Dream UI components before setting custom styles
 
 ### 4. File Structure
 Follow the existing structure:

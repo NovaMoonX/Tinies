@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Input, Badge, Button, Modal } from '@moondreamsdev/dreamer-ui/components';
+import { ALL_CATEGORIES, ALL_TAGS, Tiny } from '@/lib/tinies';
+import { Badge, Button, Input, Modal } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { Tiny, ALL_TAGS, ALL_CATEGORIES } from '@/lib/tinies';
+import { useEffect, useMemo, useState } from 'react';
 
 interface TiniesFiltersProps {
 	tinies: Tiny[];
@@ -21,26 +21,22 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase();
 			filtered = filtered.filter(
-				tiny =>
+				(tiny) =>
 					tiny.title.toLowerCase().includes(query) ||
 					tiny.description.toLowerCase().includes(query) ||
-					tiny.tags.some(tag => tag.toLowerCase().includes(query)) ||
-					tiny.categories.some(cat => cat.toLowerCase().includes(query))
+					tiny.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+					tiny.categories.some((cat) => cat.toLowerCase().includes(query))
 			);
 		}
 
 		// Filter by selected tags
 		if (selectedTags.size > 0) {
-			filtered = filtered.filter(tiny =>
-				tiny.tags.some(tag => selectedTags.has(tag))
-			);
+			filtered = filtered.filter((tiny) => tiny.tags.some((tag) => selectedTags.has(tag)));
 		}
 
 		// Filter by selected categories
 		if (selectedCategories.size > 0) {
-			filtered = filtered.filter(tiny =>
-				tiny.categories.some(cat => selectedCategories.has(cat))
-			);
+			filtered = filtered.filter((tiny) => tiny.categories.some((cat) => selectedCategories.has(cat)));
 		}
 
 		return filtered;
@@ -52,7 +48,7 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 	}, [filteredTinies, onFilteredTiniesChange]);
 
 	const toggleTag = (tag: string) => {
-		setSelectedTags(prev => {
+		setSelectedTags((prev) => {
 			const next = new Set(prev);
 			if (next.has(tag)) {
 				next.delete(tag);
@@ -64,7 +60,7 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 	};
 
 	const toggleCategory = (category: string) => {
-		setSelectedCategories(prev => {
+		setSelectedCategories((prev) => {
 			const next = new Set(prev);
 			if (next.has(category)) {
 				next.delete(category);
@@ -81,9 +77,10 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 		setSelectedCategories(new Set());
 	};
 
-	const hasActiveFilters =
-		searchQuery.trim() || selectedTags.size > 0 || selectedCategories.size > 0;
-	
+	const canFilter = ALL_CATEGORIES.length > 0 || ALL_TAGS.length > 0;
+
+	const hasActiveFilters = searchQuery.trim() || selectedTags.size > 0 || selectedCategories.size > 0;
+
 	const hasAdvancedFilters = selectedTags.size > 0 || selectedCategories.size > 0;
 
 	return (
@@ -99,27 +96,29 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 							value={searchQuery}
 							variant='outline'
 							rounded='full'
-							onChange={e => setSearchQuery(e.target.value)}
-							className='py-2 px-3 md:text-lg md:py-4 md:px-6 focus:border-primary/50! shadow-sm'
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className='py-2 px-3 md:text-lg md:py-4 md:px-6 focus:border-primary/80! shadow-sm'
 						/>
 					</div>
-					
+
 					{/* Filters Button - Mobile Only */}
-					<Button
-						variant='outline'
-						onClick={() => setIsFiltersModalOpen(true)}
-						className={join(
-							'sm:hidden',
-							hasAdvancedFilters && 'bg-primary/10 border-primary text-primary flex items-center'
-						)}
-					>
-						Filters
-						{hasAdvancedFilters && (
-							<Badge className='ml-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full'>
-								{selectedTags.size + selectedCategories.size}
-							</Badge>
-						)}
-					</Button>
+					{canFilter && (
+						<Button
+							variant='outline'
+							onClick={() => setIsFiltersModalOpen(true)}
+							className={join(
+								'sm:hidden',
+								hasAdvancedFilters && 'bg-primary/10 border-primary text-primary flex items-center'
+							)}
+						>
+							Filters
+							{hasAdvancedFilters && (
+								<Badge className='ml-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full'>
+									{selectedTags.size + selectedCategories.size}
+								</Badge>
+							)}
+						</Button>
+					)}
 				</div>
 
 				{/* Desktop Filters - Hidden on Mobile */}
@@ -127,27 +126,22 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 					{/* Categories */}
 					{ALL_CATEGORIES.length > 0 && (
 						<div className='text-center'>
-							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>
-								Categories
-							</h3>
+							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>Categories</h3>
 							<div className='flex flex-wrap justify-center gap-3'>
-								{ALL_CATEGORIES.map(category => (
-									<button
+								{ALL_CATEGORIES.map((category) => (
+									<Badge
 										key={category}
 										onClick={() => toggleCategory(category)}
-										className='transition-all duration-200 hover:scale-105'
+										role='button'
+										className={join(
+											'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
+											selectedCategories.has(category)
+												? 'bg-primary text-primary-foreground shadow-lg scale-105'
+												: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
+										)}
 									>
-										<Badge
-											className={join(
-												'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
-												selectedCategories.has(category)
-													? 'bg-primary text-primary-foreground shadow-lg scale-105'
-													: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
-											)}
-										>
-											{category}
-										</Badge>
-									</button>
+										{category}
+									</Badge>
 								))}
 							</div>
 						</div>
@@ -156,27 +150,22 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 					{/* Tags */}
 					{ALL_TAGS.length > 0 && (
 						<div className='text-center'>
-							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>
-								Tags
-							</h3>
+							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>Tags</h3>
 							<div className='flex flex-wrap justify-center gap-3'>
-								{ALL_TAGS.map(tag => (
-									<button
+								{ALL_TAGS.map((tag) => (
+									<Badge
 										key={tag}
 										onClick={() => toggleTag(tag)}
-										className='transition-all duration-200 hover:scale-105'
+										role='button'
+										className={join(
+											'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
+											selectedTags.has(tag)
+												? 'bg-accent text-accent-foreground shadow-lg scale-105'
+												: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
+										)}
 									>
-										<Badge
-											className={join(
-												'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
-												selectedTags.has(tag)
-													? 'bg-accent text-accent-foreground shadow-lg scale-105'
-													: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
-											)}
-										>
-											#{tag}
-										</Badge>
-									</button>
+										#{tag}
+									</Badge>
 								))}
 							</div>
 						</div>
@@ -185,12 +174,9 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 					{/* Clear filters button */}
 					{hasActiveFilters && (
 						<div className='text-center pt-4'>
-							<button
-								onClick={clearFilters}
-								className='text-sm text-primary hover:text-primary/80 font-medium underline decoration-2 underline-offset-4 transition-all duration-200 hover:decoration-primary/80'
-							>
+							<Button variant='tertiary' onClick={clearFilters}>
 								Clear all filters
-							</button>
+							</Button>
 						</div>
 					)}
 				</div>
@@ -204,36 +190,27 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 			</div>
 
 			{/* Mobile Filters Modal */}
-			<Modal
-				isOpen={isFiltersModalOpen}
-				onClose={() => setIsFiltersModalOpen(false)}
-				title='Filter Tinies'
-			>
+			<Modal isOpen={isFiltersModalOpen} onClose={() => setIsFiltersModalOpen(false)} title='Filter Tinies'>
 				<div className='space-y-6 p-2'>
 					{/* Categories */}
 					{ALL_CATEGORIES.length > 0 && (
 						<div className='text-center'>
-							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>
-								Categories
-							</h3>
+							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>Categories</h3>
 							<div className='flex flex-wrap justify-center gap-3'>
-								{ALL_CATEGORIES.map(category => (
-									<button
+								{ALL_CATEGORIES.map((category) => (
+									<Badge
 										key={category}
 										onClick={() => toggleCategory(category)}
-										className='transition-all duration-200'
+										role='button'
+										className={join(
+											'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
+											selectedCategories.has(category)
+												? 'bg-primary text-primary-foreground shadow-lg'
+												: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
+										)}
 									>
-										<Badge
-											className={join(
-												'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
-												selectedCategories.has(category)
-													? 'bg-primary text-primary-foreground shadow-lg'
-													: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
-											)}
-										>
-											{category}
-										</Badge>
-									</button>
+										{category}
+									</Badge>
 								))}
 							</div>
 						</div>
@@ -242,27 +219,22 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 					{/* Tags */}
 					{ALL_TAGS.length > 0 && (
 						<div className='text-center'>
-							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>
-								Tags
-							</h3>
+							<h3 className='text-sm font-semibold text-foreground/70 mb-4 uppercase tracking-wider'>Tags</h3>
 							<div className='flex flex-wrap justify-center gap-3'>
-								{ALL_TAGS.map(tag => (
-									<button
+								{ALL_TAGS.map((tag) => (
+									<Badge
 										key={tag}
 										onClick={() => toggleTag(tag)}
-										className='transition-all duration-200'
+										role='button'
+										className={join(
+											'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
+											selectedTags.has(tag)
+												? 'bg-accent text-accent-foreground shadow-lg'
+												: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
+										)}
 									>
-										<Badge
-											className={join(
-												'rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200',
-												selectedTags.has(tag)
-													? 'bg-accent text-accent-foreground shadow-lg'
-													: 'bg-muted/60 text-muted-foreground hover:bg-muted hover:shadow-md'
-											)}
-										>
-											#{tag}
-										</Badge>
-									</button>
+										#{tag}
+									</Badge>
 								))}
 							</div>
 						</div>
@@ -271,18 +243,11 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
 					{/* Modal Actions */}
 					<div className='flex flex-col gap-3 pt-6 border-t border-border/50'>
 						{hasAdvancedFilters && (
-							<Button
-								variant='outline'
-								onClick={clearFilters}
-								className='rounded-full py-3'
-							>
+							<Button variant='outline' onClick={clearFilters} className='rounded-full py-3'>
 								Clear Filters
 							</Button>
 						)}
-						<Button
-							onClick={() => setIsFiltersModalOpen(false)}
-							className='rounded-full py-3'
-						>
+						<Button onClick={() => setIsFiltersModalOpen(false)} className='rounded-full py-3'>
 							Apply Filters
 						</Button>
 					</div>
