@@ -1,4 +1,10 @@
+---
+applyTo: 'src/**/*'
+---
+
 # Adding New Tinies to Tinies
+
+Instructions for adding a new mini app (aka "tiny") to the repo.
 
 ## Quick Guide
 
@@ -7,7 +13,7 @@ To add a new mini tiny to the gallery, simply add a new entry to the `TINIES` ar
 ```typescript
 {
   id: 'your-tiny-id',
-  title: 'Your App Title',
+  title: 'The Tiny Title',
   description: 'A brief description of what your tiny does.',
   startDate: '2025-01-20', // ISO date format
   tags: ['tag1', 'tag2'], // Lowercase tags for filtering
