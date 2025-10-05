@@ -37,3 +37,15 @@ export interface FollowUpItem {
   text: string;
   completed: boolean;
 }
+
+export interface CostItem {
+  id: string;
+  label: string;
+  amount: number;
+  isCustom?: boolean;
+}
+
+export interface ApartmentCost {
+  apartmentId: string;
+  costs: CostItem[];
+}

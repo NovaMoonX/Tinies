@@ -15,6 +15,7 @@ import {
   ApartmentSelector,
   FollowUpSection,
   NoteSection,
+  PricingSection,
   QuestionAssociationButton,
 } from './ApartmentTourQuestions.components';
 import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
@@ -42,6 +43,10 @@ export function ApartmentTourQuestions() {
     addCustomLink,
     deleteCustomLink,
     getApartment,
+    getCosts,
+    updateCost,
+    addCustomCost,
+    deleteCustomCost,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(() => {
@@ -171,6 +176,7 @@ export function ApartmentTourQuestions() {
             variant='underline'
             tabsList={[
               { value: 'details', label: '🏠 Details' },
+              { value: 'pricing', label: '💰 Pricing' },
               { value: 'questions', label: '❓ Questions' },
               { value: 'notes', label: '📝 Notes' },
               { value: 'followups', label: '📋 Follow-ups' },
@@ -192,6 +198,27 @@ export function ApartmentTourQuestions() {
                     }
                   />
                 )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value='pricing'>
+              <div className='pt-6'>
+                <PricingSection
+                  apartmentName={
+                    apartments.find((a) => a.id === selectedApartment)?.name ||
+                    ''
+                  }
+                  costs={getCosts(selectedApartment)}
+                  onUpdateCost={(costId, amount) =>
+                    updateCost(selectedApartment, costId, amount)
+                  }
+                  onAddCustomCost={(label) =>
+                    addCustomCost(selectedApartment, label)
+                  }
+                  onDeleteCustomCost={(costId) =>
+                    deleteCustomCost(selectedApartment, costId)
+                  }
+                />
               </div>
             </TabsContent>
 

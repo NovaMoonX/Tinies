@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { Question, Apartment, Answer, ApartmentNote, FollowUpItem, CustomLink } from './ApartmentTourQuestions.types';
-import { QUESTIONS } from './ApartmentTourQuestions.data';
+import { Question, Apartment, Answer, ApartmentNote, FollowUpItem, CustomLink, ApartmentCost, CostItem } from './ApartmentTourQuestions.types';
+import { QUESTIONS, DEFAULT_COST_CATEGORIES } from './ApartmentTourQuestions.data';
 
 export function useApartmentTourData() {
   const actionModal = useActionModal();
@@ -12,6 +12,7 @@ export function useApartmentTourData() {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [notes, setNotes] = useState<ApartmentNote[]>([]);
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
+  const [costs, setCosts] = useState<ApartmentCost[]>([]);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 
@@ -251,6 +252,103 @@ export function useApartmentTourData() {
     return result;
   };
 
+  // Cost management
+  const getCosts = (apartmentId: string): CostItem[] => {
+    const apartmentCost = costs.find(c => c.apartmentId === apartmentId);
+    if (apartmentCost) {
+      return apartmentCost.costs;
+    }
+    
+    // Return default cost categories with 0 amounts
+    const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+      id: `default-${apartmentId}-${index}`,
+      label: category.label,
+      amount: 0,
+      isCustom: category.isCustom,
+    }));
+    
+    return defaultCosts;
+  };
+
+  const updateCost = (apartmentId: string, costId: string, amount: number) => {
+    setCosts(prev => {
+      const existing = prev.find(c => c.apartmentId === apartmentId);
+      
+      if (existing) {
+        const updatedCosts = existing.costs.map(cost =>
+          cost.id === costId ? { ...cost, amount } : cost
+        );
+        
+        return prev.map(c =>
+          c.apartmentId === apartmentId ? { ...c, costs: updatedCosts } : c
+        );
+      } else {
+        // Create new apartment cost entry
+        const defaultCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+          id: `default-${apartmentId}-${index}`,
+          label: category.label,
+          amount: 0,
+          isCustom: category.isCustom,
+        }));
+        
+        const updatedCosts = defaultCosts.map(cost =>
+          cost.id === costId ? { ...cost, amount } : cost
+        );
+        
+        const newApartmentCost: ApartmentCost = {
+          apartmentId,
+          costs: updatedCosts,
+        };
+        
+        return [...prev, newApartmentCost];
+      }
+    });
+  };
+
+  const addCustomCost = (apartmentId: string, label: string) => {
+    setCosts(prev => {
+      const existing = prev.find(c => c.apartmentId === apartmentId);
+      const newCost: CostItem = {
+        id: `custom-${Date.now()}`,
+        label,
+        amount: 0,
+        isCustom: true,
+      };
+      
+      if (existing) {
+        return prev.map(c =>
+          c.apartmentId === apartmentId
+            ? { ...c, costs: [...c.costs, newCost] }
+            : c
+        );
+      } else {
+        const defaultCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+          id: `default-${apartmentId}-${index}`,
+          label: category.label,
+          amount: 0,
+          isCustom: category.isCustom,
+        }));
+        
+        const newApartmentCost: ApartmentCost = {
+          apartmentId,
+          costs: [...defaultCosts, newCost],
+        };
+        
+        return [...prev, newApartmentCost];
+      }
+    });
+  };
+
+  const deleteCustomCost = (apartmentId: string, costId: string) => {
+    setCosts(prev =>
+      prev.map(c =>
+        c.apartmentId === apartmentId
+          ? { ...c, costs: c.costs.filter(cost => cost.id !== costId) }
+          : c
+      )
+    );
+  };
+
   return {
     allQuestions,
     customQuestions,
@@ -277,5 +375,9 @@ export function useApartmentTourData() {
     addCustomLink,
     deleteCustomLink,
     getApartment,
+    getCosts,
+    updateCost,
+    addCustomCost,
+    deleteCustomCost,
   };
 }

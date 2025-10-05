@@ -19,6 +19,7 @@ import {
   Apartment,
   FollowUpItem,
   Question,
+  CostItem,
 } from './ApartmentTourQuestions.types';
 
 interface ApartmentSelectorProps {
@@ -659,6 +660,139 @@ export function ApartmentDetailsSection({
           ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+interface PricingSectionProps {
+  apartmentName: string;
+  costs: CostItem[];
+  onUpdateCost: (costId: string, amount: number) => void;
+  onAddCustomCost: (label: string) => void;
+  onDeleteCustomCost: (costId: string) => void;
+}
+
+export function PricingSection({
+  apartmentName,
+  costs,
+  onUpdateCost,
+  onAddCustomCost,
+  onDeleteCustomCost,
+}: PricingSectionProps) {
+  const [isAddingCost, setIsAddingCost] = useState(false);
+  const [newCostLabel, setNewCostLabel] = useState('');
+
+  const handleAddCost = () => {
+    if (newCostLabel.trim()) {
+      onAddCustomCost(newCostLabel.trim());
+      setNewCostLabel('');
+      setIsAddingCost(false);
+    }
+  };
+
+  const totalMonthlyCost = costs.reduce((sum, cost) => sum + cost.amount, 0);
+
+  return (
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-foreground/90 text-xl font-semibold'>
+          Pricing for {apartmentName}
+        </h2>
+        {!isAddingCost && (
+          <Button
+            onClick={() => setIsAddingCost(true)}
+            variant='outline'
+            size='sm'
+            className='inline-flex items-center'
+          >
+            <Plus className='mr-1 h-3 w-3' />
+            Add Cost
+          </Button>
+        )}
+      </div>
+
+      {isAddingCost && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-3'>
+            <Input
+              placeholder='Cost label (e.g., "HOA Fee", "Storage Unit")'
+              variant='outline'
+              value={newCostLabel}
+              onChange={({ target: { value } }) => setNewCostLabel(value)}
+              autoFocus
+            />
+            <div className='flex gap-2'>
+              <Button
+                onClick={handleAddCost}
+                size='sm'
+                disabled={!newCostLabel.trim()}
+              >
+                Add Cost
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAddingCost(false);
+                  setNewCostLabel('');
+                }}
+                variant='outline'
+                size='sm'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className='space-y-2'>
+        {costs.map((cost) => (
+          <div
+            key={cost.id}
+            className='bg-background flex items-center gap-3 rounded-xl p-3'
+          >
+            <div className='flex-1'>
+              <label className='text-foreground/90 text-sm font-medium'>
+                {cost.label}
+              </label>
+            </div>
+            <div className='flex items-center gap-2'>
+              <span className='text-foreground/50 text-sm'>$</span>
+              <Input
+                type='number'
+                placeholder='0'
+                variant='outline'
+                value={cost.amount || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateCost(cost.id, parseFloat(value) || 0)
+                }
+                className='w-32'
+                min='0'
+                step='0.01'
+              />
+            </div>
+            {cost.isCustom && (
+              <Button
+                onClick={() => onDeleteCustomCost(cost.id)}
+                variant='destructive'
+                size='sm'
+              >
+                <Trash className='h-4 w-4' />
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {costs.length > 0 && (
+        <div className='bg-primary/10 flex items-center justify-between rounded-xl p-4'>
+          <span className='text-foreground/90 text-lg font-semibold'>
+            Total Monthly Cost
+          </span>
+          <span className='text-primary text-2xl font-bold'>
+            ${totalMonthlyCost.toFixed(2)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
