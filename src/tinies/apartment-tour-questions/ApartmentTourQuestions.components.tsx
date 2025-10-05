@@ -1,8 +1,6 @@
 import {
   Button,
   Form,
-  Select,
-  Textarea,
   FormFactories,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
@@ -46,9 +44,11 @@ export function ApartmentSelector({
   const addApartmentDisabled = formData.name.trim() === '';
 
   return (
-    <div className='bg-muted/30 rounded-2xl p-6 space-y-6'>
+    <div className='bg-muted/30 space-y-6 rounded-2xl p-6'>
       <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-semibold text-foreground/90'>Your Apartments</h2>
+        <h2 className='text-foreground/90 text-xl font-semibold'>
+          Your Apartments
+        </h2>
         {!isAdding && (
           <Button
             onClick={() => setIsAdding(true)}
@@ -57,7 +57,7 @@ export function ApartmentSelector({
             className='inline-flex items-center'
           >
             <Plus className='mr-1 h-4 w-4' />
-            Add Apartment
+            Add
           </Button>
         )}
       </div>
@@ -109,7 +109,7 @@ export function ApartmentSelector({
       )}
 
       {apartments.length === 0 && !isAdding && (
-        <p className='text-foreground/60 text-center py-4'>
+        <p className='text-foreground/60 py-4 text-center'>
           Add apartments to track answers for each one.
         </p>
       )}
@@ -119,9 +119,9 @@ export function ApartmentSelector({
           <div
             key={apt.id}
             className={join(
-              'flex items-center gap-3 rounded-xl p-4 transition-all duration-200 cursor-pointer',
+              'flex cursor-pointer items-center gap-3 rounded-xl p-4 transition-all duration-200',
               selectedApartment === apt.id
-                ? 'bg-primary/10 ring-2 ring-primary/20'
+                ? 'bg-primary/10 ring-primary/20 ring-2'
                 : 'bg-background hover:bg-muted/30',
             )}
           >
@@ -129,9 +129,9 @@ export function ApartmentSelector({
               onClick={() => onSelectApartment(apt.id)}
               className='flex-1 text-left'
             >
-              <div className='font-medium text-foreground/90'>{apt.name}</div>
+              <div className='text-foreground/90 font-medium'>{apt.name}</div>
               {apt.address && (
-                <div className='text-foreground/60 text-sm mt-1'>
+                <div className='text-foreground/60 mt-1 text-sm'>
                   {apt.address}
                 </div>
               )}
@@ -150,6 +150,11 @@ export function ApartmentSelector({
   );
 }
 
+interface AddQuestionFormData {
+  category: string;
+  question: string;
+}
+
 interface AddQuestionFormProps {
   categories: string[];
   onAdd: (question: string, category: string) => void;
@@ -157,23 +162,26 @@ interface AddQuestionFormProps {
 
 export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [newQuestion, setNewQuestion] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [formData, setFormData] = useState<AddQuestionFormData>({
+    category: '',
+    question: '',
+  });
+  const { select, textarea } = FormFactories;
 
   const handleAdd = () => {
-    if (newQuestion.trim() && selectedCategory) {
-      onAdd(newQuestion.trim(), selectedCategory);
-      setNewQuestion('');
-      setSelectedCategory('');
+    if (formData.question.trim() && formData.category) {
+      onAdd(formData.question.trim(), formData.category);
+      setFormData({ category: '', question: '' });
       setIsAdding(false);
     }
   };
 
   const resetForm = () => {
     setIsAdding(false);
-    setNewQuestion('');
-    setSelectedCategory('');
+    setFormData({ category: '', question: '' });
   };
+
+  const isFormValid = formData.question.trim() && formData.category;
 
   if (!isAdding) {
     return (
@@ -182,10 +190,10 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
           onClick={() => setIsAdding(true)}
           variant='outline'
           size='sm'
-          className='inline-flex items-center bg-muted/30 hover:bg-muted/50 border-0'
+          className='bg-muted/30 hover:bg-muted/50 inline-flex items-center border-0'
         >
           <Plus className='mr-1 h-4 w-4' />
-          Add Custom Question
+          Add a question
         </Button>
       </div>
     );
@@ -195,59 +203,53 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
     <div className='bg-muted/30 rounded-2xl p-6'>
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <h3 className='text-lg font-semibold text-foreground/90'>Add Custom Question</h3>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Add A Question
+          </h3>
           <Button
             onClick={resetForm}
             variant='outline'
             size='sm'
-            className='border-0 bg-background/50 hover:bg-background/80'
           >
             <X className='h-4 w-4' />
           </Button>
         </div>
-        <div className='space-y-4'>
-          <div>
-            <label className='text-foreground/80 mb-2 block text-sm font-medium'>
-              Category
-            </label>
-            <Select
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-              placeholder='Select a category...'
-              options={[
-                ...categories.map((cat) => ({ value: cat, text: cat })),
-                { value: 'Other', text: 'Other' },
-              ]}
-            />
-          </div>
-          <div>
-            <label className='text-foreground/80 mb-2 block text-sm font-medium'>
-              Question
-            </label>
-            <Textarea
-              placeholder='Enter your custom question...'
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              rows={3}
-              className='border-0 bg-background/50 focus:bg-background/80 transition-colors'
-            />
-          </div>
-          <div className='flex gap-2'>
-            <Button
-              onClick={handleAdd}
-              size='sm'
-              disabled={!newQuestion.trim() || !selectedCategory}
-            >
-              Add Question
-            </Button>
-            <Button
-              onClick={resetForm}
-              variant='outline'
-              size='sm'
-            >
-              Cancel
-            </Button>
-          </div>
+        <Form
+          form={[
+            select({
+              name: 'category',
+              label: 'Category',
+              placeholder: 'Select a category...',
+              options: [
+                ...categories.map((cat) => ({ value: cat, label: cat })),
+                { value: 'Other', label: 'Other' },
+              ],
+              required: true,
+            }),
+            textarea({
+              name: 'question',
+              label: 'Question',
+              placeholder: 'Enter your custom question...',
+              rows: 3,
+              className: 'bg-background/50 focus:bg-background/80 border-0 transition-colors',
+              required: true,
+            }),
+          ]}
+          onDataChange={(data: AddQuestionFormData) => {
+            setFormData(data);
+          }}
+        />
+        <div className='flex gap-2'>
+          <Button
+            onClick={handleAdd}
+            size='sm'
+            disabled={!isFormValid}
+          >
+            Add Question
+          </Button>
+          <Button onClick={resetForm} variant='outline' size='sm'>
+            Cancel
+          </Button>
         </div>
       </div>
     </div>
