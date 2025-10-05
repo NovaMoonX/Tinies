@@ -765,9 +765,10 @@ export function PricingSection({
                 onChange={({ target: { value } }) =>
                   onUpdateCost(cost.id, parseFloat(value) || 0)
                 }
-                className='w-32'
+                className='max-w-32'
                 min='0'
                 step='0.01'
+                autoComplete='off'
               />
             </div>
             {cost.isCustom && (

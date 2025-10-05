@@ -7,7 +7,6 @@ export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
   { label: 'Gas', isCustom: false },
   { label: 'Pet Fee', isCustom: false },
   { label: 'Parking', isCustom: false },
-  { label: 'Additional', isCustom: false },
 ];
 
 export const QUESTIONS: Question[] = [
