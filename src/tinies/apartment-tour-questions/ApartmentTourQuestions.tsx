@@ -69,7 +69,6 @@ export function ApartmentTourQuestions() {
           </p>
         </div>
 
-        {/* Apartment Management */}
         <ApartmentSelector
           apartments={apartments}
           selectedApartment={selectedApartment}

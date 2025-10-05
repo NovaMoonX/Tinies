@@ -6,22 +6,13 @@ import { QUESTIONS } from './ApartmentTourQuestions.data';
 export function useApartmentTourData() {
   const actionModal = useActionModal();
 
-  // Custom questions
   const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
-
-  // Apartments
   const [apartments, setApartments] = useState<Apartment[]>([]);
-
-  // Selected apartment
   const [selectedApartment, setSelectedApartment] = useState<string | null>(null);
-
-  // Answers
   const [answers, setAnswers] = useState<Answer[]>([]);
 
-  // All questions (predefined + custom)
   const allQuestions = [...QUESTIONS, ...customQuestions];
 
-  // Helper functions
   const addCustomQuestion = (question: string, category: string) => {
     const newQuestion: Question = {
       id: `custom-${Date.now()}`,
