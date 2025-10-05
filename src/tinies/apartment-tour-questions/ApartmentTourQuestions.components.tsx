@@ -2,11 +2,13 @@ import {
   Button,
   Form,
   FormFactories,
+  Textarea,
+  Checkbox,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
-import { Apartment } from './ApartmentTourQuestions.types';
+import { Apartment, FollowUpItem } from './ApartmentTourQuestions.types';
 
 interface ApartmentFormData {
   name: string;
@@ -251,6 +253,159 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
             Cancel
           </Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface NoteSectionProps {
+  apartmentName: string;
+  note: string;
+  onUpdateNote: (note: string) => void;
+}
+
+export function NoteSection({ apartmentName, note, onUpdateNote }: NoteSectionProps) {
+  return (
+    <div className='bg-muted/30 rounded-2xl p-6'>
+      <div className='space-y-4'>
+        <h2 className='text-foreground/90 text-xl font-semibold'>
+          Notes for {apartmentName}
+        </h2>
+        <Textarea
+          placeholder='Add any additional notes, observations, or reminders about this apartment...'
+          rows={4}
+          variant='solid'
+          rounded='md'
+          value={note}
+          onChange={({ target: { value } }) => onUpdateNote(value)}
+        />
+      </div>
+    </div>
+  );
+}
+
+interface FollowUpSectionProps {
+  apartmentName: string;
+  followUps: FollowUpItem[];
+  onAddFollowUp: (text: string) => void;
+  onToggleFollowUp: (id: string) => void;
+  onDeleteFollowUp: (id: string) => void;
+}
+
+export function FollowUpSection({
+  apartmentName,
+  followUps,
+  onAddFollowUp,
+  onToggleFollowUp,
+  onDeleteFollowUp,
+}: FollowUpSectionProps) {
+  const [newFollowUpText, setNewFollowUpText] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAdd = () => {
+    if (newFollowUpText.trim()) {
+      onAddFollowUp(newFollowUpText.trim());
+      setNewFollowUpText('');
+      setIsAdding(false);
+    }
+  };
+
+  return (
+    <div className='bg-muted/30 rounded-2xl p-6'>
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-foreground/90 text-xl font-semibold'>
+            Follow-ups for {apartmentName}
+          </h2>
+          {!isAdding && (
+            <Button
+              onClick={() => setIsAdding(true)}
+              variant='primary'
+              size='sm'
+              className='inline-flex items-center'
+            >
+              <Plus className='mr-1 h-4 w-4' />
+              Add
+            </Button>
+          )}
+        </div>
+
+        {isAdding && (
+          <div className='bg-background rounded-xl p-4'>
+            <div className='space-y-3'>
+              <Textarea
+                placeholder='Enter follow-up item (e.g., "Call landlord about parking")'
+                rows={2}
+                variant='outline'
+                rounded='md'
+                value={newFollowUpText}
+                onChange={({ target: { value } }) => setNewFollowUpText(value)}
+              />
+              <div className='flex gap-2'>
+                <Button
+                  onClick={handleAdd}
+                  size='sm'
+                  disabled={!newFollowUpText.trim()}
+                >
+                  Add Follow-up
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsAdding(false);
+                    setNewFollowUpText('');
+                  }}
+                  variant='outline'
+                  size='sm'
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {followUps.length === 0 && !isAdding ? (
+          <p className='text-foreground/60 py-4 text-center text-sm'>
+            No follow-ups yet. Add items you need to follow up on for this apartment.
+          </p>
+        ) : (
+          <div className='space-y-2'>
+            {followUps.map((followUp) => (
+              <div
+                key={followUp.id}
+                className={join(
+                  'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
+                  followUp.completed
+                    ? 'bg-success/10'
+                    : 'bg-background hover:bg-muted/30',
+                )}
+              >
+                <Checkbox
+                  checked={followUp.completed}
+                  onChange={() => onToggleFollowUp(followUp.id)}
+                  size={18}
+                />
+                <span
+                  className={join(
+                    'flex-1 text-sm',
+                    followUp.completed
+                      ? 'text-foreground/50 line-through'
+                      : 'text-foreground/90',
+                  )}
+                >
+                  {followUp.text}
+                </span>
+                <Button
+                  onClick={() => onDeleteFollowUp(followUp.id)}
+                  variant='destructive'
+                  size='sm'
+                >
+                  <Trash className='h-4 w-4' />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

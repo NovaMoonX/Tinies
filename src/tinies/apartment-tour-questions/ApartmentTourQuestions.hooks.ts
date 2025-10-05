@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { Question, Apartment, Answer } from './ApartmentTourQuestions.types';
+import { Question, Apartment, Answer, ApartmentNote, FollowUpItem } from './ApartmentTourQuestions.types';
 import { QUESTIONS } from './ApartmentTourQuestions.data';
 
 export function useApartmentTourData() {
@@ -10,6 +10,8 @@ export function useApartmentTourData() {
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [selectedApartment, setSelectedApartment] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [notes, setNotes] = useState<ApartmentNote[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 
@@ -66,6 +68,10 @@ export function useApartmentTourData() {
       setApartments(prev => prev.filter(a => a.id !== apartmentId));
       // Remove answers for this apartment
       setAnswers(prev => prev.filter(a => a.apartmentId !== apartmentId));
+      // Remove notes for this apartment
+      setNotes(prev => prev.filter(n => n.apartmentId !== apartmentId));
+      // Remove follow-ups for this apartment
+      setFollowUps(prev => prev.filter(f => f.apartmentId !== apartmentId));
       // Clear selection if this was the selected apartment
       if (selectedApartment === apartmentId) {
         setSelectedApartment(null);
@@ -104,6 +110,86 @@ export function useApartmentTourData() {
     return answer?.answer || '';
   };
 
+  // Note management
+  const updateNote = (apartmentId: string, note: string) => {
+    setNotes(prev => {
+      const existing = prev.find(n => n.apartmentId === apartmentId);
+      if (existing) {
+        return prev.map(n =>
+          n.apartmentId === apartmentId ? { ...n, note } : n
+        );
+      } else if (note !== '') {
+        return [...prev, { apartmentId, note }];
+      }
+      return prev;
+    });
+  };
+
+  const getNote = (apartmentId: string): string => {
+    const note = notes.find(n => n.apartmentId === apartmentId);
+    return note?.note || '';
+  };
+
+  // Follow-up management
+  const addFollowUp = (apartmentId: string, text: string) => {
+    const newFollowUp: FollowUpItem = {
+      id: `followup-${Date.now()}`,
+      apartmentId,
+      text,
+      completed: false,
+    };
+    setFollowUps(prev => [...prev, newFollowUp]);
+  };
+
+  const toggleFollowUp = (followUpId: string) => {
+    setFollowUps(prev =>
+      prev.map(f =>
+        f.id === followUpId ? { ...f, completed: !f.completed } : f
+      )
+    );
+  };
+
+  const deleteFollowUp = (followUpId: string) => {
+    setFollowUps(prev => prev.filter(f => f.id !== followUpId));
+  };
+
+  const getFollowUps = (apartmentId: string): FollowUpItem[] => {
+    const result = followUps.filter(f => f.apartmentId === apartmentId);
+    return result;
+  };
+
+  // Question association management
+  const toggleQuestionAssociation = (questionId: string, apartmentId: string) => {
+    setCustomQuestions(prev =>
+      prev.map(q => {
+        if (q.id === questionId) {
+          const currentAssociations = q.associatedApartments || [];
+          const isAssociated = currentAssociations.includes(apartmentId);
+          
+          const newAssociations = isAssociated
+            ? currentAssociations.filter(id => id !== apartmentId)
+            : [...currentAssociations, apartmentId];
+
+          const result = {
+            ...q,
+            associatedApartments: newAssociations.length > 0 ? newAssociations : undefined,
+          };
+          return result;
+        }
+        return q;
+      })
+    );
+  };
+
+  const isQuestionAssociated = (questionId: string, apartmentId: string): boolean => {
+    const question = customQuestions.find(q => q.id === questionId);
+    if (!question || !question.associatedApartments) {
+      return true; // Default questions and non-associated custom questions show for all apartments
+    }
+    const result = question.associatedApartments.includes(apartmentId);
+    return result;
+  };
+
   return {
     allQuestions,
     customQuestions,
@@ -117,5 +203,13 @@ export function useApartmentTourData() {
     updateAnswer,
     getAnswer,
     setSelectedApartment,
+    updateNote,
+    getNote,
+    addFollowUp,
+    toggleFollowUp,
+    deleteFollowUp,
+    getFollowUps,
+    toggleQuestionAssociation,
+    isQuestionAssociated,
   };
 }

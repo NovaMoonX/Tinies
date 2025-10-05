@@ -4,12 +4,18 @@ import {
   Checkbox,
   Disclosure,
   Textarea,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { useMemo } from 'react';
 import {
   AddQuestionForm,
   ApartmentSelector,
+  NoteSection,
+  FollowUpSection,
 } from './ApartmentTourQuestions.components';
 import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
 
@@ -25,6 +31,12 @@ export function ApartmentTourQuestions() {
     updateAnswer,
     getAnswer,
     setSelectedApartment,
+    updateNote,
+    getNote,
+    addFollowUp,
+    toggleFollowUp,
+    deleteFollowUp,
+    getFollowUps,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(
@@ -104,95 +116,133 @@ export function ApartmentTourQuestions() {
 
         {/* Questions by Category */}
         {selectedApartment ? (
-          <div className='space-y-8'>
-            {categories.map((category) => {
-              const categoryQuestions = questionsByCategory[category] || [];
-              const categoryAnswered = categoryQuestions.filter(
-                (q) => getAnswer(q.id, selectedApartment) !== '',
-              ).length;
-              const allQuestionsAnswered =
-                categoryAnswered === categoryQuestions.length;
+          <Tabs defaultValue='questions' variant='underline'>
+            <TabsList>
+              <TabsTrigger value='questions'>Questions</TabsTrigger>
+              <TabsTrigger value='notes'>Notes</TabsTrigger>
+              <TabsTrigger value='followups'>Follow-ups</TabsTrigger>
+            </TabsList>
 
-              return (
-                <div key={category}>
-                  <div className='flex items-center justify-between pb-1'>
-                    <h2 className='text-foreground/90 text-xl font-semibold'>
-                      {category}
-                    </h2>
-                    <Badge
-                      variant={allQuestionsAnswered ? 'success' : 'muted'}
-                      size='sm'
-                    >
-                      {categoryAnswered} / {categoryQuestions.length}
-                    </Badge>
-                  </div>
-                  <div className='space-y-1'>
-                    {categoryQuestions.map((question) => {
-                      const hasAnswer =
-                        getAnswer(question.id, selectedApartment) !== '';
+            <TabsContent value='questions'>
+              <div className='space-y-8 pt-6'>
+                {categories.map((category) => {
+                  const categoryQuestions = questionsByCategory[category] || [];
+                  const categoryAnswered = categoryQuestions.filter(
+                    (q) => getAnswer(q.id, selectedApartment) !== '',
+                  ).length;
+                  const allQuestionsAnswered =
+                    categoryAnswered === categoryQuestions.length;
 
-                      return (
-                        <div
-                          key={question.id}
-                          className='group rounded-xl px-3 py-2 transition-all duration-200'
+                  return (
+                    <div key={category}>
+                      <div className='flex items-center justify-between pb-1'>
+                        <h2 className='text-foreground/90 text-xl font-semibold'>
+                          {category}
+                        </h2>
+                        <Badge
+                          variant={allQuestionsAnswered ? 'success' : 'muted'}
+                          size='sm'
                         >
-                          <div className='flex items-start justify-between gap-3'>
-                            <div className='flex flex-1 items-start gap-3'>
-                              <Checkbox
-                                checked={hasAnswer}
-                                className='mt-1.5'
-                                size={16}
-                                inert
-                              />
-                              <Disclosure
-                                label={
-                                  <span className='text-foreground/90 group-hover:text-foreground text-sm leading-relaxed font-medium transition-colors'>
-                                    {question.question}
-                                  </span>
-                                }
-                                className='flex-1'
-                                buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-2'
-                              >
-                                <Textarea
-                                  placeholder='Enter your answer...'
-                                  rows={2}
-                                  variant='solid'
-                                  className='mt-3 text-sm'
-                                  rounded='md'
-                                  value={getAnswer(
-                                    question.id,
-                                    selectedApartment,
-                                  )}
-                                  onChange={({ target: { value } }) =>
-                                    updateAnswer(
-                                      question.id,
-                                      selectedApartment,
-                                      value,
-                                    )
-                                  }
-                                />
-                              </Disclosure>
+                          {categoryAnswered} / {categoryQuestions.length}
+                        </Badge>
+                      </div>
+                      <div className='space-y-1'>
+                        {categoryQuestions.map((question) => {
+                          const hasAnswer =
+                            getAnswer(question.id, selectedApartment) !== '';
+
+                          return (
+                            <div
+                              key={question.id}
+                              className='group rounded-xl px-3 py-2 transition-all duration-200'
+                            >
+                              <div className='flex items-start justify-between gap-3'>
+                                <div className='flex flex-1 items-start gap-3'>
+                                  <Checkbox
+                                    checked={hasAnswer}
+                                    className='mt-1.5'
+                                    size={16}
+                                    inert
+                                  />
+                                  <Disclosure
+                                    label={
+                                      <span className='text-foreground/90 group-hover:text-foreground text-sm leading-relaxed font-medium transition-colors'>
+                                        {question.question}
+                                      </span>
+                                    }
+                                    className='flex-1'
+                                    buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-2'
+                                  >
+                                    <Textarea
+                                      placeholder='Enter your answer...'
+                                      rows={2}
+                                      variant='solid'
+                                      className='mt-3 text-sm'
+                                      rounded='md'
+                                      value={getAnswer(
+                                        question.id,
+                                        selectedApartment,
+                                      )}
+                                      onChange={({ target: { value } }) =>
+                                        updateAnswer(
+                                          question.id,
+                                          selectedApartment,
+                                          value,
+                                        )
+                                      }
+                                    />
+                                  </Disclosure>
+                                </div>
+                                {question.isCustom && (
+                                  <Button
+                                    onClick={() =>
+                                      deleteCustomQuestion(question.id)
+                                    }
+                                    variant='destructive'
+                                    size='sm'
+                                  >
+                                    <Trash className='h-4 w-4' />
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                            {question.isCustom && (
-                              <Button
-                                onClick={() =>
-                                  deleteCustomQuestion(question.id)
-                                }
-                                variant='destructive'
-                                size='sm'
-                              >
-                                <Trash className='h-4 w-4' />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
+
+            <TabsContent value='notes'>
+              <div className='pt-6'>
+                <NoteSection
+                  apartmentName={
+                    apartments.find((a) => a.id === selectedApartment)
+                      ?.name || ''
+                  }
+                  note={getNote(selectedApartment)}
+                  onUpdateNote={(note) => updateNote(selectedApartment, note)}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value='followups'>
+              <div className='pt-6'>
+                <FollowUpSection
+                  apartmentName={
+                    apartments.find((a) => a.id === selectedApartment)
+                      ?.name || ''
+                  }
+                  followUps={getFollowUps(selectedApartment)}
+                  onAddFollowUp={(text) => addFollowUp(selectedApartment, text)}
+                  onToggleFollowUp={toggleFollowUp}
+                  onDeleteFollowUp={deleteFollowUp}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         ) : (
           <div className='bg-muted/30 rounded-2xl p-12 text-center'>
             <div className='text-foreground/60 space-y-2'>
