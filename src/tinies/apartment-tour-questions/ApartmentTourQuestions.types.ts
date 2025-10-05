@@ -6,10 +6,18 @@ export interface Question {
   associatedApartments?: string[]; // Array of apartment IDs this question is associated with
 }
 
+export interface CustomLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
 export interface Apartment {
   id: string;
   name: string;
   address?: string;
+  website?: string;
+  customLinks?: CustomLink[];
 }
 
 export interface Answer {

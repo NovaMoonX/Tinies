@@ -16,6 +16,7 @@ import {
   ApartmentSelector,
   NoteSection,
   FollowUpSection,
+  ApartmentDetailsSection,
 } from './ApartmentTourQuestions.components';
 import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
 
@@ -37,6 +38,10 @@ export function ApartmentTourQuestions() {
     toggleFollowUp,
     deleteFollowUp,
     getFollowUps,
+    updateApartmentDetails,
+    addCustomLink,
+    deleteCustomLink,
+    getApartment,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(
@@ -116,12 +121,32 @@ export function ApartmentTourQuestions() {
 
         {/* Questions by Category */}
         {selectedApartment ? (
-          <Tabs defaultValue='questions' variant='underline'>
+          <Tabs defaultValue='details' variant='underline'>
             <TabsList>
+              <TabsTrigger value='details'>Details</TabsTrigger>
               <TabsTrigger value='questions'>Questions</TabsTrigger>
               <TabsTrigger value='notes'>Notes</TabsTrigger>
               <TabsTrigger value='followups'>Follow-ups</TabsTrigger>
             </TabsList>
+
+            <TabsContent value='details'>
+              <div className='pt-6'>
+                {getApartment(selectedApartment) && (
+                  <ApartmentDetailsSection
+                    apartment={getApartment(selectedApartment)!}
+                    onUpdateDetails={(updates) =>
+                      updateApartmentDetails(selectedApartment, updates)
+                    }
+                    onAddCustomLink={(label, url) =>
+                      addCustomLink(selectedApartment, label, url)
+                    }
+                    onDeleteCustomLink={(linkId) =>
+                      deleteCustomLink(selectedApartment, linkId)
+                    }
+                  />
+                )}
+              </div>
+            </TabsContent>
 
             <TabsContent value='questions'>
               <div className='space-y-8 pt-6'>

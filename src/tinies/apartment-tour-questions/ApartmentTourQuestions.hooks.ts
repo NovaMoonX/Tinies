@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { Question, Apartment, Answer, ApartmentNote, FollowUpItem } from './ApartmentTourQuestions.types';
+import { Question, Apartment, Answer, ApartmentNote, FollowUpItem, CustomLink } from './ApartmentTourQuestions.types';
 import { QUESTIONS } from './ApartmentTourQuestions.data';
 
 export function useApartmentTourData() {
@@ -41,11 +41,10 @@ export function useApartmentTourData() {
     }
   };
 
-  const addApartment = (name: string, address?: string) => {
+  const addApartment = (name: string) => {
     const newApartment: Apartment = {
       id: `apt-${Date.now()}`,
       name,
-      address,
     };
     setApartments(prev => [...prev, newApartment]);
     // Auto-select if it's the first apartment
@@ -190,6 +189,49 @@ export function useApartmentTourData() {
     return result;
   };
 
+  // Apartment details management
+  const updateApartmentDetails = (apartmentId: string, updates: Partial<Apartment>) => {
+    setApartments(prev =>
+      prev.map(apt =>
+        apt.id === apartmentId ? { ...apt, ...updates } : apt
+      )
+    );
+  };
+
+  const addCustomLink = (apartmentId: string, label: string, url: string) => {
+    setApartments(prev =>
+      prev.map(apt => {
+        if (apt.id === apartmentId) {
+          const newLink: CustomLink = {
+            id: `link-${Date.now()}`,
+            label,
+            url,
+          };
+          const currentLinks = apt.customLinks || [];
+          return { ...apt, customLinks: [...currentLinks, newLink] };
+        }
+        return apt;
+      })
+    );
+  };
+
+  const deleteCustomLink = (apartmentId: string, linkId: string) => {
+    setApartments(prev =>
+      prev.map(apt => {
+        if (apt.id === apartmentId && apt.customLinks) {
+          const updatedLinks = apt.customLinks.filter(link => link.id !== linkId);
+          return { ...apt, customLinks: updatedLinks.length > 0 ? updatedLinks : undefined };
+        }
+        return apt;
+      })
+    );
+  };
+
+  const getApartment = (apartmentId: string): Apartment | undefined => {
+    const result = apartments.find(a => a.id === apartmentId);
+    return result;
+  };
+
   return {
     allQuestions,
     customQuestions,
@@ -211,5 +253,9 @@ export function useApartmentTourData() {
     getFollowUps,
     toggleQuestionAssociation,
     isQuestionAssociated,
+    updateApartmentDetails,
+    addCustomLink,
+    deleteCustomLink,
+    getApartment,
   };
 }

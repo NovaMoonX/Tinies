@@ -4,22 +4,18 @@ import {
   FormFactories,
   Textarea,
   Checkbox,
+  Input,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import { Apartment, FollowUpItem } from './ApartmentTourQuestions.types';
 
-interface ApartmentFormData {
-  name: string;
-  address?: string;
-}
-
 interface ApartmentSelectorProps {
   apartments: Apartment[];
   selectedApartment: string | null;
   onSelectApartment: (id: string) => void;
-  onAddApartment: (name: string, address?: string) => void;
+  onAddApartment: (name: string) => void;
   onDeleteApartment: (id: string) => void;
 }
 
@@ -30,20 +26,22 @@ export function ApartmentSelector({
   onAddApartment,
   onDeleteApartment,
 }: ApartmentSelectorProps) {
-  const [formData, setFormData] = useState<ApartmentFormData>({
-    name: '',
-    address: '',
-  });
+  const [newApartmentName, setNewApartmentName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const { input } = FormFactories;
 
   const handleAddApartment = () => {
-    onAddApartment(formData.name, formData.address || undefined);
-    setFormData({ name: '', address: '' });
-    setIsAdding(false);
+    if (newApartmentName.trim()) {
+      onAddApartment(newApartmentName.trim());
+      setNewApartmentName('');
+      setIsAdding(false);
+    }
   };
 
-  const addApartmentDisabled = formData.name.trim() === '';
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && newApartmentName.trim()) {
+      handleAddApartment();
+    }
+  };
 
   return (
     <div className='bg-muted/30 space-y-6 rounded-2xl p-6'>
@@ -66,42 +64,30 @@ export function ApartmentSelector({
 
       {isAdding && (
         <div className='bg-background rounded-xl p-4'>
-          <div className='space-y-4'>
-            <Form
-              form={[
-                input({
-                  name: 'name',
-                  label: 'Apartment Name',
-                  placeholder: 'e.g., "123 Main St #4B"',
-                  variant: 'outline',
-                  required: true,
-                }),
-                input({
-                  name: 'address',
-                  label: 'Address',
-                  placeholder: 'Full address (optional)',
-                  variant: 'outline',
-                  required: false,
-                }),
-              ]}
-              onDataChange={(data: ApartmentFormData) => {
-                setFormData(data);
-              }}
+          <div className='space-y-3'>
+            <Input
+              placeholder='e.g., "Sunset Gardens Apt 3B"'
+              variant='outline'
+              value={newApartmentName}
+              onChange={({ target: { value } }) => setNewApartmentName(value)}
+              onKeyPress={handleKeyPress}
+              autoFocus
             />
             <div className='flex gap-2'>
               <Button
-                type='submit'
-                size='sm'
                 onClick={handleAddApartment}
-                disabled={addApartmentDisabled}
+                size='sm'
+                disabled={!newApartmentName.trim()}
               >
                 Add Apartment
               </Button>
               <Button
-                onClick={() => setIsAdding(false)}
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewApartmentName('');
+                }}
                 variant='outline'
                 size='sm'
-                type='button'
               >
                 Cancel
               </Button>
@@ -406,6 +392,185 @@ export function FollowUpSection({
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+interface ApartmentDetailsSectionProps {
+  apartment: Apartment;
+  onUpdateDetails: (updates: Partial<Apartment>) => void;
+  onAddCustomLink: (label: string, url: string) => void;
+  onDeleteCustomLink: (linkId: string) => void;
+}
+
+export function ApartmentDetailsSection({
+  apartment,
+  onUpdateDetails,
+  onAddCustomLink,
+  onDeleteCustomLink,
+}: ApartmentDetailsSectionProps) {
+  const [isAddingLink, setIsAddingLink] = useState(false);
+  const [newLinkLabel, setNewLinkLabel] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
+
+  const handleAddLink = () => {
+    if (newLinkLabel.trim() && newLinkUrl.trim()) {
+      onAddCustomLink(newLinkLabel.trim(), newLinkUrl.trim());
+      setNewLinkLabel('');
+      setNewLinkUrl('');
+      setIsAddingLink(false);
+    }
+  };
+
+  return (
+    <div className='bg-muted/30 rounded-2xl p-6'>
+      <div className='space-y-6'>
+        <h2 className='text-foreground/90 text-xl font-semibold'>
+          Apartment Details
+        </h2>
+
+        <div className='space-y-4'>
+          {/* Name */}
+          <div>
+            <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+              Name
+            </label>
+            <Input
+              placeholder='Apartment name'
+              variant='outline'
+              value={apartment.name}
+              onChange={({ target: { value } }) =>
+                onUpdateDetails({ name: value })
+              }
+            />
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+              Address
+            </label>
+            <Input
+              placeholder='Full address (optional)'
+              variant='outline'
+              value={apartment.address || ''}
+              onChange={({ target: { value } }) =>
+                onUpdateDetails({ address: value })
+              }
+            />
+          </div>
+
+          {/* Website */}
+          <div>
+            <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+              Website
+            </label>
+            <Input
+              placeholder='https://example.com (optional)'
+              variant='outline'
+              value={apartment.website || ''}
+              onChange={({ target: { value } }) =>
+                onUpdateDetails({ website: value })
+              }
+            />
+          </div>
+
+          {/* Custom Links */}
+          <div>
+            <div className='mb-2 flex items-center justify-between'>
+              <label className='text-foreground/70 text-sm font-medium'>
+                Custom Links
+              </label>
+              {!isAddingLink && (
+                <Button
+                  onClick={() => setIsAddingLink(true)}
+                  variant='outline'
+                  size='sm'
+                  className='inline-flex items-center'
+                >
+                  <Plus className='mr-1 h-3 w-3' />
+                  Add Link
+                </Button>
+              )}
+            </div>
+
+            {isAddingLink && (
+              <div className='bg-background mb-3 rounded-xl p-4'>
+                <div className='space-y-3'>
+                  <Input
+                    placeholder='Link label (e.g., "Apartments.com")'
+                    variant='outline'
+                    value={newLinkLabel}
+                    onChange={({ target: { value } }) => setNewLinkLabel(value)}
+                  />
+                  <Input
+                    placeholder='URL (e.g., "https://apartments.com/...")'
+                    variant='outline'
+                    value={newLinkUrl}
+                    onChange={({ target: { value } }) => setNewLinkUrl(value)}
+                  />
+                  <div className='flex gap-2'>
+                    <Button
+                      onClick={handleAddLink}
+                      size='sm'
+                      disabled={!newLinkLabel.trim() || !newLinkUrl.trim()}
+                    >
+                      Add Link
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setIsAddingLink(false);
+                        setNewLinkLabel('');
+                        setNewLinkUrl('');
+                      }}
+                      variant='outline'
+                      size='sm'
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {apartment.customLinks && apartment.customLinks.length > 0 ? (
+              <div className='space-y-2'>
+                {apartment.customLinks.map((link) => (
+                  <div
+                    key={link.id}
+                    className='bg-background flex items-center justify-between rounded-xl p-3'
+                  >
+                    <div className='flex-1'>
+                      <div className='text-foreground/90 text-sm font-medium'>
+                        {link.label}
+                      </div>
+                      <a
+                        href={link.url}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-primary hover:text-primary/80 mt-1 block text-xs underline'
+                      >
+                        {link.url}
+                      </a>
+                    </div>
+                    <Button
+                      onClick={() => onDeleteCustomLink(link.id)}
+                      variant='destructive'
+                      size='sm'
+                    >
+                      <Trash className='h-4 w-4' />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : !isAddingLink ? (
+              <p className='text-foreground/60 py-4 text-center text-sm'>
+                No custom links yet. Add links to listing sites, photos, or other resources.
+              </p>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );
