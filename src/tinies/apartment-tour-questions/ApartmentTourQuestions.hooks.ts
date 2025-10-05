@@ -29,6 +29,7 @@ export function useApartmentTourData() {
     setCustomQuestions(prev => [...prev, newQuestion]);
   };
 
+  // TASK: confirm deletion action
   const deleteCustomQuestion = (questionId: string) => {
     setCustomQuestions(prev => prev.filter(q => q.id !== questionId));
     // Also remove any answers for this question
@@ -49,6 +50,7 @@ export function useApartmentTourData() {
     return newApartment.id;
   };
 
+  // TASK: confirm deletion action
   const deleteApartment = (apartmentId: string) => {
     setApartments(prev => prev.filter(a => a.id !== apartmentId));
     // Remove answers for this apartment

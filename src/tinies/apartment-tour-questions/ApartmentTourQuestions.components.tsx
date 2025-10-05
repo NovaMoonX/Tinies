@@ -1,6 +1,5 @@
 import {
   Button,
-  Card,
   Form,
   Select,
   Textarea,
@@ -47,109 +46,107 @@ export function ApartmentSelector({
   const addApartmentDisabled = formData.name.trim() === '';
 
   return (
-    <Card>
-      <div className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <h2 className='text-lg font-semibold'>Apartments</h2>
-          {!isAdding && (
-            <Button
-              onClick={() => setIsAdding(true)}
-              variant='primary'
-              size='sm'
-              className='inline-flex items-center'
-            >
-              <Plus className='mr-1 h-4 w-4' />
-              Add Apartment
-            </Button>
-          )}
-        </div>
-
-        {isAdding && (
-          <div className='border-border rounded-lg border p-3'>
-            <div className='space-y-4'>
-              <Form
-                form={[
-                  input({
-                    name: 'name',
-                    label: 'Apartment Name',
-                    placeholder: 'e.g., "123 Main St #4B"',
-                    variant: 'outline',
-                    required: true,
-                  }),
-                  input({
-                    name: 'address',
-                    label: 'Address',
-                    placeholder: 'Full address (optional)',
-                    variant: 'outline',
-                    required: false,
-                  }),
-                ]}
-                onDataChange={(data: ApartmentFormData) => {
-                  setFormData(data);
-                }}
-              />
-              <div className='flex gap-2'>
-                <Button
-                  type='submit'
-                  size='sm'
-                  onClick={handleAddApartment}
-                  disabled={addApartmentDisabled}
-                >
-                  Add Apartment
-                </Button>
-                <Button
-                  onClick={() => setIsAdding(false)}
-                  variant='outline'
-                  size='sm'
-                  type='button'
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
+    <div className='bg-muted/30 rounded-2xl p-6 space-y-6'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-xl font-semibold text-foreground/90'>Your Apartments</h2>
+        {!isAdding && (
+          <Button
+            onClick={() => setIsAdding(true)}
+            variant='primary'
+            size='sm'
+            className='inline-flex items-center'
+          >
+            <Plus className='mr-1 h-4 w-4' />
+            Add Apartment
+          </Button>
         )}
+      </div>
 
-        {apartments.length === 0 && !isAdding && (
-          <p className='text-foreground/60 text-sm'>
-            Add apartments to track answers for each one.
-          </p>
-        )}
-
-        <div className='space-y-2'>
-          {apartments.map((apt) => (
-            <div
-              key={apt.id}
-              className={join(
-                'flex items-center gap-2 rounded-lg border p-3 transition-colors',
-                selectedApartment === apt.id
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:bg-muted/50',
-              )}
-            >
-              <button
-                onClick={() => onSelectApartment(apt.id)}
-                className='flex-1 text-left'
-              >
-                <div className='font-medium'>{apt.name}</div>
-                {apt.address && (
-                  <div className='text-foreground/60 text-sm'>
-                    {apt.address}
-                  </div>
-                )}
-              </button>
+      {isAdding && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-4'>
+            <Form
+              form={[
+                input({
+                  name: 'name',
+                  label: 'Apartment Name',
+                  placeholder: 'e.g., "123 Main St #4B"',
+                  variant: 'outline',
+                  required: true,
+                }),
+                input({
+                  name: 'address',
+                  label: 'Address',
+                  placeholder: 'Full address (optional)',
+                  variant: 'outline',
+                  required: false,
+                }),
+              ]}
+              onDataChange={(data: ApartmentFormData) => {
+                setFormData(data);
+              }}
+            />
+            <div className='flex gap-2'>
               <Button
-                onClick={() => onDeleteApartment(apt.id)}
-                variant='destructive'
+                type='submit'
                 size='sm'
+                onClick={handleAddApartment}
+                disabled={addApartmentDisabled}
               >
-                <Trash className='h-4 w-4' />
+                Add Apartment
+              </Button>
+              <Button
+                onClick={() => setIsAdding(false)}
+                variant='outline'
+                size='sm'
+                type='button'
+              >
+                Cancel
               </Button>
             </div>
-          ))}
+          </div>
         </div>
+      )}
+
+      {apartments.length === 0 && !isAdding && (
+        <p className='text-foreground/60 text-center py-4'>
+          Add apartments to track answers for each one.
+        </p>
+      )}
+
+      <div className='space-y-3'>
+        {apartments.map((apt) => (
+          <div
+            key={apt.id}
+            className={join(
+              'flex items-center gap-3 rounded-xl p-4 transition-all duration-200 cursor-pointer',
+              selectedApartment === apt.id
+                ? 'bg-primary/10 ring-2 ring-primary/20'
+                : 'bg-background hover:bg-muted/30',
+            )}
+          >
+            <button
+              onClick={() => onSelectApartment(apt.id)}
+              className='flex-1 text-left'
+            >
+              <div className='font-medium text-foreground/90'>{apt.name}</div>
+              {apt.address && (
+                <div className='text-foreground/60 text-sm mt-1'>
+                  {apt.address}
+                </div>
+              )}
+            </button>
+            <Button
+              onClick={() => onDeleteApartment(apt.id)}
+              variant='destructive'
+              size='sm'
+            >
+              <Trash className='h-4 w-4' />
+            </Button>
+          </div>
+        ))}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -167,44 +164,50 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
     if (newQuestion.trim() && selectedCategory) {
       onAdd(newQuestion.trim(), selectedCategory);
       setNewQuestion('');
+      setSelectedCategory('');
       setIsAdding(false);
     }
   };
 
+  const resetForm = () => {
+    setIsAdding(false);
+    setNewQuestion('');
+    setSelectedCategory('');
+  };
+
   if (!isAdding) {
     return (
-      <Button
-        onClick={() => setIsAdding(true)}
-        variant='outline'
-        size='sm'
-        className='inline-flex items-center'
-      >
-        <Plus className='mr-1 h-4 w-4' />
-        Add question
-      </Button>
+      <div className='flex justify-center'>
+        <Button
+          onClick={() => setIsAdding(true)}
+          variant='outline'
+          size='sm'
+          className='inline-flex items-center bg-muted/30 hover:bg-muted/50 border-0'
+        >
+          <Plus className='mr-1 h-4 w-4' />
+          Add Custom Question
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <div className='space-y-3'>
+    <div className='bg-muted/30 rounded-2xl p-6'>
+      <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <h3 className='font-semibold'>Add question</h3>
+          <h3 className='text-lg font-semibold text-foreground/90'>Add Custom Question</h3>
           <Button
-            onClick={() => {
-              setIsAdding(false);
-              setNewQuestion('');
-              setSelectedCategory('');
-            }}
+            onClick={resetForm}
             variant='outline'
             size='sm'
+            className='border-0 bg-background/50 hover:bg-background/80'
           >
             <X className='h-4 w-4' />
           </Button>
         </div>
-        <div className='space-y-3'>
+        <div className='space-y-4'>
           <div>
-            <label className='text-foreground/80 mb-1 block text-sm font-medium'>
+            <label className='text-foreground/80 mb-2 block text-sm font-medium'>
               Category
             </label>
             <Select
@@ -218,14 +221,15 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
             />
           </div>
           <div>
-            <label className='text-foreground/80 mb-1 block text-sm font-medium'>
+            <label className='text-foreground/80 mb-2 block text-sm font-medium'>
               Question
             </label>
             <Textarea
-              placeholder='Enter your question...'
+              placeholder='Enter your custom question...'
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
-              rows={2}
+              rows={3}
+              className='border-0 bg-background/50 focus:bg-background/80 transition-colors'
             />
           </div>
           <div className='flex gap-2'>
@@ -237,11 +241,7 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
               Add Question
             </Button>
             <Button
-              onClick={() => {
-                setIsAdding(false);
-                setNewQuestion('');
-                setSelectedCategory('');
-              }}
+              onClick={resetForm}
               variant='outline'
               size='sm'
             >
@@ -250,6 +250,6 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -16,7 +16,7 @@
 	--color-warning: var(--color-yellow-300);
 	--color-warning-foreground: var(--color-black);
 	--color-destructive: var(--color-red-500);
-	--color-destructive-foreground: var(--color-black);
+	--color-destructive-foreground: var(--color-white);
 
 	--color-border: var(--color-gray-400); /* for input/textarea borders and dividers */
 	--color-popover: var(--color-gray-200); /* for popover backgrounds (popover, dropdowns, modals, etc) */

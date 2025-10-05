@@ -1,4 +1,10 @@
-import { Button, Card, Textarea, Checkbox, Disclosure } from '@moondreamsdev/dreamer-ui/components';
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Disclosure,
+  Textarea,
+} from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { useMemo } from 'react';
 import {
@@ -21,8 +27,6 @@ export function ApartmentTourQuestions() {
     setSelectedApartment,
   } = useApartmentTourData();
 
-
-
   const questionsByCategory = useMemo(
     () =>
       allQuestions.reduce(
@@ -42,8 +46,6 @@ export function ApartmentTourQuestions() {
     () => Object.keys(questionsByCategory),
     [questionsByCategory],
   );
-
-
 
   const answeredCount = useMemo(() => {
     if (!selectedApartment) return 0;
@@ -78,19 +80,24 @@ export function ApartmentTourQuestions() {
 
         {/* Progress Card */}
         {selectedApartment && (
-          <Card>
+          <div className='bg-muted/30 rounded-2xl p-6'>
             <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
               <div className='text-center sm:text-left'>
-                <div className='text-2xl font-bold'>
+                <div className='mb-1 text-3xl font-bold'>
                   {answeredCount} / {totalCount}
                 </div>
                 <div className='text-foreground/60 text-sm'>
-                  Questions Answered for{' '}
-                  {apartments.find((a) => a.id === selectedApartment)?.name}
+                  Questions answered for{' '}
+                  <span className='text-foreground/80 font-medium'>
+                    {apartments.find((a) => a.id === selectedApartment)?.name}
+                  </span>
                 </div>
               </div>
+              <div className='bg-primary/10 text-primary rounded-full px-4 py-2 text-sm font-medium'>
+                {Math.round((answeredCount / totalCount) * 100)}% Complete
+              </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Add Custom Question */}
@@ -98,99 +105,107 @@ export function ApartmentTourQuestions() {
 
         {/* Questions by Category */}
         {selectedApartment ? (
-          <div className='space-y-6'>
+          <div className='space-y-8'>
             {categories.map((category) => {
               const categoryQuestions = questionsByCategory[category] || [];
               const categoryAnswered = categoryQuestions.filter(
                 (q) => getAnswer(q.id, selectedApartment) !== '',
               ).length;
+              const allQuestionsAnswered =
+                categoryAnswered === categoryQuestions.length;
 
               return (
-                <Card key={category}>
-                  <div className='space-y-4'>
-                    <div className='flex items-center justify-between'>
-                      <h2 className='text-lg font-semibold'>{category}</h2>
-                      <span className='text-foreground/60 text-sm'>
-                        {categoryAnswered} / {categoryQuestions.length}
-                      </span>
-                    </div>
-                    <div className='space-y-3'>
-                      {categoryQuestions.map((question) => {
-                        const hasAnswer =
-                          getAnswer(question.id, selectedApartment) !== '';
-
-                        return (
-                          <div
-                            key={question.id}
-                            className='hover:bg-muted/50 border-border rounded-lg border p-3 transition-colors'
-                          >
-                            <div className='flex items-start justify-between gap-3'>
-                              <div className='flex items-start gap-3 flex-1'>
-                                <Checkbox
-                                  checked={hasAnswer}
-                                  className='mt-1.5'
-                                  size={16}
-                                  inert
-                                />
-                                <Disclosure 
-                                  label={
-                                    <span className='text-sm leading-relaxed'>
-                                      {question.question}
-                                    </span>
-                                  }
-                                  className='flex-1'
-                                  buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-1'
-                                >
-                                  <div className='mt-3'>
-                                    <Textarea
-                                      placeholder='Enter answer...'
-                                      rows={2}
-                                      className='text-sm'
-                                      value={getAnswer(
-                                        question.id,
-                                        selectedApartment,
-                                      )}
-                                      onChange={({ target: { value } }) =>
-                                        updateAnswer(
-                                          question.id,
-                                          selectedApartment,
-                                          value,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                </Disclosure>
-                              </div>
-                              {question.isCustom && (
-                                <Button
-                                  onClick={() =>
-                                    deleteCustomQuestion(question.id)
-                                  }
-                                  variant='destructive'
-                                  size='sm'
-                                >
-                                  <Trash className='h-4 w-4' />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                <div key={category}>
+                  <div className='flex items-center justify-between pb-1'>
+                    <h2 className='text-foreground/90 text-xl font-semibold'>
+                      {category}
+                    </h2>
+                    <Badge
+                      variant={allQuestionsAnswered ? 'success' : 'muted'}
+                      size='sm'
+                    >
+                      {categoryAnswered} / {categoryQuestions.length}
+                    </Badge>
                   </div>
-                </Card>
+                  <div className='space-y-1'>
+                    {categoryQuestions.map((question) => {
+                      const hasAnswer =
+                        getAnswer(question.id, selectedApartment) !== '';
+
+                      return (
+                        <div
+                          key={question.id}
+                          className='group rounded-xl px-3 py-2 transition-all duration-200'
+                        >
+                          <div className='flex items-start justify-between gap-3'>
+                            <div className='flex flex-1 items-start gap-3'>
+                              <Checkbox
+                                checked={hasAnswer}
+                                className='mt-1.5'
+                                size={16}
+                                inert
+                              />
+                              <Disclosure
+                                label={
+                                  <span className='text-foreground/90 group-hover:text-foreground text-sm leading-relaxed font-medium transition-colors'>
+                                    {question.question}
+                                  </span>
+                                }
+                                className='flex-1'
+                                buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-2'
+                              >
+                                <Textarea
+                                  placeholder='Enter your answer...'
+                                  rows={2}
+                                  variant='solid'
+                                  className='mt-3 text-sm'
+                                  rounded='md'
+                                  value={getAnswer(
+                                    question.id,
+                                    selectedApartment,
+                                  )}
+                                  onChange={({ target: { value } }) =>
+                                    updateAnswer(
+                                      question.id,
+                                      selectedApartment,
+                                      value,
+                                    )
+                                  }
+                                />
+                              </Disclosure>
+                            </div>
+                            {question.isCustom && (
+                              <Button
+                                onClick={() =>
+                                  deleteCustomQuestion(question.id)
+                                }
+                                variant='destructive'
+                                size='sm'
+                              >
+                                <Trash className='h-4 w-4' />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </div>
         ) : (
-          <Card>
-            <div className='text-foreground/60 text-center'>
-              <p>
-                Add an apartment to get started tracking your questions and
+          <div className='bg-muted/30 rounded-2xl p-12 text-center'>
+            <div className='text-foreground/60 space-y-2'>
+              <p className='text-lg font-medium'>
+                Ready to start your apartment search?
+              </p>
+              <p className='text-sm'>
+                Add an apartment above to begin tracking your questions and
                 answers.
               </p>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Footer */}
