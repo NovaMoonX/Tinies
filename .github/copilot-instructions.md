@@ -9,9 +9,35 @@
 ### 1. Component Creation
 - Use \`export function ComponentName\` syntax (NOT \`React.FC\` or arrow functions)
 
-### 2. Styling & Class Names
+### 2. Return Value Debugging
+- Always store return values in variables before returning them for easier debugging
+- This applies to all callbacks, computed values, and complex expressions
+
+\`\`\`tsx
+// ❌ Hard to debug - direct return
+const answeredCount = useMemo(() => {
+  if (!selectedApartment) return 0;
+  return allQuestions.filter(
+    (q) => getAnswer(q.id, selectedApartment) !== '',
+  ).length;
+}, [allQuestions, selectedApartment, getAnswer]);
+
+// ✅ Easy to debug - store in variable first
+const answeredCount = useMemo(() => {
+  if (!selectedApartment) return 0;
+  
+  const result = allQuestions.filter(
+    (q) => getAnswer(q.id, selectedApartment) !== '',
+  ).length;
+  
+  return result;
+}, [allQuestions, selectedApartment, getAnswer]);
+\`\`\`
+
+### 3. Styling & Class Names
 - Use TailwindCSS exclusively
-- Use \`join\` from \`@moondreamsdev/dreamer-ui/utils\` for conditional class names
+- **ALWAYS** use \`join\` from \`@moondreamsdev/dreamer-ui/utils\` for conditional class names
+- **NEVER** use template literals with \`${\` for className - always use \`join()\` instead
 - Use existing styles and colors from \`src/dreamer-ui.css\` and \`src/index.css\` when applicable (do not modify them)
 
 \`\`\`tsx
@@ -32,12 +58,26 @@ export function Test({ variant, className }: TestProps) {
 }
 \`\`\`
 
-### 3. Component Library Priority
+**❌ NEVER DO THIS:**
+\`\`\`tsx
+// Bad - template literals for conditional classes
+className={\`base-class $\{condition ? 'conditional-class' : ''}\`}
+className={\`base-class $\{isActive ? 'active' : 'inactive'}\`}
+\`\`\`
+
+**✅ ALWAYS DO THIS:**
+\`\`\`tsx
+// Good - use join() for all conditional classes
+className={join('base-class', condition && 'conditional-class')}
+className={join('base-class', isActive ? 'active' : 'inactive')}
+\`\`\`
+
+### 4. Component Library Priority
 - Always check Dreamer UI first before creating custom components
 - Import from \`@moondreamsdev/dreamer-ui/components\`, \`/hooks\`, \`/symbols\`, \`/utils\`
 - Always check existing props of Dream UI components before setting custom styles
 
-### 4. File Structure
+### 5. File Structure
 Follow the existing structure:
 \`\`\`
 src/
@@ -54,7 +94,7 @@ src/
 ├── utils/      # Utility functions
 \`\`\`
 
-### 5. Import Patterns
+### 6. Import Patterns
 \`\`\`tsx
 // Dreamer UI imports
 import { Button } from '@moondreamsdev/dreamer-ui/components';
@@ -73,7 +113,7 @@ import { store } from '@store';
 import { helper } from '@utils/helper';
 \`\`\`
 
-### 6. Available Import Aliases
+### 7. Available Import Aliases
 - \`@/\` → \`src/\`
 - \`@components/\` → \`src/components/\`
 - \`@contexts/\` → \`src/contexts/\`
@@ -89,7 +129,12 @@ import { helper } from '@utils/helper';
 
 ## Quick Reference
 - Component syntax: \`export function ComponentName\`
-- Class names: Use \`join()\` for conditionals
+- **Class names: ALWAYS use \`join()\` for conditionals - NEVER template literals**
 - Check Dreamer UI first
 - Use import aliases: \`@components/\`, \`@hooks/\`, \`@lib/\`, \`@screens/\`, \`@ui/\`, etc.
 - Follow structured folder organization with proper separation of concerns
+
+## ⚠️ Critical Reminders
+- **Template literals with \`${\` in className are FORBIDDEN**
+- **Always import and use \`join\` from \`@moondreamsdev/dreamer-ui/utils\`**
+- **Before writing any conditional className, ask: "Am I using join()?"**

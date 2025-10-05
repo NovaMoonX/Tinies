@@ -1,12 +1,12 @@
-import { Button, Card } from '@moondreamsdev/dreamer-ui/components';
+import { Button, Card, Textarea } from '@moondreamsdev/dreamer-ui/components';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { useMemo, useState } from 'react';
-import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
 import {
-  ApartmentSelector,
   AddQuestionForm,
-  AnswerInput,
+  ApartmentSelector,
 } from './ApartmentTourQuestions.components';
+import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
 
 export function ApartmentTourQuestions() {
   const {
@@ -60,9 +60,8 @@ export function ApartmentTourQuestions() {
 
   const answeredCount = useMemo(() => {
     if (!selectedApartment) return 0;
-    return allQuestions.filter(
-      (q) => getAnswer(q.id, selectedApartment) !== '',
-    ).length;
+    return allQuestions.filter((q) => getAnswer(q.id, selectedApartment) !== '')
+      .length;
   }, [allQuestions, selectedApartment, getAnswer]);
 
   const totalCount = allQuestions.length;
@@ -108,10 +107,7 @@ export function ApartmentTourQuestions() {
         )}
 
         {/* Add Custom Question */}
-        <AddQuestionForm
-          categories={categories}
-          onAdd={addCustomQuestion}
-        />
+        <AddQuestionForm categories={categories} onAdd={addCustomQuestion} />
 
         {/* Questions by Category */}
         {selectedApartment ? (
@@ -140,7 +136,7 @@ export function ApartmentTourQuestions() {
                         return (
                           <div
                             key={question.id}
-                            className='hover:bg-muted/50 rounded-lg border border-border p-3 transition-colors'
+                            className='hover:bg-muted/50 border-border rounded-lg border p-3 transition-colors'
                           >
                             <div className='flex items-start justify-between gap-2'>
                               <button
@@ -148,11 +144,10 @@ export function ApartmentTourQuestions() {
                                 className='flex-1 text-left'
                               >
                                 <div
-                                  className={`text-sm leading-relaxed ${
-                                    hasAnswer
-                                      ? 'font-medium text-primary'
-                                      : ''
-                                  }`}
+                                  className={join(
+                                    'text-sm leading-relaxed',
+                                    hasAnswer && 'text-primary font-medium'
+                                  )}
                                 >
                                   {question.question}
                                 </div>
@@ -170,13 +165,16 @@ export function ApartmentTourQuestions() {
                               )}
                             </div>
                             {isExpanded && (
-                              <div className='mt-3 pt-3 border-t border-border'>
-                                <AnswerInput
+                              <div className='border-border mt-3 border-t pt-3'>
+                                <Textarea
+                                  placeholder='Enter answer...'
+                                  rows={2}
+                                  className='text-sm'
                                   value={getAnswer(
                                     question.id,
                                     selectedApartment,
                                   )}
-                                  onChange={(value) =>
+                                  onChange={({ target: { value } }) =>
                                     updateAnswer(
                                       question.id,
                                       selectedApartment,
@@ -198,7 +196,10 @@ export function ApartmentTourQuestions() {
         ) : (
           <Card>
             <div className='text-foreground/60 text-center'>
-              <p>Add an apartment to get started tracking your questions and answers.</p>
+              <p>
+                Add an apartment to get started tracking your questions and
+                answers.
+              </p>
             </div>
           </Card>
         )}

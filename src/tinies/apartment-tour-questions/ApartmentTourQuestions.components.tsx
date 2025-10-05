@@ -1,4 +1,5 @@
 import { Button, Input, Card, Textarea, Select } from '@moondreamsdev/dreamer-ui/components';
+import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import { Apartment } from './ApartmentTourQuestions.types';
@@ -39,7 +40,7 @@ export function ApartmentSelector({
           {!isAdding && (
             <Button
               onClick={() => setIsAdding(true)}
-              variant='outline'
+              variant='primary'
               size='sm'
               className='inline-flex items-center'
             >
@@ -100,11 +101,12 @@ export function ApartmentSelector({
           {apartments.map((apt) => (
             <div
               key={apt.id}
-              className={`flex items-center gap-2 rounded-lg border p-3 transition-colors ${
+              className={join(
+                'flex items-center gap-2 rounded-lg border p-3 transition-colors',
                 selectedApartment === apt.id
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:bg-muted/50'
-              }`}
+              )}
             >
               <button
                 onClick={() => onSelectApartment(apt.id)}
@@ -223,25 +225,5 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
         </div>
       </div>
     </Card>
-  );
-}
-
-interface AnswerInputProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export function AnswerInput({
-  value,
-  onChange,
-}: AnswerInputProps) {
-  return (
-    <Textarea
-      placeholder='Enter answer...'
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      rows={2}
-      className='text-sm'
-    />
   );
 }
