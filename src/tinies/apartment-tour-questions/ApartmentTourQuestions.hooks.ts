@@ -15,12 +15,13 @@ export function useApartmentTourData() {
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 
-  const addCustomQuestion = (question: string, category: string) => {
+  const addCustomQuestion = (question: string, category: string, associatedApartments?: string[]) => {
     const newQuestion: Question = {
       id: `custom-${Date.now()}`,
       category,
       question,
       isCustom: true,
+      associatedApartments,
     };
     setCustomQuestions(prev => [...prev, newQuestion]);
   };
@@ -180,6 +181,24 @@ export function useApartmentTourData() {
     );
   };
 
+  const updateQuestionAssociations = (questionId: string, associatedApartments?: string[]) => {
+    // If associatedApartments is an empty array, delete the question
+    if (associatedApartments && associatedApartments.length === 0) {
+      setCustomQuestions(prev => prev.filter(q => q.id !== questionId));
+      // Also remove any answers for this question
+      setAnswers(prev => prev.filter(a => a.questionId !== questionId));
+      return;
+    }
+    
+    setCustomQuestions(prev =>
+      prev.map(q =>
+        q.id === questionId
+          ? { ...q, associatedApartments }
+          : q
+      )
+    );
+  };
+
   const isQuestionAssociated = (questionId: string, apartmentId: string): boolean => {
     const question = customQuestions.find(q => q.id === questionId);
     if (!question || !question.associatedApartments) {
@@ -252,6 +271,7 @@ export function useApartmentTourData() {
     deleteFollowUp,
     getFollowUps,
     toggleQuestionAssociation,
+    updateQuestionAssociations,
     isQuestionAssociated,
     updateApartmentDetails,
     addCustomLink,

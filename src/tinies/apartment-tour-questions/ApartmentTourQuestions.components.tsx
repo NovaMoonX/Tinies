@@ -7,9 +7,9 @@ import {
   Input,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
+import { DotsVertical, Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
-import { Apartment, FollowUpItem } from './ApartmentTourQuestions.types';
+import { Apartment, FollowUpItem, Question } from './ApartmentTourQuestions.types';
 
 interface ApartmentSelectorProps {
   apartments: Apartment[];
@@ -141,35 +141,44 @@ export function ApartmentSelector({
 interface AddQuestionFormData {
   category: string;
   question: string;
+  associatedApartments: string[];
 }
 
 interface AddQuestionFormProps {
   categories: string[];
-  onAdd: (question: string, category: string) => void;
+  apartments: Apartment[];
+  onAdd: (question: string, category: string, associatedApartments?: string[]) => void;
 }
 
-export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
+const questionFormInitialState: AddQuestionFormData = {
+  category: '',
+  question: '',
+  associatedApartments: [],
+};
+export function AddQuestionForm({ categories, apartments, onAdd }: AddQuestionFormProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState<AddQuestionFormData>({
-    category: '',
-    question: '',
-  });
-  const { select, textarea } = FormFactories;
+  const [formData, setFormData] = useState<AddQuestionFormData>(questionFormInitialState);
+  const { select, textarea, checkboxGroup } = FormFactories;
 
   const handleAdd = () => {
-    if (formData.question.trim() && formData.category) {
-      onAdd(formData.question.trim(), formData.category);
-      setFormData({ category: '', question: '' });
+    if (formData.question.trim() && formData.category && formData.associatedApartments.length > 0) {
+      // If all apartments are selected, pass undefined (shows for all apartments)
+      const associatedApartments = formData.associatedApartments.length === apartments.length
+        ? undefined
+        : formData.associatedApartments;
+      
+      onAdd(formData.question.trim(), formData.category, associatedApartments);
+      setFormData({ category: '', question: '', associatedApartments: [] });
       setIsAdding(false);
     }
   };
 
   const resetForm = () => {
     setIsAdding(false);
-    setFormData({ category: '', question: '' });
+    setFormData({ category: '', question: '', associatedApartments: [] });
   };
 
-  const isFormValid = formData.question.trim() && formData.category;
+  const isFormValid = formData.question.trim() && formData.category && formData.associatedApartments.length > 0;
 
   if (!isAdding) {
     return (
@@ -203,6 +212,7 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
           </Button>
         </div>
         <Form
+          initialData={questionFormInitialState}
           form={[
             select({
               name: 'category',
@@ -222,6 +232,19 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
               className: 'bg-background/50 focus:bg-background/80 border-0 transition-colors',
               required: true,
             }),
+            ...(apartments.length > 0 ? [
+              checkboxGroup({
+                name: 'associatedApartments',
+                label: 'Associate with apartments',
+                description: 'Will only show this question for the selected apartments.',
+                required: true,
+                selectAll: true,
+                options: apartments.map(apartment => ({
+                  value: apartment.id,
+                  label: apartment.name,
+                })),
+              })
+            ] : []),
           ]}
           onDataChange={(data: AddQuestionFormData) => {
             setFormData(data);
@@ -259,7 +282,7 @@ export function NoteSection({ apartmentName, note, onUpdateNote }: NoteSectionPr
         </h2>
         <Textarea
           placeholder='Add any additional notes, observations, or reminders about this apartment...'
-          rows={4}
+          rows={8}
           variant='solid'
           rounded='md'
           value={note}
@@ -362,18 +385,18 @@ export function FollowUpSection({
                 className={join(
                   'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
                   followUp.completed
-                    ? 'bg-success/10'
+                    ? 'bg-success/50'
                     : 'bg-background hover:bg-muted/30',
                 )}
               >
                 <Checkbox
                   checked={followUp.completed}
-                  onChange={() => onToggleFollowUp(followUp.id)}
+                  onCheckedChange={() => onToggleFollowUp(followUp.id)}
                   size={18}
                 />
                 <span
                   className={join(
-                    'flex-1 text-sm',
+                    'flex-1 text-sm inline-block',
                     followUp.completed
                       ? 'text-foreground/50 line-through'
                       : 'text-foreground/90',
@@ -569,6 +592,108 @@ export function ApartmentDetailsSection({
                 No custom links yet. Add links to listing sites, photos, or other resources.
               </p>
             ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface QuestionAssociationButtonProps {
+  question: Question;
+  apartments: Apartment[];
+  onUpdateAssociations: (questionId: string, associatedApartments?: string[]) => void;
+}
+
+export function QuestionAssociationButton({ 
+  question, 
+  apartments, 
+  onUpdateAssociations 
+}: QuestionAssociationButtonProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({ 
+    associatedApartments: question.associatedApartments || [] 
+  });
+  const { checkboxGroup } = FormFactories;
+
+  const handleSave = () => {
+    // If no apartments are selected, delete the question
+    if (formData.associatedApartments.length === 0) {
+      // We need to signal deletion - we'll pass a special value
+      onUpdateAssociations(question.id, []);
+      setIsEditing(false);
+      return;
+    }
+    
+    // If all apartments are selected, pass undefined (shows for all apartments)
+    const associations = formData.associatedApartments.length === apartments.length
+      ? undefined
+      : formData.associatedApartments;
+    
+    onUpdateAssociations(question.id, associations);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({ associatedApartments: question.associatedApartments || [] });
+    setIsEditing(false);
+  };
+
+  if (apartments.length === 0) {
+    return null;
+  }
+
+  if (!isEditing) {
+    return (
+      <Button
+        onClick={() => setIsEditing(true)}
+        variant='outline'
+        size='sm'
+        title='Edit apartment associations'
+        className='px-1!'
+      >
+        <DotsVertical className='size-4' />
+      </Button>
+    );
+  }
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+      <div className='bg-background w-full max-w-md rounded-2xl p-6 shadow-xl'>
+        <div className='space-y-4'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Edit Apartment Associations
+          </h3>
+          <p className='text-foreground/60 text-sm'>
+            Select which apartments this question should appear for.
+          </p>
+          
+          <Form
+            initialData={formData}
+            form={[
+              checkboxGroup({
+                name: 'associatedApartments',
+                label: 'Associate...',
+                description: 'If no apartments are selected, this question will be deleted.',
+                selectAll: true,
+                options: apartments.map(apartment => ({
+                  value: apartment.id,
+                  label: apartment.name,
+                })),
+              })
+            ]}
+            onDataChange={(data) => {
+              setFormData(data);
+            }}
+          />
+
+          <div className='flex gap-2 pt-2'>
+            <Button onClick={handleSave} size='sm'>
+              Save
+            </Button>
+            <Button onClick={handleCancel} variant='outline' size='sm'>
+              Cancel
+            </Button>
           </div>
         </div>
       </div>
