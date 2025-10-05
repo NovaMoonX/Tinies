@@ -506,7 +506,7 @@ export function ApartmentDetailsSection({
           <div className='flex items-center gap-1'>
             <div className='flex-1'>
               <Input
-                placeholder='Full address (optional)'
+                placeholder='Full address'
                 variant='outline'
                 value={apartment.address || ''}
                 onChange={({ target: { value } }) =>
@@ -539,7 +539,7 @@ export function ApartmentDetailsSection({
           <div className='flex items-center gap-1'>
             <div className='flex-1'>
               <Input
-                placeholder='https://example.com (optional)'
+                placeholder='https://example.com'
                 variant='outline'
                 value={apartment.website || ''}
                 onChange={({ target: { value } }) =>

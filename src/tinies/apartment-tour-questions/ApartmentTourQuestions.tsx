@@ -114,7 +114,7 @@ export function ApartmentTourQuestions() {
   }, [allQuestions, selectedApartment]);
 
   return (
-    <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
+    <div className='tiny-page'>
       <div className='mx-auto max-w-4xl space-y-6'>
         {/* Header */}
         <div className='space-y-2 text-center'>
@@ -170,10 +170,10 @@ export function ApartmentTourQuestions() {
             defaultValue='details'
             variant='underline'
             tabsList={[
-              { value: 'details', label: 'Details' },
-              { value: 'questions', label: 'Questions' },
-              { value: 'notes', label: 'Notes' },
-              { value: 'followups', label: 'Follow-ups' },
+              { value: 'details', label: '🏠 Details' },
+              { value: 'questions', label: '❓ Questions' },
+              { value: 'notes', label: '📝 Notes' },
+              { value: 'followups', label: '📋 Follow-ups' },
             ]}
           >
             <TabsContent value='details'>
