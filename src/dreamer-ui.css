@@ -15,10 +15,10 @@
 	--color-success-foreground: var(--color-black);
 	--color-warning: var(--color-yellow-300);
 	--color-warning-foreground: var(--color-black);
-	--color-destructive: var(--color-red-300);
-	--color-destructive-foreground: var(--color-black);
+	--color-destructive: var(--color-red-500);
+	--color-destructive-foreground: var(--color-white);
 
-	--color-border: var(--color-gray-600); /* for input/textarea borders and dividers */
+	--color-border: var(--color-gray-400); /* for input/textarea borders and dividers */
 	--color-popover: var(--color-gray-200); /* for popover backgrounds (popover, dropdowns, modals, etc) */
 	--color-popover-foreground: var(--color-gray-950); /* for popover text */
 
@@ -27,14 +27,17 @@
 }
 
 .dark {
-  --color-muted: var(--color-gray-500);
+  --color-muted: var(--color-gray-800);
   --color-muted-foreground: var(--color-gray-200);
 
 	--color-success: var(--color-green-700);
 	--color-success-foreground: var(--color-white);
 	--color-warning: var(--color-yellow-700);
 	--color-warning-foreground: var(--color-white);
+	--color-destructive: var(--color-red-700);
+	--color-destructive-foreground: var(--color-white);
 
-	--color-popover: var(--color-gray-800);
+	--color-border: var(--color-gray-700);
+	--color-popover: var(--color-gray-900);
 	--color-popover-foreground: var(--color-gray-100);
 }

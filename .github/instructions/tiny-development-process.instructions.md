@@ -6,6 +6,17 @@ applyTo: 'src/**/*'
 
 Instructions for adding and updating a new mini app (aka "tiny") to the repo.
 
+## Important Development Guidelines
+
+### 🚫 No Persistent Storage by Default
+**Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state. This ensures:
+- Clean demos that reset on each visit
+- No data persistence complications
+- Simpler, more maintainable code
+- Consistent user experience
+
+If persistent storage is needed for a specific tiny, it must be explicitly requested and justified.
+
 ## Step 1: Add to Data
 
 Add a new entry to the `ALL_TINIES` array in `src/lib/tinies/tinies.data.ts`:
@@ -24,6 +35,7 @@ Add a new entry to the `ALL_TINIES` array in `src/lib/tinies/tinies.data.ts`:
 ```
 
 ### Example Entry
+
 ```typescript
 {
   id: 'calculator',
@@ -42,6 +54,7 @@ All tags and categories are automatically extracted and made available for filte
 ## Step 2: Create the Tiny Structure
 
 ### 2.1 Create Folder Structure
+
 Create a new folder in `src/tinies/` with the **exact same name** as the `id` you used in the data file:
 
 ```
@@ -49,9 +62,11 @@ src/tinies/calculator/
 ```
 
 ### 2.2 Create Main Component
+
 Inside that folder, create a main component using the **title-cased version** of the tiny ID:
 
 **File:** `src/tinies/calculator/Calculator.tsx`
+
 ```typescript
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 
@@ -70,10 +85,13 @@ export default Calculator;
 ```
 
 ### 2.3 Organize Additional Files (Optional)
+
 Create additional files as needed using the **exact file naming pattern**:
 
 #### Types File
+
 **File:** `Calculator.types.ts`
+
 ```typescript
 export interface CalculatorOperation {
   type: 'add' | 'subtract' | 'multiply' | 'divide';
@@ -88,38 +106,62 @@ export interface CalculatorState {
 ```
 
 #### Data File
+
 **File:** `Calculator.data.ts`
+
 ```typescript
 import { CalculatorOperation } from './Calculator.types';
 
 export const CALCULATOR_BUTTONS = [
-  '7', '8', '9', '/',
-  '4', '5', '6', '*',
-  '1', '2', '3', '-',
-  '0', '.', '=', '+'
+  '7',
+  '8',
+  '9',
+  '/',
+  '4',
+  '5',
+  '6',
+  '*',
+  '1',
+  '2',
+  '3',
+  '-',
+  '0',
+  '.',
+  '=',
+  '+',
 ];
 
 export const OPERATIONS: CalculatorOperation['type'][] = [
-  'add', 'subtract', 'multiply', 'divide'
+  'add',
+  'subtract',
+  'multiply',
+  'divide',
 ];
 ```
 
 #### Utils File
+
 **File:** `Calculator.utils.ts`
+
 ```typescript
 import { CalculatorOperation } from './Calculator.types';
 
 export function performCalculation(
   prev: number,
   current: number,
-  operation: CalculatorOperation['type']
+  operation: CalculatorOperation['type'],
 ): number {
   switch (operation) {
-    case 'add': return prev + current;
-    case 'subtract': return prev - current;
-    case 'multiply': return prev * current;
-    case 'divide': return prev / current;
-    default: return current;
+    case 'add':
+      return prev + current;
+    case 'subtract':
+      return prev - current;
+    case 'multiply':
+      return prev * current;
+    case 'divide':
+      return prev / current;
+    default:
+      return current;
   }
 }
 
@@ -129,7 +171,11 @@ export function formatDisplay(value: string): string {
 ```
 
 #### Hooks File
+
+Only create this file if you really need custom hooks (i.e. to encapsulate complex stateful logic). Otherwise, keep logic in the main component.
+
 **File:** `Calculator.hooks.ts`
+
 ```typescript
 import { useState } from 'react';
 import { CalculatorState } from './Calculator.types';
@@ -139,11 +185,12 @@ export function useCalculator() {
   const [state, setState] = useState<CalculatorState>({
     display: '0',
     previousValue: null,
-    operation: null
+    operation: null,
   });
 
   const handleNumber = (num: string) => {
     // Calculator logic here
+    // Note: Keep all state in memory - no localStorage/sessionStorage
   };
 
   return { state, handleNumber };
@@ -151,7 +198,9 @@ export function useCalculator() {
 ```
 
 #### Components File
+
 **File:** `Calculator.components.tsx`
+
 ```typescript
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 
@@ -175,6 +224,7 @@ export function CalculatorButton({ value, onClick, variant = 'default' }: Calcul
 ```
 
 ### 2.4 Import Structure in Main Component
+
 Update your main component to import from the additional files:
 
 ```typescript
@@ -185,7 +235,7 @@ import { CalculatorButton } from './Calculator.components';
 
 export function Calculator() {
   const { state, handleNumber } = useCalculator();
-  
+
   return (
     <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
       {/* Component JSX */}
@@ -215,6 +265,7 @@ Add a new lazy-loaded route in `src/routes/AppRoutes.tsx`:
 ## File Naming Rules
 
 ### ✅ Allowed File Qualifiers
+
 - `.types.ts` - TypeScript interfaces and types
 - `.data.ts` - Static data, constants, and arrays
 - `.utils.ts` - Pure utility functions
@@ -222,11 +273,13 @@ Add a new lazy-loaded route in `src/routes/AppRoutes.tsx`:
 - `.components.tsx` - Reusable React components
 
 ### ❌ Restrictions
+
 - Only **one file of each qualifier** per tiny
 - File names must match the **exact pattern**: `TinyName.qualifier.extension`
 - Main component must be **title-cased** and match the folder name
 
 ### Example File Structure
+
 ```
 src/tinies/calculator/
 ├── Calculator.tsx          # Main component (required)
