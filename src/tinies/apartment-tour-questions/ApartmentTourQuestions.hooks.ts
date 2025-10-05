@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { Question, Apartment, Answer } from './ApartmentTourQuestions.types';
 import { QUESTIONS } from './ApartmentTourQuestions.data';
 
 export function useApartmentTourData() {
+  const actionModal = useActionModal();
+
   // Custom questions
   const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
 
@@ -29,11 +32,20 @@ export function useApartmentTourData() {
     setCustomQuestions(prev => [...prev, newQuestion]);
   };
 
-  // TASK: confirm deletion action
-  const deleteCustomQuestion = (questionId: string) => {
-    setCustomQuestions(prev => prev.filter(q => q.id !== questionId));
-    // Also remove any answers for this question
-    setAnswers(prev => prev.filter(a => a.questionId !== questionId));
+  const deleteCustomQuestion = async (questionId: string) => {
+    const question = customQuestions.find(q => q.id === questionId);
+    if (!question) return;
+
+    const confirmed = await actionModal.confirm({
+      title: 'Delete Custom Question',
+      message: `Are you sure you want to delete "${question.question}"? This will also remove all answers to this question.`,
+    });
+
+    if (confirmed) {
+      setCustomQuestions(prev => prev.filter(q => q.id !== questionId));
+      // Also remove any answers for this question
+      setAnswers(prev => prev.filter(a => a.questionId !== questionId));
+    }
   };
 
   const addApartment = (name: string, address?: string) => {
@@ -50,14 +62,23 @@ export function useApartmentTourData() {
     return newApartment.id;
   };
 
-  // TASK: confirm deletion action
-  const deleteApartment = (apartmentId: string) => {
-    setApartments(prev => prev.filter(a => a.id !== apartmentId));
-    // Remove answers for this apartment
-    setAnswers(prev => prev.filter(a => a.apartmentId !== apartmentId));
-    // Clear selection if this was the selected apartment
-    if (selectedApartment === apartmentId) {
-      setSelectedApartment(null);
+  const deleteApartment = async (apartmentId: string) => {
+    const apartment = apartments.find(a => a.id === apartmentId);
+    if (!apartment) return;
+
+    const confirmed = await actionModal.confirm({
+      title: 'Delete Apartment',
+      message: `Are you sure you want to delete "${apartment.name}"? This will also remove all answers for this apartment.`,
+    });
+
+    if (confirmed) {
+      setApartments(prev => prev.filter(a => a.id !== apartmentId));
+      // Remove answers for this apartment
+      setAnswers(prev => prev.filter(a => a.apartmentId !== apartmentId));
+      // Clear selection if this was the selected apartment
+      if (selectedApartment === apartmentId) {
+        setSelectedApartment(null);
+      }
     }
   };
 
