@@ -1,15 +1,25 @@
 import {
   Button,
+  Checkbox,
   Form,
   FormFactories,
-  Textarea,
-  Checkbox,
   Input,
+  Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
+import {
+  DotsVertical,
+  ExternalLink,
+  Plus,
+  Trash,
+  X,
+} from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { DotsVertical, Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
-import { Apartment, FollowUpItem, Question } from './ApartmentTourQuestions.types';
+import {
+  Apartment,
+  FollowUpItem,
+  Question,
+} from './ApartmentTourQuestions.types';
 
 interface ApartmentSelectorProps {
   apartments: Apartment[];
@@ -147,7 +157,11 @@ interface AddQuestionFormData {
 interface AddQuestionFormProps {
   categories: string[];
   apartments: Apartment[];
-  onAdd: (question: string, category: string, associatedApartments?: string[]) => void;
+  onAdd: (
+    question: string,
+    category: string,
+    associatedApartments?: string[],
+  ) => void;
 }
 
 const questionFormInitialState: AddQuestionFormData = {
@@ -155,18 +169,29 @@ const questionFormInitialState: AddQuestionFormData = {
   question: '',
   associatedApartments: [],
 };
-export function AddQuestionForm({ categories, apartments, onAdd }: AddQuestionFormProps) {
+export function AddQuestionForm({
+  categories,
+  apartments,
+  onAdd,
+}: AddQuestionFormProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState<AddQuestionFormData>(questionFormInitialState);
+  const [formData, setFormData] = useState<AddQuestionFormData>(
+    questionFormInitialState,
+  );
   const { select, textarea, checkboxGroup } = FormFactories;
 
   const handleAdd = () => {
-    if (formData.question.trim() && formData.category && formData.associatedApartments.length > 0) {
+    if (
+      formData.question.trim() &&
+      formData.category &&
+      formData.associatedApartments.length > 0
+    ) {
       // If all apartments are selected, pass undefined (shows for all apartments)
-      const associatedApartments = formData.associatedApartments.length === apartments.length
-        ? undefined
-        : formData.associatedApartments;
-      
+      const associatedApartments =
+        formData.associatedApartments.length === apartments.length
+          ? undefined
+          : formData.associatedApartments;
+
       onAdd(formData.question.trim(), formData.category, associatedApartments);
       setFormData({ category: '', question: '', associatedApartments: [] });
       setIsAdding(false);
@@ -178,9 +203,16 @@ export function AddQuestionForm({ categories, apartments, onAdd }: AddQuestionFo
     setFormData({ category: '', question: '', associatedApartments: [] });
   };
 
-  const isFormValid = formData.question.trim() && formData.category && formData.associatedApartments.length > 0;
+  const isFormValid =
+    formData.question.trim() &&
+    formData.category &&
+    formData.associatedApartments.length > 0;
 
-  if (!isAdding && apartments.length > 0) {
+  if (apartments.length === 0) {
+    return null;
+  }
+
+  if (!isAdding) {
     return (
       <div className='flex justify-center'>
         <Button
@@ -203,11 +235,7 @@ export function AddQuestionForm({ categories, apartments, onAdd }: AddQuestionFo
           <h3 className='text-foreground/90 text-lg font-semibold'>
             Add A Question
           </h3>
-          <Button
-            onClick={resetForm}
-            variant='outline'
-            size='sm'
-          >
+          <Button onClick={resetForm} variant='outline' size='sm'>
             <X className='h-4 w-4' />
           </Button>
         </div>
@@ -229,33 +257,33 @@ export function AddQuestionForm({ categories, apartments, onAdd }: AddQuestionFo
               label: 'Question',
               placeholder: 'Enter your custom question...',
               rows: 3,
-              className: 'bg-background/50 focus:bg-background/80 border-0 transition-colors',
+              className:
+                'bg-background/50 focus:bg-background/80 border-0 transition-colors',
               required: true,
             }),
-            ...(apartments.length > 0 ? [
-              checkboxGroup({
-                name: 'associatedApartments',
-                label: 'Associate with apartments',
-                description: 'Will only show this question for the selected apartments.',
-                required: true,
-                selectAll: true,
-                options: apartments.map(apartment => ({
-                  value: apartment.id,
-                  label: apartment.name,
-                })),
-              })
-            ] : []),
+            ...(apartments.length > 0
+              ? [
+                  checkboxGroup({
+                    name: 'associatedApartments',
+                    label: 'Associate with apartments',
+                    description:
+                      'Will only show this question for the selected apartments.',
+                    required: true,
+                    selectAll: true,
+                    options: apartments.map((apartment) => ({
+                      value: apartment.id,
+                      label: apartment.name,
+                    })),
+                  }),
+                ]
+              : []),
           ]}
           onDataChange={(data: AddQuestionFormData) => {
             setFormData(data);
           }}
         />
         <div className='flex gap-2'>
-          <Button
-            onClick={handleAdd}
-            size='sm'
-            disabled={!isFormValid}
-          >
+          <Button onClick={handleAdd} size='sm' disabled={!isFormValid}>
             Add Question
           </Button>
           <Button onClick={resetForm} variant='outline' size='sm'>
@@ -273,22 +301,24 @@ interface NoteSectionProps {
   onUpdateNote: (note: string) => void;
 }
 
-export function NoteSection({ apartmentName, note, onUpdateNote }: NoteSectionProps) {
+export function NoteSection({
+  apartmentName,
+  note,
+  onUpdateNote,
+}: NoteSectionProps) {
   return (
-    <div className='bg-muted/30 rounded-2xl p-6'>
-      <div className='space-y-4'>
-        <h2 className='text-foreground/90 text-xl font-semibold'>
-          Notes for {apartmentName}
-        </h2>
-        <Textarea
-          placeholder='Add any additional notes, observations, or reminders about this apartment...'
-          rows={8}
-          variant='solid'
-          rounded='md'
-          value={note}
-          onChange={({ target: { value } }) => onUpdateNote(value)}
-        />
-      </div>
+    <div className='space-y-4'>
+      <h2 className='text-foreground/90 text-xl font-semibold'>
+        Notes for {apartmentName}
+      </h2>
+      <Textarea
+        placeholder='Add any additional notes, observations, or reminders about this apartment...'
+        rows={8}
+        variant='solid'
+        rounded='md'
+        value={note}
+        onChange={({ target: { value } }) => onUpdateNote(value)}
+      />
     </div>
   );
 }
@@ -320,102 +350,101 @@ export function FollowUpSection({
   };
 
   return (
-    <div className='bg-muted/30 rounded-2xl p-6'>
-      <div className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <h2 className='text-foreground/90 text-xl font-semibold'>
-            Follow-ups for {apartmentName}
-          </h2>
-          {!isAdding && (
-            <Button
-              onClick={() => setIsAdding(true)}
-              variant='primary'
-              size='sm'
-              className='inline-flex items-center'
-            >
-              <Plus className='mr-1 h-4 w-4' />
-              Add
-            </Button>
-          )}
-        </div>
-
-        {isAdding && (
-          <div className='bg-background rounded-xl p-4'>
-            <div className='space-y-3'>
-              <Textarea
-                placeholder='Enter follow-up item (e.g., "Call landlord about parking")'
-                rows={2}
-                variant='outline'
-                rounded='md'
-                value={newFollowUpText}
-                onChange={({ target: { value } }) => setNewFollowUpText(value)}
-              />
-              <div className='flex gap-2'>
-                <Button
-                  onClick={handleAdd}
-                  size='sm'
-                  disabled={!newFollowUpText.trim()}
-                >
-                  Add Follow-up
-                </Button>
-                <Button
-                  onClick={() => {
-                    setIsAdding(false);
-                    setNewFollowUpText('');
-                  }}
-                  variant='outline'
-                  size='sm'
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {followUps.length === 0 && !isAdding ? (
-          <p className='text-foreground/60 py-4 text-center text-sm'>
-            No follow-ups yet. Add items you need to follow up on for this apartment.
-          </p>
-        ) : (
-          <div className='space-y-2'>
-            {followUps.map((followUp) => (
-              <div
-                key={followUp.id}
-                className={join(
-                  'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
-                  followUp.completed
-                    ? 'bg-success/50'
-                    : 'bg-background hover:bg-muted/30',
-                )}
-              >
-                <Checkbox
-                  checked={followUp.completed}
-                  onCheckedChange={() => onToggleFollowUp(followUp.id)}
-                  size={18}
-                />
-                <span
-                  className={join(
-                    'flex-1 text-sm inline-block',
-                    followUp.completed
-                      ? 'text-foreground/50 line-through'
-                      : 'text-foreground/90',
-                  )}
-                >
-                  {followUp.text}
-                </span>
-                <Button
-                  onClick={() => onDeleteFollowUp(followUp.id)}
-                  variant='destructive'
-                  size='sm'
-                >
-                  <Trash className='h-4 w-4' />
-                </Button>
-              </div>
-            ))}
-          </div>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-foreground/90 text-xl font-semibold'>
+          Follow-ups for {apartmentName}
+        </h2>
+        {!isAdding && (
+          <Button
+            onClick={() => setIsAdding(true)}
+            variant='primary'
+            size='sm'
+            className='inline-flex items-center'
+          >
+            <Plus className='mr-1 h-4 w-4' />
+            Add
+          </Button>
         )}
       </div>
+
+      {isAdding && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-3'>
+            <Textarea
+              placeholder='Enter follow-up item (e.g., "Call landlord about parking")'
+              rows={2}
+              variant='outline'
+              rounded='md'
+              value={newFollowUpText}
+              onChange={({ target: { value } }) => setNewFollowUpText(value)}
+            />
+            <div className='flex gap-2'>
+              <Button
+                onClick={handleAdd}
+                size='sm'
+                disabled={!newFollowUpText.trim()}
+              >
+                Add Follow-up
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewFollowUpText('');
+                }}
+                variant='outline'
+                size='sm'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {followUps.length === 0 && !isAdding ? (
+        <p className='text-foreground/60 py-4 text-center text-sm'>
+          No follow-ups yet. Add items you need to follow up on for this
+          apartment.
+        </p>
+      ) : (
+        <div className='space-y-2'>
+          {followUps.map((followUp) => (
+            <div
+              key={followUp.id}
+              className={join(
+                'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
+                followUp.completed
+                  ? 'bg-success/50'
+                  : 'bg-background hover:bg-muted/30',
+              )}
+            >
+              <Checkbox
+                checked={followUp.completed}
+                onCheckedChange={() => onToggleFollowUp(followUp.id)}
+                size={18}
+              />
+              <span
+                className={join(
+                  'inline-block flex-1 text-sm',
+                  followUp.completed
+                    ? 'text-foreground/50 line-through'
+                    : 'text-foreground/90',
+                )}
+              >
+                {followUp.text}
+              </span>
+              <Button
+                onClick={() => onDeleteFollowUp(followUp.id)}
+                variant='destructive'
+                size='sm'
+              >
+                <Trash className='h-4 w-4' />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -447,152 +476,187 @@ export function ApartmentDetailsSection({
   };
 
   return (
-    <div className='bg-muted/30 rounded-2xl p-6'>
-      <div className='space-y-6'>
-        <h2 className='text-foreground/90 text-xl font-semibold'>
-          Apartment Details
-        </h2>
+    <div className='space-y-6'>
+      <h2 className='text-foreground/90 text-xl font-semibold'>
+        Apartment Details
+      </h2>
 
-        <div className='space-y-4'>
-          {/* Name */}
-          <div>
-            <label className='text-foreground/70 mb-2 block text-sm font-medium'>
-              Name
-            </label>
-            <Input
-              placeholder='Apartment name'
-              variant='outline'
-              value={apartment.name}
-              onChange={({ target: { value } }) =>
-                onUpdateDetails({ name: value })
-              }
-            />
-          </div>
+      <div className='space-y-4'>
+        {/* Name */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Name
+          </label>
+          <Input
+            placeholder='Apartment name'
+            variant='outline'
+            value={apartment.name}
+            onChange={({ target: { value } }) =>
+              onUpdateDetails({ name: value })
+            }
+          />
+        </div>
 
-          {/* Address */}
-          <div>
-            <label className='text-foreground/70 mb-2 block text-sm font-medium'>
-              Address
-            </label>
-            <Input
-              placeholder='Full address (optional)'
-              variant='outline'
-              value={apartment.address || ''}
-              onChange={({ target: { value } }) =>
-                onUpdateDetails({ address: value })
-              }
-            />
-          </div>
+        {/* Address */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Address
+          </label>
 
-          {/* Website */}
-          <div>
-            <label className='text-foreground/70 mb-2 block text-sm font-medium'>
-              Website
-            </label>
-            <Input
-              placeholder='https://example.com (optional)'
-              variant='outline'
-              value={apartment.website || ''}
-              onChange={({ target: { value } }) =>
-                onUpdateDetails({ website: value })
-              }
-            />
-          </div>
-
-          {/* Custom Links */}
-          <div>
-            <div className='mb-2 flex items-center justify-between'>
-              <label className='text-foreground/70 text-sm font-medium'>
-                Custom Links
-              </label>
-              {!isAddingLink && (
-                <Button
-                  onClick={() => setIsAddingLink(true)}
-                  variant='outline'
-                  size='sm'
-                  className='inline-flex items-center'
-                >
-                  <Plus className='mr-1 h-3 w-3' />
-                  Add Link
-                </Button>
-              )}
+          <div className='flex items-center gap-1'>
+            <div className='flex-1'>
+              <Input
+                placeholder='Full address (optional)'
+                variant='outline'
+                value={apartment.address || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateDetails({ address: value })
+                }
+              />
             </div>
+            {apartment.address && (
+              <Button
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(apartment.address)}`}
+                target='_blank'
+                rel='noopener noreferrer'
+                variant='tertiary'
+                size='fitted'
+                className='p-1'
+                title='Open in Google Maps'
+              >
+                <ExternalLink size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
 
-            {isAddingLink && (
-              <div className='bg-background mb-3 rounded-xl p-4'>
-                <div className='space-y-3'>
-                  <Input
-                    placeholder='Link label (e.g., "Apartments.com")'
+        {/* Website */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Website
+          </label>
+
+          <div className='flex items-center gap-1'>
+            <div className='flex-1'>
+              <Input
+                placeholder='https://example.com (optional)'
+                variant='outline'
+                value={apartment.website || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateDetails({ website: value })
+                }
+              />
+            </div>
+            {apartment.website && (
+              <Button
+                href={apartment.website}
+                target='_blank'
+                rel='noopener noreferrer'
+                variant='tertiary'
+                size='fitted'
+                className='p-1'
+                title='Open apartment website'
+              >
+                <ExternalLink size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Links */}
+        <div>
+          <div className='mb-2 flex items-center justify-between'>
+            <label className='text-foreground/70 text-sm font-medium'>
+              Custom Links
+            </label>
+            {!isAddingLink && (
+              <Button
+                onClick={() => setIsAddingLink(true)}
+                variant='outline'
+                size='sm'
+                className='inline-flex items-center'
+              >
+                <Plus className='mr-1 h-3 w-3' />
+                Add Link
+              </Button>
+            )}
+          </div>
+
+          {isAddingLink && (
+            <div className='bg-background mb-3 rounded-xl p-4'>
+              <div className='space-y-3'>
+                <Input
+                  placeholder='Link label (e.g., "Apartments.com")'
+                  variant='outline'
+                  value={newLinkLabel}
+                  onChange={({ target: { value } }) => setNewLinkLabel(value)}
+                />
+                <Input
+                  placeholder='URL (e.g., "https://apartments.com/...")'
+                  variant='outline'
+                  value={newLinkUrl}
+                  onChange={({ target: { value } }) => setNewLinkUrl(value)}
+                />
+                <div className='flex gap-2'>
+                  <Button
+                    onClick={handleAddLink}
+                    size='sm'
+                    disabled={!newLinkLabel.trim() || !newLinkUrl.trim()}
+                  >
+                    Add Link
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsAddingLink(false);
+                      setNewLinkLabel('');
+                      setNewLinkUrl('');
+                    }}
                     variant='outline'
-                    value={newLinkLabel}
-                    onChange={({ target: { value } }) => setNewLinkLabel(value)}
-                  />
-                  <Input
-                    placeholder='URL (e.g., "https://apartments.com/...")'
-                    variant='outline'
-                    value={newLinkUrl}
-                    onChange={({ target: { value } }) => setNewLinkUrl(value)}
-                  />
-                  <div className='flex gap-2'>
-                    <Button
-                      onClick={handleAddLink}
-                      size='sm'
-                      disabled={!newLinkLabel.trim() || !newLinkUrl.trim()}
-                    >
-                      Add Link
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setIsAddingLink(false);
-                        setNewLinkLabel('');
-                        setNewLinkUrl('');
-                      }}
-                      variant='outline'
-                      size='sm'
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+                    size='sm'
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {apartment.customLinks && apartment.customLinks.length > 0 ? (
-              <div className='space-y-2'>
-                {apartment.customLinks.map((link) => (
-                  <div
-                    key={link.id}
-                    className='bg-background flex items-center justify-between rounded-xl p-3'
-                  >
-                    <div className='flex-1'>
-                      <div className='text-foreground/90 text-sm font-medium'>
-                        {link.label}
-                      </div>
-                      <a
-                        href={link.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-primary hover:text-primary/80 mt-1 block text-xs underline'
-                      >
-                        {link.url}
-                      </a>
+          {apartment.customLinks && apartment.customLinks.length > 0 ? (
+            <div className='space-y-2'>
+              {apartment.customLinks.map((link) => (
+                <div
+                  key={link.id}
+                  className='bg-background flex items-center justify-between rounded-xl p-3'
+                >
+                  <div className='flex-1'>
+                    <div className='text-foreground/90 text-sm font-medium'>
+                      {link.label}
                     </div>
-                    <Button
-                      onClick={() => onDeleteCustomLink(link.id)}
-                      variant='destructive'
-                      size='sm'
+                    <a
+                      href={link.url}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-primary hover:text-primary/80 mt-1 block text-xs underline'
                     >
-                      <Trash className='h-4 w-4' />
-                    </Button>
+                      {link.url}
+                    </a>
                   </div>
-                ))}
-              </div>
-            ) : !isAddingLink ? (
-              <p className='text-foreground/60 py-4 text-center text-sm'>
-                No custom links yet. Add links to listing sites, photos, or other resources.
-              </p>
-            ) : null}
-          </div>
+                  <Button
+                    onClick={() => onDeleteCustomLink(link.id)}
+                    variant='destructive'
+                    size='sm'
+                  >
+                    <Trash className='h-4 w-4' />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : !isAddingLink ? (
+            <p className='text-foreground/60 py-4 text-center text-sm'>
+              No custom links yet. Add links to listing sites, photos, or other
+              resources.
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
@@ -602,17 +666,20 @@ export function ApartmentDetailsSection({
 interface QuestionAssociationButtonProps {
   question: Question;
   apartments: Apartment[];
-  onUpdateAssociations: (questionId: string, associatedApartments?: string[]) => void;
+  onUpdateAssociations: (
+    questionId: string,
+    associatedApartments?: string[],
+  ) => void;
 }
 
-export function QuestionAssociationButton({ 
-  question, 
-  apartments, 
-  onUpdateAssociations 
+export function QuestionAssociationButton({
+  question,
+  apartments,
+  onUpdateAssociations,
 }: QuestionAssociationButtonProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ 
-    associatedApartments: question.associatedApartments || [] 
+  const [formData, setFormData] = useState({
+    associatedApartments: question.associatedApartments || [],
   });
   const { checkboxGroup } = FormFactories;
 
@@ -624,12 +691,13 @@ export function QuestionAssociationButton({
       setIsEditing(false);
       return;
     }
-    
+
     // If all apartments are selected, pass undefined (shows for all apartments)
-    const associations = formData.associatedApartments.length === apartments.length
-      ? undefined
-      : formData.associatedApartments;
-    
+    const associations =
+      formData.associatedApartments.length === apartments.length
+        ? undefined
+        : formData.associatedApartments;
+
     onUpdateAssociations(question.id, associations);
     setIsEditing(false);
   };
@@ -667,20 +735,21 @@ export function QuestionAssociationButton({
           <p className='text-foreground/60 text-sm'>
             Select which apartments this question should appear for.
           </p>
-          
+
           <Form
             initialData={formData}
             form={[
               checkboxGroup({
                 name: 'associatedApartments',
                 label: 'Associate...',
-                description: 'If no apartments are selected, this question will be deleted.',
+                description:
+                  'If no apartments are selected, this question will be deleted.',
                 selectAll: true,
-                options: apartments.map(apartment => ({
+                options: apartments.map((apartment) => ({
                   value: apartment.id,
                   label: apartment.name,
                 })),
-              })
+              }),
             ]}
             onDataChange={(data) => {
               setFormData(data);
