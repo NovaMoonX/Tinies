@@ -3,7 +3,12 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @utility page {
-  @apply min-h-screen w-screen;
+  /* use dynamic viewport to handle browser UI (i.e. search bar, keyboard, etc) obscuring viewport */
+  @apply min-h-dvh w-dvw; 
+}
+
+@utility tiny-page {
+  @apply page p-4 pt-16 md:p-8 md:pt-24;
 }
 
 @theme tiny {
@@ -29,6 +34,11 @@ body {
 
 html {
   @apply bg-background;
+}
+
+/* Smooth height transitions for when keyboard appears on mobile */
+html, body {
+  transition: height 0.3s ease;
 }
 
 /* Dreamer UI styles */

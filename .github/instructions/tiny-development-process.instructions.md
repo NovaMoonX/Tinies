@@ -72,7 +72,7 @@ import { Button } from '@moondreamsdev/dreamer-ui/components';
 
 export function Calculator() {
   return (
-    <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
+    <div className='tiny-page'> // use the tiny-page utility class
       <div className='mx-auto max-w-4xl space-y-6'>
         <h1 className='text-3xl font-bold text-center'>Calculator</h1>
         {/* Your calculator UI here */}

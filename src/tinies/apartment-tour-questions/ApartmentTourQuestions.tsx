@@ -3,13 +3,19 @@ import {
   Button,
   Checkbox,
   Disclosure,
+  Tabs,
+  TabsContent,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { useMemo } from 'react';
 import {
   AddQuestionForm,
+  ApartmentDetailsSection,
   ApartmentSelector,
+  FollowUpSection,
+  NoteSection,
+  QuestionAssociationButton,
 } from './ApartmentTourQuestions.components';
 import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
 
@@ -25,11 +31,22 @@ export function ApartmentTourQuestions() {
     updateAnswer,
     getAnswer,
     setSelectedApartment,
+    updateNote,
+    getNote,
+    addFollowUp,
+    toggleFollowUp,
+    deleteFollowUp,
+    getFollowUps,
+    updateQuestionAssociations,
+    updateApartmentDetails,
+    addCustomLink,
+    deleteCustomLink,
+    getApartment,
   } = useApartmentTourData();
 
-  const questionsByCategory = useMemo(
-    () =>
-      allQuestions.reduce(
+  const questionsByCategory = useMemo(() => {
+    if (!selectedApartment) {
+      return allQuestions.reduce(
         (acc, question) => {
           if (!acc[question.category]) {
             acc[question.category] = [];
@@ -38,9 +55,30 @@ export function ApartmentTourQuestions() {
           return acc;
         },
         {} as Record<string, typeof allQuestions>,
-      ),
-    [allQuestions],
-  );
+      );
+    }
+
+    // Filter questions based on apartment associations
+    const filteredQuestions = allQuestions.filter((question) => {
+      // Show default questions (no associatedApartments) for all apartments
+      if (!question.associatedApartments) {
+        return true;
+      }
+      // Show custom questions only if they're associated with the selected apartment
+      return question.associatedApartments.includes(selectedApartment);
+    });
+
+    return filteredQuestions.reduce(
+      (acc, question) => {
+        if (!acc[question.category]) {
+          acc[question.category] = [];
+        }
+        acc[question.category].push(question);
+        return acc;
+      },
+      {} as Record<string, typeof allQuestions>,
+    );
+  }, [allQuestions, selectedApartment]);
 
   const categories = useMemo(
     () => Object.keys(questionsByCategory),
@@ -49,14 +87,34 @@ export function ApartmentTourQuestions() {
 
   const answeredCount = useMemo(() => {
     if (!selectedApartment) return 0;
-    return allQuestions.filter((q) => getAnswer(q.id, selectedApartment) !== '')
-      .length;
+
+    // Only count questions that are relevant for this apartment
+    const relevantQuestions = allQuestions.filter((question) => {
+      if (!question.associatedApartments) {
+        return true; // Default questions show for all apartments
+      }
+      return question.associatedApartments.includes(selectedApartment);
+    });
+
+    return relevantQuestions.filter(
+      (q) => getAnswer(q.id, selectedApartment) !== '',
+    ).length;
   }, [allQuestions, selectedApartment, getAnswer]);
 
-  const totalCount = allQuestions.length;
+  const totalCount = useMemo(() => {
+    if (!selectedApartment) return allQuestions.length;
+
+    // Only count questions that are relevant for this apartment
+    return allQuestions.filter((question) => {
+      if (!question.associatedApartments) {
+        return true; // Default questions show for all apartments
+      }
+      return question.associatedApartments.includes(selectedApartment);
+    }).length;
+  }, [allQuestions, selectedApartment]);
 
   return (
-    <div className='page min-h-screen w-full p-4 pt-16 md:p-8 md:pt-24'>
+    <div className='tiny-page'>
       <div className='mx-auto max-w-4xl space-y-6'>
         {/* Header */}
         <div className='space-y-2 text-center'>
@@ -100,99 +158,208 @@ export function ApartmentTourQuestions() {
         )}
 
         {/* Add Custom Question */}
-        <AddQuestionForm categories={categories} onAdd={addCustomQuestion} />
+        <AddQuestionForm
+          categories={categories}
+          apartments={apartments}
+          onAdd={addCustomQuestion}
+        />
 
         {/* Questions by Category */}
         {selectedApartment ? (
-          <div className='space-y-8'>
-            {categories.map((category) => {
-              const categoryQuestions = questionsByCategory[category] || [];
-              const categoryAnswered = categoryQuestions.filter(
-                (q) => getAnswer(q.id, selectedApartment) !== '',
-              ).length;
-              const allQuestionsAnswered =
-                categoryAnswered === categoryQuestions.length;
+          <Tabs
+            defaultValue='details'
+            variant='underline'
+            tabsList={[
+              { value: 'details', label: '🏠 Details' },
+              { value: 'questions', label: '❓ Questions' },
+              { value: 'notes', label: '📝 Notes' },
+              { value: 'followups', label: '📋 Follow-ups' },
+            ]}
+          >
+            <TabsContent value='details'>
+              <div className='pt-6'>
+                {getApartment(selectedApartment) && (
+                  <ApartmentDetailsSection
+                    apartment={getApartment(selectedApartment)!}
+                    onUpdateDetails={(updates) =>
+                      updateApartmentDetails(selectedApartment, updates)
+                    }
+                    onAddCustomLink={(label, url) =>
+                      addCustomLink(selectedApartment, label, url)
+                    }
+                    onDeleteCustomLink={(linkId) =>
+                      deleteCustomLink(selectedApartment, linkId)
+                    }
+                  />
+                )}
+              </div>
+            </TabsContent>
 
-              return (
-                <div key={category}>
-                  <div className='flex items-center justify-between pb-1'>
-                    <h2 className='text-foreground/90 text-xl font-semibold'>
-                      {category}
-                    </h2>
-                    <Badge
-                      variant={allQuestionsAnswered ? 'success' : 'muted'}
-                      size='sm'
-                    >
-                      {categoryAnswered} / {categoryQuestions.length}
-                    </Badge>
-                  </div>
-                  <div className='space-y-1'>
-                    {categoryQuestions.map((question) => {
-                      const hasAnswer =
-                        getAnswer(question.id, selectedApartment) !== '';
+            <TabsContent value='questions'>
+              <div className='space-y-8 pt-6'>
+                {categories.map((category) => {
+                  const categoryQuestions = questionsByCategory[category] || [];
+                  const categoryAnswered = categoryQuestions.filter(
+                    (q) => getAnswer(q.id, selectedApartment) !== '',
+                  ).length;
+                  const allQuestionsAnswered =
+                    categoryAnswered === categoryQuestions.length;
 
-                      return (
-                        <div
-                          key={question.id}
-                          className='group rounded-xl px-3 py-2 transition-all duration-200'
+                  return (
+                    <div key={category}>
+                      <div className='flex items-center justify-between pb-1'>
+                        <h2 className='text-foreground/90 text-xl font-semibold'>
+                          {category}
+                        </h2>
+                        <Badge
+                          variant={allQuestionsAnswered ? 'success' : 'muted'}
+                          size='sm'
                         >
-                          <div className='flex items-start justify-between gap-3'>
-                            <div className='flex flex-1 items-start gap-3'>
-                              <Checkbox
-                                checked={hasAnswer}
-                                className='mt-1.5'
-                                size={16}
-                                inert
-                              />
-                              <Disclosure
-                                label={
-                                  <span className='text-foreground/90 group-hover:text-foreground text-sm leading-relaxed font-medium transition-colors'>
-                                    {question.question}
-                                  </span>
-                                }
-                                className='flex-1'
-                                buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-2'
-                              >
-                                <Textarea
-                                  placeholder='Enter your answer...'
-                                  rows={2}
-                                  variant='solid'
-                                  className='mt-3 text-sm'
-                                  rounded='md'
-                                  value={getAnswer(
-                                    question.id,
-                                    selectedApartment,
-                                  )}
-                                  onChange={({ target: { value } }) =>
-                                    updateAnswer(
-                                      question.id,
-                                      selectedApartment,
-                                      value,
-                                    )
-                                  }
-                                />
-                              </Disclosure>
+                          {categoryAnswered} / {categoryQuestions.length}
+                        </Badge>
+                      </div>
+                      <div className='space-y-1'>
+                        {categoryQuestions.map((question) => {
+                          const hasAnswer =
+                            getAnswer(question.id, selectedApartment) !== '';
+                          const hasAssociatedApartments =
+                            question.associatedApartments &&
+                            question.associatedApartments.length > 0;
+
+                          return (
+                            <div
+                              key={question.id}
+                              className='group rounded-xl px-3 py-2 transition-all duration-200'
+                            >
+                              <div className='flex items-start justify-between gap-3'>
+                                <div className='flex flex-1 items-start gap-3'>
+                                  <Checkbox
+                                    checked={hasAnswer}
+                                    className='mt-1'
+                                    size={16}
+                                    inert
+                                  />
+                                  <Disclosure
+                                    label={
+                                      <div className='flex items-center gap-1'>
+                                        {hasAssociatedApartments && (
+                                          <Badge
+                                            variant='secondary'
+                                            size='sm'
+                                            aspect='square'
+                                            className='border border-accent'
+                                          />
+                                        )}
+                                        <span className='text-foreground/90 group-hover:text-foreground text-sm leading-relaxed font-medium transition-colors'>
+                                          {question.question}
+                                        </span>
+                                      </div>
+                                    }
+                                    className='flex-1'
+                                    buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-2'
+                                  >
+                                    <>
+                                      {hasAssociatedApartments && (
+                                        <div className='flex flex-wrap gap-1 mt-1'>
+                                          {question.associatedApartments!.map(
+                                            (aptId) => {
+                                              const apartment = apartments.find(
+                                                (a) => a.id === aptId,
+                                              );
+                                              return apartment ? (
+                                                <Badge
+                                                  key={aptId}
+                                                  variant='secondary'
+                                                  size='xs'
+                                                  className='text-xs'
+                                                >
+                                                  {apartment.name}
+                                                </Badge>
+                                              ) : null;
+                                            },
+                                          )}
+                                        </div>
+                                      )}
+                                      <Textarea
+                                        placeholder='Enter your answer...'
+                                        rows={2}
+                                        variant='solid'
+                                        className='mt-3 text-sm'
+                                        rounded='md'
+                                        value={getAnswer(
+                                          question.id,
+                                          selectedApartment,
+                                        )}
+                                        onChange={({ target: { value } }) =>
+                                          updateAnswer(
+                                            question.id,
+                                            selectedApartment,
+                                            value,
+                                          )
+                                        }
+                                      />
+                                    </>
+                                  </Disclosure>
+                                </div>
+                                {question.isCustom && (
+                                  <div className='flex gap-1'>
+                                    <QuestionAssociationButton
+                                      question={question}
+                                      apartments={apartments}
+                                      onUpdateAssociations={
+                                        updateQuestionAssociations
+                                      }
+                                    />
+                                    <Button
+                                      onClick={() =>
+                                        deleteCustomQuestion(question.id)
+                                      }
+                                      variant='destructive'
+                                      size='sm'
+                                    >
+                                      <Trash className='h-4 w-4' />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            {question.isCustom && (
-                              <Button
-                                onClick={() =>
-                                  deleteCustomQuestion(question.id)
-                                }
-                                variant='destructive'
-                                size='sm'
-                              >
-                                <Trash className='h-4 w-4' />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
+
+            <TabsContent value='notes'>
+              <div className='pt-6'>
+                <NoteSection
+                  apartmentName={
+                    apartments.find((a) => a.id === selectedApartment)?.name ||
+                    ''
+                  }
+                  note={getNote(selectedApartment)}
+                  onUpdateNote={(note) => updateNote(selectedApartment, note)}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value='followups'>
+              <div className='pt-6'>
+                <FollowUpSection
+                  apartmentName={
+                    apartments.find((a) => a.id === selectedApartment)?.name ||
+                    ''
+                  }
+                  followUps={getFollowUps(selectedApartment)}
+                  onAddFollowUp={(text) => addFollowUp(selectedApartment, text)}
+                  onToggleFollowUp={toggleFollowUp}
+                  onDeleteFollowUp={deleteFollowUp}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         ) : (
           <div className='bg-muted/30 rounded-2xl p-12 text-center'>
             <div className='text-foreground/60 space-y-2'>

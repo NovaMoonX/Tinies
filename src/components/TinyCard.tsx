@@ -29,7 +29,7 @@ function TinyCard({ tiny }: TinyCardProps) {
   const header = (
     <div className='flex items-start justify-between gap-2'>
       <h3 className='text-foreground text-xl font-semibold'>{tiny.title}</h3>
-      <Badge variant={getBadgeVariant(tiny.status)}>{tiny.status}</Badge>
+      <Badge variant={getBadgeVariant(tiny.status)} className='text-nowrap'>{tiny.status}</Badge>
     </div>
   );
 
