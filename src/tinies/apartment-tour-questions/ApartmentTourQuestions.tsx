@@ -1,7 +1,6 @@
-import { Button, Card, Textarea } from '@moondreamsdev/dreamer-ui/components';
-import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { Button, Card, Textarea, Checkbox, Disclosure } from '@moondreamsdev/dreamer-ui/components';
 import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   AddQuestionForm,
   ApartmentSelector,
@@ -22,9 +21,7 @@ export function ApartmentTourQuestions() {
     setSelectedApartment,
   } = useApartmentTourData();
 
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
-    new Set(),
-  );
+
 
   const questionsByCategory = useMemo(
     () =>
@@ -46,17 +43,7 @@ export function ApartmentTourQuestions() {
     [questionsByCategory],
   );
 
-  const toggleExpanded = (questionId: string) => {
-    setExpandedQuestions((prev) => {
-      const next = new Set(prev);
-      if (next.has(questionId)) {
-        next.delete(questionId);
-      } else {
-        next.add(questionId);
-      }
-      return next;
-    });
-  };
+
 
   const answeredCount = useMemo(() => {
     if (!selectedApartment) return 0;
@@ -129,7 +116,6 @@ export function ApartmentTourQuestions() {
                     </div>
                     <div className='space-y-3'>
                       {categoryQuestions.map((question) => {
-                        const isExpanded = expandedQuestions.has(question.id);
                         const hasAnswer =
                           getAnswer(question.id, selectedApartment) !== '';
 
@@ -138,20 +124,43 @@ export function ApartmentTourQuestions() {
                             key={question.id}
                             className='hover:bg-muted/50 border-border rounded-lg border p-3 transition-colors'
                           >
-                            <div className='flex items-start justify-between gap-2'>
-                              <button
-                                onClick={() => toggleExpanded(question.id)}
-                                className='flex-1 text-left'
-                              >
-                                <div
-                                  className={join(
-                                    'text-sm leading-relaxed',
-                                    hasAnswer && 'text-primary font-medium'
-                                  )}
+                            <div className='flex items-start justify-between gap-3'>
+                              <div className='flex items-start gap-3 flex-1'>
+                                <Checkbox
+                                  checked={hasAnswer}
+                                  className='mt-1.5'
+                                  size={16}
+                                  inert
+                                />
+                                <Disclosure 
+                                  label={
+                                    <span className='text-sm leading-relaxed'>
+                                      {question.question}
+                                    </span>
+                                  }
+                                  className='flex-1'
+                                  buttonClassName='!p-0 hover:bg-inherit! hover:underline hover:underline-offset-1'
                                 >
-                                  {question.question}
-                                </div>
-                              </button>
+                                  <div className='mt-3'>
+                                    <Textarea
+                                      placeholder='Enter answer...'
+                                      rows={2}
+                                      className='text-sm'
+                                      value={getAnswer(
+                                        question.id,
+                                        selectedApartment,
+                                      )}
+                                      onChange={({ target: { value } }) =>
+                                        updateAnswer(
+                                          question.id,
+                                          selectedApartment,
+                                          value,
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </Disclosure>
+                              </div>
                               {question.isCustom && (
                                 <Button
                                   onClick={() =>
@@ -164,26 +173,6 @@ export function ApartmentTourQuestions() {
                                 </Button>
                               )}
                             </div>
-                            {isExpanded && (
-                              <div className='border-border mt-3 border-t pt-3'>
-                                <Textarea
-                                  placeholder='Enter answer...'
-                                  rows={2}
-                                  className='text-sm'
-                                  value={getAnswer(
-                                    question.id,
-                                    selectedApartment,
-                                  )}
-                                  onChange={({ target: { value } }) =>
-                                    updateAnswer(
-                                      question.id,
-                                      selectedApartment,
-                                      value,
-                                    )
-                                  }
-                                />
-                              </div>
-                            )}
                           </div>
                         );
                       })}

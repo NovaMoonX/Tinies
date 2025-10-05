@@ -18,7 +18,7 @@
 	--color-destructive: var(--color-red-300);
 	--color-destructive-foreground: var(--color-black);
 
-	--color-border: var(--color-gray-600); /* for input/textarea borders and dividers */
+	--color-border: var(--color-gray-400); /* for input/textarea borders and dividers */
 	--color-popover: var(--color-gray-200); /* for popover backgrounds (popover, dropdowns, modals, etc) */
 	--color-popover-foreground: var(--color-gray-950); /* for popover text */
 
@@ -37,6 +37,7 @@
 	--color-destructive: var(--color-red-700);
 	--color-destructive-foreground: var(--color-white);
 
+	--color-border: var(--color-gray-700);
 	--color-popover: var(--color-gray-800);
 	--color-popover-foreground: var(--color-gray-100);
 }
