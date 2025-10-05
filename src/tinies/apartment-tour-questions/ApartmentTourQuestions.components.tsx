@@ -1,8 +1,20 @@
-import { Button, Input, Card, Textarea, Select } from '@moondreamsdev/dreamer-ui/components';
+import {
+  Button,
+  Card,
+  Form,
+  Select,
+  Textarea,
+  FormFactories,
+} from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import { Apartment } from './ApartmentTourQuestions.types';
+
+interface ApartmentFormData {
+  name: string;
+  address?: string;
+}
 
 interface ApartmentSelectorProps {
   apartments: Apartment[];
@@ -19,18 +31,20 @@ export function ApartmentSelector({
   onAddApartment,
   onDeleteApartment,
 }: ApartmentSelectorProps) {
+  const [formData, setFormData] = useState<ApartmentFormData>({
+    name: '',
+    address: '',
+  });
   const [isAdding, setIsAdding] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newAddress, setNewAddress] = useState('');
+  const { input } = FormFactories;
 
-  const handleAdd = () => {
-    if (newName.trim()) {
-      onAddApartment(newName.trim(), newAddress.trim() || undefined);
-      setNewName('');
-      setNewAddress('');
-      setIsAdding(false);
-    }
+  const handleAddApartment = () => {
+    onAddApartment(formData.name, formData.address || undefined);
+    setFormData({ name: '', address: '' });
+    setIsAdding(false);
   };
+
+  const addApartmentDisabled = formData.name.trim() === '';
 
   return (
     <Card>
@@ -51,42 +65,47 @@ export function ApartmentSelector({
         </div>
 
         {isAdding && (
-          <div className='space-y-3 rounded-lg border border-border p-3'>
-            <Input
-              placeholder='Apartment name (e.g., "123 Main St #4B")'
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAdd();
-                }
-              }}
-            />
-            <Input
-              placeholder='Address (optional)'
-              value={newAddress}
-              onChange={(e) => setNewAddress(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAdd();
-                }
-              }}
-            />
-            <div className='flex gap-2'>
-              <Button onClick={handleAdd} size='sm' disabled={!newName.trim()}>
-                Add
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsAdding(false);
-                  setNewName('');
-                  setNewAddress('');
+          <div className='border-border rounded-lg border p-3'>
+            <div className='space-y-4'>
+              <Form
+                form={[
+                  input({
+                    name: 'name',
+                    label: 'Apartment Name',
+                    placeholder: 'e.g., "123 Main St #4B"',
+                    variant: 'outline',
+                    required: true,
+                  }),
+                  input({
+                    name: 'address',
+                    label: 'Address',
+                    placeholder: 'Full address (optional)',
+                    variant: 'outline',
+                    required: false,
+                  }),
+                ]}
+                onDataChange={(data: ApartmentFormData) => {
+                  setFormData(data);
                 }}
-                variant='outline'
-                size='sm'
-              >
-                Cancel
-              </Button>
+              />
+              <div className='flex gap-2'>
+                <Button
+                  type='submit'
+                  size='sm'
+                  onClick={handleAddApartment}
+                  disabled={addApartmentDisabled}
+                >
+                  Add Apartment
+                </Button>
+                <Button
+                  onClick={() => setIsAdding(false)}
+                  variant='outline'
+                  size='sm'
+                  type='button'
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -105,7 +124,7 @@ export function ApartmentSelector({
                 'flex items-center gap-2 rounded-lg border p-3 transition-colors',
                 selectedApartment === apt.id
                   ? 'border-primary bg-primary/5'
-                  : 'border-border hover:bg-muted/50'
+                  : 'border-border hover:bg-muted/50',
               )}
             >
               <button
@@ -114,7 +133,9 @@ export function ApartmentSelector({
               >
                 <div className='font-medium'>{apt.name}</div>
                 {apt.address && (
-                  <div className='text-foreground/60 text-sm'>{apt.address}</div>
+                  <div className='text-foreground/60 text-sm'>
+                    {apt.address}
+                  </div>
                 )}
               </button>
               <Button
@@ -152,7 +173,12 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
 
   if (!isAdding) {
     return (
-      <Button onClick={() => setIsAdding(true)} variant='outline' size='sm' className='inline-flex items-center'>
+      <Button
+        onClick={() => setIsAdding(true)}
+        variant='outline'
+        size='sm'
+        className='inline-flex items-center'
+      >
         <Plus className='mr-1 h-4 w-4' />
         Add question
       </Button>
@@ -184,10 +210,10 @@ export function AddQuestionForm({ categories, onAdd }: AddQuestionFormProps) {
             <Select
               value={selectedCategory}
               onChange={setSelectedCategory}
-              placeholder="Select a category..."
+              placeholder='Select a category...'
               options={[
                 ...categories.map((cat) => ({ value: cat, text: cat })),
-                { value: 'Other', text: 'Other' }
+                { value: 'Other', text: 'Other' },
               ]}
             />
           </div>
