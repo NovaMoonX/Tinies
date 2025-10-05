@@ -180,7 +180,7 @@ export function AddQuestionForm({ categories, apartments, onAdd }: AddQuestionFo
 
   const isFormValid = formData.question.trim() && formData.category && formData.associatedApartments.length > 0;
 
-  if (!isAdding) {
+  if (!isAdding && apartments.length > 0) {
     return (
       <div className='flex justify-center'>
         <Button
