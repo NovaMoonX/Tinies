@@ -24,6 +24,8 @@ export interface Apartment {
   name: string;
   address?: string;
   website?: string;
+  phoneNumber?: string;
+  email?: string;
   customLinks?: CustomLink[];
 }
 

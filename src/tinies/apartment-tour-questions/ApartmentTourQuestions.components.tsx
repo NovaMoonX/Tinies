@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  CopyButton,
   Form,
   FormFactories,
   Input,
@@ -15,12 +16,12 @@ import {
   X,
 } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Apartment,
+  CostItem,
   FollowUpItem,
   Question,
-  CostItem,
   Unit,
 } from './ApartmentTourQuestions.types';
 
@@ -109,44 +110,40 @@ export function ApartmentSelector({
         </div>
       )}
 
-      {apartments.length === 0 && !isAdding && (
-        <p className='text-foreground/60 py-4 text-center'>
-          Add apartments to track answers for each one.
-        </p>
-      )}
-
-      <div className='space-y-3'>
-        {apartments.map((apt) => (
-          <div
-            key={apt.id}
-            className={join(
-              'flex cursor-pointer items-center gap-3 rounded-xl p-4 transition-all duration-200',
-              selectedApartment === apt.id
-                ? 'bg-primary/10 ring-primary/20 ring-2'
-                : 'bg-background hover:bg-muted/30',
-            )}
-          >
-            <button
-              onClick={() => onSelectApartment(apt.id)}
-              className='flex-1 text-left'
-            >
-              <div className='text-foreground/90 font-medium'>{apt.name}</div>
-              {apt.address && (
-                <div className='text-foreground/60 mt-1 text-sm'>
-                  {apt.address}
-                </div>
+      {apartments.length > 0 && (
+        <div className='space-y-3'>
+          {apartments.map((apt) => (
+            <div
+              key={apt.id}
+              className={join(
+                'flex cursor-pointer items-center gap-3 rounded-xl p-4 transition-all duration-200',
+                selectedApartment === apt.id
+                  ? 'bg-primary/10 ring-primary/20 ring-2'
+                  : 'bg-background hover:bg-muted/30',
               )}
-            </button>
-            <Button
-              onClick={() => onDeleteApartment(apt.id)}
-              variant='destructive'
-              size='sm'
             >
-              <Trash className='h-4 w-4' />
-            </Button>
-          </div>
-        ))}
-      </div>
+              <button
+                onClick={() => onSelectApartment(apt.id)}
+                className='flex-1 text-left'
+              >
+                <div className='text-foreground/90 font-medium'>{apt.name}</div>
+                {apt.address && (
+                  <div className='text-foreground/60 mt-1 text-sm'>
+                    {apt.address}
+                  </div>
+                )}
+              </button>
+              <Button
+                onClick={() => onDeleteApartment(apt.id)}
+                variant='destructive'
+                size='sm'
+              >
+                <Trash className='h-4 w-4' />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -542,12 +539,14 @@ export function ApartmentDetailsSection({
           <div className='flex items-center gap-1'>
             <div className='flex-1'>
               <Input
+                type='url'
                 placeholder='https://example.com'
                 variant='outline'
                 value={apartment.website || ''}
                 onChange={({ target: { value } }) =>
                   onUpdateDetails({ website: value })
                 }
+                autoComplete='off'
               />
             </div>
             {apartment.website && (
@@ -562,6 +561,67 @@ export function ApartmentDetailsSection({
               >
                 <ExternalLink size={16} />
               </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Phone Number */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Phone Number
+          </label>
+
+          <div className='flex items-center gap-1'>
+            <div className='flex-1'>
+              <Input
+                type='tel'
+                placeholder='(555) 123-4567'
+                variant='outline'
+                value={apartment.phoneNumber || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateDetails({ phoneNumber: value })
+                }
+              />
+            </div>
+            {apartment.phoneNumber && (
+              <Button
+                href={`tel:${apartment.phoneNumber}`}
+                variant='tertiary'
+                size='fitted'
+                className='p-1'
+                title='Call this number'
+              >
+                <ExternalLink size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Email
+          </label>
+
+          <div className='flex items-center gap-1'>
+            <div className='flex-1'>
+              <Input
+                type='email'
+                placeholder='contact@example.com'
+                variant='outline'
+                value={apartment.email || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateDetails({ email: value })
+                }
+              />
+            </div>
+            {apartment.email && (
+              <CopyButton
+                variant='tertiary'
+                size='fitted'
+                className='p-1'
+                textToCopy={apartment.email}
+              />
             )}
           </div>
         </div>
@@ -595,10 +655,12 @@ export function ApartmentDetailsSection({
                   onChange={({ target: { value } }) => setNewLinkLabel(value)}
                 />
                 <Input
+                  type='url'
                   placeholder='URL (e.g., "https://apartments.com/...")'
                   variant='outline'
                   value={newLinkUrl}
                   onChange={({ target: { value } }) => setNewLinkUrl(value)}
+                  autoComplete='off'
                 />
                 <div className='flex gap-2'>
                   <Button
