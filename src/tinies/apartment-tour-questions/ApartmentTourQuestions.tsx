@@ -47,6 +47,10 @@ export function ApartmentTourQuestions() {
     updateCost,
     addCustomCost,
     deleteCustomCost,
+    addUnit,
+    deleteUnit,
+    getUnits,
+    addUnitCosts,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(() => {
@@ -208,15 +212,23 @@ export function ApartmentTourQuestions() {
                     apartments.find((a) => a.id === selectedApartment)?.name ||
                     ''
                   }
-                  costs={getCosts(selectedApartment)}
-                  onUpdateCost={(costId, amount) =>
-                    updateCost(selectedApartment, costId, amount)
+                  units={getUnits(selectedApartment)}
+                  getCosts={(unitId) => getCosts(selectedApartment, unitId)}
+                  onUpdateCost={(costId, amount, unitId) =>
+                    updateCost(selectedApartment, costId, amount, unitId)
                   }
-                  onAddCustomCost={(label) =>
-                    addCustomCost(selectedApartment, label)
+                  onAddCustomCost={(label, unitId) =>
+                    addCustomCost(selectedApartment, label, unitId)
                   }
                   onDeleteCustomCost={(costId) =>
                     deleteCustomCost(selectedApartment, costId)
+                  }
+                  onAddUnit={(name) => {
+                    const unitId = addUnit(selectedApartment, name);
+                    addUnitCosts(selectedApartment, unitId);
+                  }}
+                  onDeleteUnit={(unitId) =>
+                    deleteUnit(selectedApartment, unitId)
                   }
                 />
               </div>

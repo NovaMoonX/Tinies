@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { Question, Apartment, Answer, ApartmentNote, FollowUpItem, CustomLink, ApartmentCost, CostItem } from './ApartmentTourQuestions.types';
+import { Question, Apartment, Answer, ApartmentNote, FollowUpItem, CustomLink, ApartmentCost, CostItem, Unit } from './ApartmentTourQuestions.types';
 import { QUESTIONS, DEFAULT_COST_CATEGORIES } from './ApartmentTourQuestions.data';
 
 export function useApartmentTourData() {
@@ -253,24 +253,33 @@ export function useApartmentTourData() {
   };
 
   // Cost management
-  const getCosts = (apartmentId: string): CostItem[] => {
+  const getCosts = (apartmentId: string, unitId?: string): CostItem[] => {
     const apartmentCost = costs.find(c => c.apartmentId === apartmentId);
     if (apartmentCost) {
-      return apartmentCost.costs;
+      // Filter by unitId if provided
+      if (unitId) {
+        return apartmentCost.costs.filter(cost => cost.unitId === unitId);
+      }
+      // Return costs without unitId (apartment-level costs)
+      return apartmentCost.costs.filter(cost => !cost.unitId);
     }
     
-    // Return default cost categories with 0 amounts
-    const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
-      id: `default-${apartmentId}-${index}`,
-      label: category.label,
-      amount: 0,
-      isCustom: category.isCustom,
-    }));
+    // Return default cost categories with 0 amounts (only if no unitId specified)
+    if (!unitId) {
+      const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+        id: `default-${apartmentId}-${index}`,
+        label: category.label,
+        amount: 0,
+        isCustom: category.isCustom,
+      }));
+      
+      return defaultCosts;
+    }
     
-    return defaultCosts;
+    return [];
   };
 
-  const updateCost = (apartmentId: string, costId: string, amount: number) => {
+  const updateCost = (apartmentId: string, costId: string, amount: number, unitId?: string) => {
     setCosts(prev => {
       const existing = prev.find(c => c.apartmentId === apartmentId);
       
@@ -289,6 +298,7 @@ export function useApartmentTourData() {
           label: category.label,
           amount: 0,
           isCustom: category.isCustom,
+          unitId,
         }));
         
         const updatedCosts = defaultCosts.map(cost =>
@@ -305,7 +315,7 @@ export function useApartmentTourData() {
     });
   };
 
-  const addCustomCost = (apartmentId: string, label: string) => {
+  const addCustomCost = (apartmentId: string, label: string, unitId?: string) => {
     setCosts(prev => {
       const existing = prev.find(c => c.apartmentId === apartmentId);
       const newCost: CostItem = {
@@ -313,6 +323,7 @@ export function useApartmentTourData() {
         label,
         amount: 0,
         isCustom: true,
+        unitId,
       };
       
       if (existing) {
@@ -322,7 +333,7 @@ export function useApartmentTourData() {
             : c
         );
       } else {
-        const defaultCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+        const defaultCosts = unitId ? [] : DEFAULT_COST_CATEGORIES.map((category, index) => ({
           id: `default-${apartmentId}-${index}`,
           label: category.label,
           amount: 0,
@@ -339,6 +350,35 @@ export function useApartmentTourData() {
     });
   };
 
+  const addUnitCosts = (apartmentId: string, unitId: string) => {
+    setCosts(prev => {
+      const existing = prev.find(c => c.apartmentId === apartmentId);
+      
+      const unitCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+        id: `unit-${unitId}-${index}`,
+        label: category.label,
+        amount: 0,
+        isCustom: category.isCustom,
+        unitId,
+      }));
+      
+      if (existing) {
+        return prev.map(c =>
+          c.apartmentId === apartmentId
+            ? { ...c, costs: [...c.costs, ...unitCosts] }
+            : c
+        );
+      } else {
+        const newApartmentCost: ApartmentCost = {
+          apartmentId,
+          costs: unitCosts,
+        };
+        
+        return [...prev, newApartmentCost];
+      }
+    });
+  };
+
   const deleteCustomCost = (apartmentId: string, costId: string) => {
     setCosts(prev =>
       prev.map(c =>
@@ -347,6 +387,66 @@ export function useApartmentTourData() {
           : c
       )
     );
+  };
+
+  // Unit management
+  const addUnit = (apartmentId: string, unitName: string) => {
+    const newUnit: Unit = {
+      id: `unit-${Date.now()}`,
+      name: unitName,
+      apartmentId,
+    };
+    
+    setApartments(prev =>
+      prev.map(apt => {
+        if (apt.id === apartmentId) {
+          const currentUnits = apt.units || [];
+          return { ...apt, units: [...currentUnits, newUnit] };
+        }
+        return apt;
+      })
+    );
+    
+    return newUnit.id;
+  };
+
+  const deleteUnit = async (apartmentId: string, unitId: string) => {
+    const apartment = apartments.find(a => a.id === apartmentId);
+    const unit = apartment?.units?.find(u => u.id === unitId);
+    
+    if (!unit) return;
+
+    const confirmed = await actionModal.confirm({
+      title: 'Delete Unit',
+      message: `Are you sure you want to delete "${unit.name}"? This will also remove all costs associated with this unit.`,
+    });
+
+    if (confirmed) {
+      setApartments(prev =>
+        prev.map(apt => {
+          if (apt.id === apartmentId && apt.units) {
+            const updatedUnits = apt.units.filter(u => u.id !== unitId);
+            return { ...apt, units: updatedUnits.length > 0 ? updatedUnits : undefined };
+          }
+          return apt;
+        })
+      );
+      
+      // Remove costs associated with this unit
+      setCosts(prev =>
+        prev.map(c => {
+          if (c.apartmentId === apartmentId) {
+            return { ...c, costs: c.costs.filter(cost => cost.unitId !== unitId) };
+          }
+          return c;
+        })
+      );
+    }
+  };
+
+  const getUnits = (apartmentId: string): Unit[] => {
+    const apartment = apartments.find(a => a.id === apartmentId);
+    return apartment?.units || [];
   };
 
   return {
@@ -379,5 +479,9 @@ export function useApartmentTourData() {
     updateCost,
     addCustomCost,
     deleteCustomCost,
+    addUnit,
+    deleteUnit,
+    getUnits,
+    addUnitCosts,
   };
 }

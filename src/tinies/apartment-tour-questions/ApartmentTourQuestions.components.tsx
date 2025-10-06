@@ -20,6 +20,7 @@ import {
   FollowUpItem,
   Question,
   CostItem,
+  Unit,
 } from './ApartmentTourQuestions.types';
 
 interface ApartmentSelectorProps {
@@ -666,50 +667,117 @@ export function ApartmentDetailsSection({
 
 interface PricingSectionProps {
   apartmentName: string;
-  costs: CostItem[];
-  onUpdateCost: (costId: string, amount: number) => void;
-  onAddCustomCost: (label: string) => void;
+  units: Unit[];
+  getCosts: (unitId?: string) => CostItem[];
+  onUpdateCost: (costId: string, amount: number, unitId?: string) => void;
+  onAddCustomCost: (label: string, unitId?: string) => void;
   onDeleteCustomCost: (costId: string) => void;
+  onAddUnit: (name: string) => void;
+  onDeleteUnit: (unitId: string) => void;
 }
 
 export function PricingSection({
   apartmentName,
-  costs,
+  units,
+  getCosts,
   onUpdateCost,
   onAddCustomCost,
   onDeleteCustomCost,
+  onAddUnit,
+  onDeleteUnit,
 }: PricingSectionProps) {
   const [isAddingCost, setIsAddingCost] = useState(false);
   const [newCostLabel, setNewCostLabel] = useState('');
+  const [isAddingUnit, setIsAddingUnit] = useState(false);
+  const [newUnitName, setNewUnitName] = useState('');
+  const [selectedUnitId, setSelectedUnitId] = useState<string | undefined>(undefined);
 
   const handleAddCost = () => {
     if (newCostLabel.trim()) {
-      onAddCustomCost(newCostLabel.trim());
+      onAddCustomCost(newCostLabel.trim(), selectedUnitId);
       setNewCostLabel('');
       setIsAddingCost(false);
     }
   };
 
-  const totalMonthlyCost = costs.reduce((sum, cost) => sum + cost.amount, 0);
+  const handleAddUnit = () => {
+    if (newUnitName.trim()) {
+      onAddUnit(newUnitName.trim());
+      setNewUnitName('');
+      setIsAddingUnit(false);
+    }
+  };
+
+  const currentCosts = getCosts(selectedUnitId);
+  const totalMonthlyCost = currentCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  
+  const selectedUnit = selectedUnitId ? units.find(u => u.id === selectedUnitId) : undefined;
+  const displayName = selectedUnit ? `${apartmentName} - ${selectedUnit.name}` : apartmentName;
 
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-between'>
         <h2 className='text-foreground/90 text-xl font-semibold'>
-          Pricing for {apartmentName}
+          Pricing for {displayName}
         </h2>
-        {!isAddingCost && (
-          <Button
-            onClick={() => setIsAddingCost(true)}
-            variant='outline'
-            size='sm'
-            className='inline-flex items-center'
-          >
-            <Plus className='mr-1 h-3 w-3' />
-            Add Cost
-          </Button>
-        )}
+        <div className='flex gap-2'>
+          {!isAddingUnit && (
+            <Button
+              onClick={() => setIsAddingUnit(true)}
+              variant='outline'
+              size='sm'
+              className='inline-flex items-center'
+            >
+              <Plus className='mr-1 h-3 w-3' />
+              Add Unit
+            </Button>
+          )}
+          {!isAddingCost && (
+            <Button
+              onClick={() => setIsAddingCost(true)}
+              variant='outline'
+              size='sm'
+              className='inline-flex items-center'
+            >
+              <Plus className='mr-1 h-3 w-3' />
+              Add Cost
+            </Button>
+          )}
+        </div>
       </div>
+
+      {isAddingUnit && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-3'>
+            <Input
+              placeholder='Unit name (e.g., "Unit 1A", "2nd Floor")'
+              variant='outline'
+              value={newUnitName}
+              onChange={({ target: { value } }) => setNewUnitName(value)}
+              autoFocus
+            />
+            <div className='flex gap-2'>
+              <Button
+                onClick={handleAddUnit}
+                size='sm'
+                disabled={!newUnitName.trim()}
+              >
+                Add Unit
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAddingUnit(false);
+                  setNewUnitName('');
+                }}
+                variant='outline'
+                size='sm'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isAddingCost && (
         <div className='bg-background rounded-xl p-4'>
@@ -744,8 +812,45 @@ export function PricingSection({
         </div>
       )}
 
+      {/* Unit selector */}
+      {units.length > 0 && (
+        <div className='space-y-2'>
+          <label className='text-foreground/70 text-sm font-medium'>
+            Select Unit (optional)
+          </label>
+          <div className='flex flex-wrap gap-2'>
+            <Button
+              onClick={() => setSelectedUnitId(undefined)}
+              variant={selectedUnitId === undefined ? 'primary' : 'outline'}
+              size='sm'
+            >
+              Building-wide
+            </Button>
+            {units.map((unit) => (
+              <div key={unit.id} className='flex items-center gap-1'>
+                <Button
+                  onClick={() => setSelectedUnitId(unit.id)}
+                  variant={selectedUnitId === unit.id ? 'primary' : 'outline'}
+                  size='sm'
+                >
+                  {unit.name}
+                </Button>
+                <Button
+                  onClick={() => onDeleteUnit(unit.id)}
+                  variant='destructive'
+                  size='sm'
+                  className='px-1!'
+                >
+                  <Trash className='h-3 w-3' />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className='space-y-2'>
-        {costs.map((cost) => (
+        {currentCosts.map((cost) => (
           <div
             key={cost.id}
             className='bg-background flex items-center gap-3 rounded-xl p-3'
@@ -763,7 +868,7 @@ export function PricingSection({
                 variant='outline'
                 value={cost.amount || ''}
                 onChange={({ target: { value } }) =>
-                  onUpdateCost(cost.id, parseFloat(value) || 0)
+                  onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
                 }
                 className='max-w-32'
                 min='0'
@@ -784,7 +889,7 @@ export function PricingSection({
         ))}
       </div>
 
-      {costs.length > 0 && (
+      {currentCosts.length > 0 && (
         <div className='bg-primary/10 flex items-center justify-between rounded-xl p-4'>
           <span className='text-foreground/90 text-lg font-semibold'>
             Total Monthly Cost
