@@ -10,6 +10,15 @@ export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
   { label: 'Parking', isCustom: false },
 ];
 
+// Default one-time fees (paid once, not monthly)
+export const DEFAULT_ONE_TIME_FEES: Omit<CostItem, 'id' | 'amount'>[] = [
+  { label: 'Security Deposit', isCustom: false, isOneTime: true },
+  { label: 'Application Fee', isCustom: false, isOneTime: true },
+  { label: 'Admin Fee', isCustom: false, isOneTime: true },
+  { label: 'Pet Deposit', isCustom: false, isOneTime: true },
+  { label: 'Key Fee', isCustom: false, isOneTime: true },
+];
+
 export const QUESTIONS: Question[] = [
   // Pricing & Lease Terms
   {

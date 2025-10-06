@@ -53,6 +53,7 @@ export interface CostItem {
   amount: number;
   isCustom?: boolean;
   unitId?: string; // Optional: if specified, this cost is for a specific unit
+  isOneTime?: boolean; // True for one-time fees (security deposits, application fees), false/undefined for monthly costs
 }
 
 export interface ApartmentCost {

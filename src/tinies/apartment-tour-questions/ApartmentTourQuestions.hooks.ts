@@ -14,6 +14,7 @@ import {
 import {
   QUESTIONS,
   DEFAULT_COST_CATEGORIES,
+  DEFAULT_ONE_TIME_FEES,
 } from './ApartmentTourQuestions.data';
 
 export function useApartmentTourData() {
@@ -310,9 +311,9 @@ export function useApartmentTourData() {
         (cost) => !cost.unitId,
       );
 
-      // If no building-wide costs exist yet, return defaults (including building-wide rent)
+      // If no building-wide costs exist yet, return defaults (monthly costs + one-time fees)
       if (buildingWideCosts.length === 0) {
-        const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map(
+        const defaultMonthlyCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map(
           (category, index) => ({
             id: `default-${apartmentId}-${index}`,
             label: category.label,
@@ -320,7 +321,16 @@ export function useApartmentTourData() {
             isCustom: category.isCustom,
           }),
         );
-        return defaultCosts;
+        const defaultOneTimeFees: CostItem[] = DEFAULT_ONE_TIME_FEES.map(
+          (fee, index) => ({
+            id: `onetime-${apartmentId}-${index}`,
+            label: fee.label,
+            amount: 0,
+            isCustom: fee.isCustom,
+            isOneTime: fee.isOneTime,
+          }),
+        );
+        return [...defaultMonthlyCosts, ...defaultOneTimeFees];
       }
 
       return buildingWideCosts;
@@ -329,7 +339,7 @@ export function useApartmentTourData() {
     // Return default cost categories with 0 amounts (only if no unitId specified)
     // For units, we don't return defaults - they're created when the unit is added
     if (!unitId) {
-      const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map(
+      const defaultMonthlyCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map(
         (category, index) => ({
           id: `default-${apartmentId}-${index}`,
           label: category.label,
@@ -337,8 +347,17 @@ export function useApartmentTourData() {
           isCustom: category.isCustom,
         }),
       );
+      const defaultOneTimeFees: CostItem[] = DEFAULT_ONE_TIME_FEES.map(
+        (fee, index) => ({
+          id: `onetime-${apartmentId}-${index}`,
+          label: fee.label,
+          amount: 0,
+          isCustom: fee.isCustom,
+          isOneTime: fee.isOneTime,
+        }),
+      );
 
-      return defaultCosts;
+      return [...defaultMonthlyCosts, ...defaultOneTimeFees];
     }
 
     return [];
@@ -368,16 +387,25 @@ export function useApartmentTourData() {
         }
 
         // Cost doesn't exist, need to add defaults first
-        const defaultCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+        const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
           id: `default-${apartmentId}-${index}`,
           label: category.label,
           amount: 0,
           isCustom: category.isCustom,
           unitId: undefined, // Default fees are always building-wide
         }));
+        const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
+          id: `onetime-${apartmentId}-${index}`,
+          label: fee.label,
+          amount: 0,
+          isCustom: fee.isCustom,
+          isOneTime: fee.isOneTime,
+          unitId: undefined, // One-time fees are always building-wide
+        }));
+        const allDefaults = [...defaultMonthlyCosts, ...defaultOneTimeFees];
 
         // Add any defaults that don't already exist, then update the target cost
-        const newDefaults = defaultCosts.filter(
+        const newDefaults = allDefaults.filter(
           (defaultCost) =>
             !existing.costs.some(
               (existingCost) =>
@@ -396,16 +424,25 @@ export function useApartmentTourData() {
         );
       }
 
-      // Create new apartment cost entry with building-wide rent + default categories
-      const defaultCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+      // Create new apartment cost entry with default categories + one-time fees
+      const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
         id: `default-${apartmentId}-${index}`,
         label: category.label,
         amount: 0,
         isCustom: category.isCustom,
         unitId: undefined, // Default fees are always building-wide
       }));
+      const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
+        id: `onetime-${apartmentId}-${index}`,
+        label: fee.label,
+        amount: 0,
+        isCustom: fee.isCustom,
+        isOneTime: fee.isOneTime,
+        unitId: undefined, // One-time fees are always building-wide
+      }));
+      const allDefaults = [...defaultMonthlyCosts, ...defaultOneTimeFees];
 
-      const updatedCosts = defaultCosts.map((cost) =>
+      const updatedCosts = allDefaults.map((cost) =>
         cost.id === costId ? { ...cost, amount } : cost,
       );
 
@@ -422,6 +459,7 @@ export function useApartmentTourData() {
     apartmentId: string,
     label: string,
     unitId?: string,
+    isOneTime?: boolean,
   ) => {
     setCosts((prev) => {
       const existing = prev.find((c) => c.apartmentId === apartmentId);
@@ -431,6 +469,7 @@ export function useApartmentTourData() {
         amount: 0,
         isCustom: true,
         unitId, // Custom costs are always building-wide in the new design
+        isOneTime,
       };
 
       if (existing) {
@@ -441,17 +480,24 @@ export function useApartmentTourData() {
         );
       }
 
-      // Initialize with building-wide rent + default categories
-      const defaultCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+      // Initialize with default categories + one-time fees
+      const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
         id: `default-${apartmentId}-${index}`,
         label: category.label,
         amount: 0,
         isCustom: category.isCustom,
       }));
+      const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
+        id: `onetime-${apartmentId}-${index}`,
+        label: fee.label,
+        amount: 0,
+        isCustom: fee.isCustom,
+        isOneTime: fee.isOneTime,
+      }));
 
       const newApartmentCost: ApartmentCost = {
         apartmentId,
-        costs: [...defaultCosts, newCost],
+        costs: [...defaultMonthlyCosts, ...defaultOneTimeFees, newCost],
       };
 
       return [...prev, newApartmentCost];
@@ -473,6 +519,10 @@ export function useApartmentTourData() {
           : c,
       ),
     );
+  };
+
+  const addCustomOneTimeFee = (apartmentId: string, label: string) => {
+    return addCustomCost(apartmentId, label, undefined, true);
   };
 
   // Unit management
@@ -563,6 +613,7 @@ export function useApartmentTourData() {
     getCosts,
     updateCost,
     addCustomCost,
+    addCustomOneTimeFee,
     deleteCustomCost,
     addUnit,
     deleteUnit,
