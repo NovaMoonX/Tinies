@@ -12,6 +12,13 @@ export interface CustomLink {
   url: string;
 }
 
+export interface Unit {
+  id: string;
+  name: string;
+  apartmentId: string;
+  rentPrice?: number;
+}
+
 export interface Apartment {
   id: string;
   name: string;
@@ -36,4 +43,17 @@ export interface FollowUpItem {
   apartmentId: string;
   text: string;
   completed: boolean;
+}
+
+export interface CostItem {
+  id: string;
+  label: string;
+  amount: number;
+  isCustom?: boolean;
+  unitId?: string; // Optional: if specified, this cost is for a specific unit
+}
+
+export interface ApartmentCost {
+  apartmentId: string;
+  costs: CostItem[];
 }

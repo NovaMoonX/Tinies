@@ -4,6 +4,7 @@ import {
   Form,
   FormFactories,
   Input,
+  Modal,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import {
@@ -14,11 +15,13 @@ import {
   X,
 } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Apartment,
   FollowUpItem,
   Question,
+  CostItem,
+  Unit,
 } from './ApartmentTourQuestions.types';
 
 interface ApartmentSelectorProps {
@@ -663,6 +666,478 @@ export function ApartmentDetailsSection({
   );
 }
 
+interface PricingSectionProps {
+  apartmentName: string;
+  units: Unit[];
+  getCosts: (unitId?: string) => CostItem[];
+  onUpdateCost: (costId: string, amount: number) => void;
+  onAddCustomCost: (label: string, unitId?: string) => void;
+  onDeleteCustomCost: (costId: string) => void;
+  onAddUnit: (name: string) => void;
+  onDeleteUnit: (unitId: string) => void;
+  onRenameUnit: (unitId: string, newName: string) => void;
+  onUpdateUnitRentPrice: (unitId: string, rentPrice: number) => void;
+}
+
+function PricingSectionInput({
+  cost,
+  onUpdateCost,
+}: {
+  cost: CostItem;
+  onUpdateCost: (costId: string, amount: number, unitId?: string) => void;
+}) {
+  return (
+    <div className='flex items-center gap-2'>
+      <span className='text-foreground/50 text-sm'>$</span>
+      <Input
+        type='number'
+        placeholder='0'
+        variant='outline'
+        value={cost.amount || ''}
+        onChange={({ target: { value } }) =>
+          onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
+        }
+        className='max-w-32'
+        min='0'
+        step='0.01'
+        autoComplete='off'
+      />
+    </div>
+  );
+}
+
+export function PricingSection({
+  apartmentName,
+  units,
+  getCosts,
+  onUpdateCost,
+  onAddCustomCost,
+  onDeleteCustomCost,
+  onAddUnit,
+  onDeleteUnit,
+  onRenameUnit,
+  onUpdateUnitRentPrice,
+}: PricingSectionProps) {
+  const [isAddingCost, setIsAddingCost] = useState(false);
+  const [newCostLabel, setNewCostLabel] = useState('');
+  const [isAddingUnit, setIsAddingUnit] = useState(false);
+  const [newUnitName, setNewUnitName] = useState('');
+  const [selectedRentUnit, setSelectedRentUnit] = useState<string | undefined>(
+    undefined,
+  );
+  const [isManagingUnits, setIsManagingUnits] = useState(false);
+  const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
+  const [editingUnitName, setEditingUnitName] = useState('');
+
+  // Auto-select first unit when units are available
+  useEffect(() => {
+    if (units.length > 0 && !selectedRentUnit) {
+      setSelectedRentUnit(units[0].id);
+    } else if (units.length === 0) {
+      setSelectedRentUnit(undefined);
+    } else if (
+      selectedRentUnit &&
+      !units.find((u) => u.id === selectedRentUnit)
+    ) {
+      // Selected unit was deleted, select first available
+      setSelectedRentUnit(units[0]?.id);
+    }
+  }, [units, selectedRentUnit]);
+
+  const handleAddCost = () => {
+    if (newCostLabel.trim()) {
+      onAddCustomCost(newCostLabel.trim(), undefined); // All custom costs are building-wide
+      setNewCostLabel('');
+      setIsAddingCost(false);
+    }
+  };
+
+  const handleAddUnit = () => {
+    if (newUnitName.trim()) {
+      onAddUnit(newUnitName.trim());
+      setNewUnitName('');
+      setIsAddingUnit(false);
+    }
+  };
+
+  const handleStartEdit = (unitId: string, currentName: string) => {
+    setEditingUnitId(unitId);
+    setEditingUnitName(currentName);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingUnitId && editingUnitName.trim()) {
+      onRenameUnit(editingUnitId, editingUnitName.trim());
+      setEditingUnitId(null);
+      setEditingUnitName('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUnitId(null);
+    setEditingUnitName('');
+  };
+
+  const buildingCosts = getCosts();
+  const defaultFees = buildingCosts.filter((cost) => !cost.isCustom);
+  const customFees = buildingCosts.filter((cost) => cost.isCustom);
+
+  // Calculate total: building costs + rent from selected unit
+  const buildingTotal = buildingCosts.reduce(
+    (sum, cost) => sum + cost.amount,
+    0,
+  );
+  const selectedUnit = units.find((u) => u.id === selectedRentUnit);
+  const rentAmount = selectedUnit?.rentPrice || 0;
+  const totalMonthlyCost = buildingTotal + rentAmount;
+
+  return (
+    <div className='space-y-6'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-foreground/90 text-xl font-semibold'>
+          Pricing for {apartmentName}
+        </h2>
+        <div className='flex gap-2'>
+          {units.length > 0 && (
+            <Button
+              onClick={() => setIsManagingUnits(true)}
+              variant='outline'
+              size='sm'
+              className='inline-flex items-center'
+            >
+              <DotsVertical className='mr-1 h-3 w-3' />
+              Manage Units
+            </Button>
+          )}
+          <Button
+            onClick={() => setIsAddingUnit(true)}
+            variant='outline'
+            size='sm'
+            className='inline-flex items-center'
+            disabled={isAddingUnit}
+          >
+            <Plus className='mr-1 h-3 w-3' />
+            Add Unit
+          </Button>
+          <Button
+            onClick={() => setIsAddingCost(true)}
+            variant='outline'
+            size='sm'
+            className='inline-flex items-center'
+            disabled={isAddingCost}
+          >
+            <Plus className='mr-1 h-3 w-3' />
+            Add Custom Fee
+          </Button>
+        </div>
+      </div>
+
+      {isAddingUnit && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-3'>
+            <Input
+              placeholder='Unit name (e.g., "Unit 1A", "2nd Floor")'
+              variant='outline'
+              value={newUnitName}
+              onChange={({ target: { value } }) => setNewUnitName(value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newUnitName.trim()) {
+                  handleAddUnit();
+                }
+              }}
+            />
+            <div className='flex gap-2'>
+              <Button
+                onClick={handleAddUnit}
+                size='sm'
+                disabled={!newUnitName.trim()}
+              >
+                Add Unit
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAddingUnit(false);
+                  setNewUnitName('');
+                }}
+                variant='outline'
+                size='sm'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAddingCost && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-3'>
+            <Input
+              placeholder='Custom fee label (e.g., "HOA Fee", "Storage Unit")'
+              variant='outline'
+              value={newCostLabel}
+              onChange={({ target: { value } }) => setNewCostLabel(value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newCostLabel.trim()) {
+                  handleAddCost();
+                }
+              }}
+            />
+            <div className='flex gap-2'>
+              <Button
+                onClick={handleAddCost}
+                size='sm'
+                disabled={!newCostLabel.trim()}
+              >
+                Add Custom Fee
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAddingCost(false);
+                  setNewCostLabel('');
+                }}
+                variant='outline'
+                size='sm'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rent Section */}
+      <div className='space-y-3'>
+        <h3 className='text-foreground/90 text-lg font-semibold'>Rent</h3>
+
+        {units.length === 0 ? (
+          <div className='bg-muted/30 rounded-xl p-6 text-center'>
+            <div className='space-y-3'>
+              <p className='text-foreground/70 text-sm'>
+                Add a unit to track rent for specific apartments or floor plans.
+              </p>
+              <Button
+                onClick={() => setIsAddingUnit(true)}
+                variant='primary'
+                size='sm'
+                className='inline-flex items-center'
+              >
+                <Plus className='mr-1 h-3 w-3' />
+                Add Your First Unit
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className='flex min-h-8 flex-wrap gap-2'>
+              {/* min height prevents shifting when variant changes */}
+              {units.map((unit) => (
+                <Button
+                  key={unit.id}
+                  onClick={() => setSelectedRentUnit(unit.id)}
+                  variant={selectedRentUnit === unit.id ? 'primary' : 'outline'}
+                  size='sm'
+                >
+                  {unit.name}
+                </Button>
+              ))}
+            </div>
+
+            {selectedRentUnit && selectedUnit && (
+              <div className='bg-background flex items-center gap-3 rounded-xl p-3'>
+                <div className='flex-1'>
+                  <label className='text-foreground/90 text-sm font-medium'>
+                    Rent
+                    <span className='text-foreground/60 ml-1'>
+                      ({selectedUnit.name})
+                    </span>
+                  </label>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <span className='text-foreground/50 text-sm'>$</span>
+                  <Input
+                    type='number'
+                    placeholder='0'
+                    variant='outline'
+                    value={selectedUnit.rentPrice || ''}
+                    onChange={({ target: { value } }) =>
+                      onUpdateUnitRentPrice(
+                        selectedRentUnit,
+                        parseFloat(value) || 0,
+                      )
+                    }
+                    className='max-w-32'
+                    min='0'
+                    step='0.01'
+                    autoComplete='off'
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Default Fees Section */}
+      {defaultFees.length > 0 && (
+        <div className='space-y-3'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Default Fees
+          </h3>
+          {defaultFees.map((cost) => (
+            <div
+              key={cost.id}
+              className='bg-background flex items-center gap-3 rounded-xl p-3'
+            >
+              <div className='flex-1'>
+                <label className='text-foreground/90 text-sm font-medium'>
+                  {cost.label}
+                </label>
+              </div>
+              <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Custom Fees Section */}
+      {customFees.length > 0 && (
+        <div className='space-y-3'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Custom Fees
+          </h3>
+          {customFees.map((cost) => (
+            <div
+              key={cost.id}
+              className='bg-background flex items-center gap-3 rounded-xl p-3'
+            >
+              <div className='flex-1'>
+                <label className='text-foreground/90 text-sm font-medium'>
+                  {cost.label}
+                </label>
+              </div>
+              <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
+              <Button
+                onClick={() => onDeleteCustomCost(cost.id)}
+                variant='destructive'
+                size='sm'
+              >
+                <Trash className='h-4 w-4' />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Total Section */}
+      {(buildingCosts.length > 0 || units.length > 0) && (
+        <div className='bg-primary/10 flex items-center justify-between rounded-xl p-4'>
+          <span className='text-foreground/90 text-lg font-semibold'>
+            Total Monthly Cost
+          </span>
+          <span className='text-primary text-2xl font-bold'>
+            ${totalMonthlyCost.toFixed(2)}
+          </span>
+        </div>
+      )}
+
+      {/* Unit Management Modal */}
+      <Modal
+        isOpen={units.length > 0 && isManagingUnits}
+        onClose={() => setIsManagingUnits(false)}
+        title='Manage Units'
+      >
+        <div className='space-y-4'>
+          {units.length > 0 && (
+            <div className='space-y-2'>
+              {units.map((unit) => (
+                <div
+                  key={unit.id}
+                  className='bg-muted/30 flex items-center gap-3 rounded-xl p-3'
+                >
+                  {editingUnitId === unit.id ? (
+                    <>
+                      <Input
+                        value={editingUnitName}
+                        onChange={({ target: { value } }) =>
+                          setEditingUnitName(value)
+                        }
+                        variant='outline'
+                        className='flex-1'
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEdit();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEdit();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className='flex gap-1'>
+                        <Button
+                          onClick={handleSaveEdit}
+                          variant='outline'
+                          size='sm'
+                          disabled={!editingUnitName.trim()}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          onClick={handleCancelEdit}
+                          variant='outline'
+                          size='sm'
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleStartEdit(unit.id, unit.name)}
+                        className='text-foreground/90 hover:text-foreground flex-1 text-left font-medium transition-colors'
+                      >
+                        {unit.name}
+                      </button>
+                      <Button
+                        onClick={() => {
+                          onDeleteUnit(unit.id);
+                        }}
+                        variant='destructive'
+                        size='sm'
+                      >
+                        <Trash className='h-4 w-4' />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {units.length === 0 && (
+            <p className='text-foreground/60 py-4 text-center text-sm'>
+              No units added yet.
+            </p>
+          )}
+
+          <div className='flex justify-end pt-2'>
+            <Button
+              onClick={() => setIsManagingUnits(false)}
+              variant='outline'
+              size='sm'
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
 interface QuestionAssociationButtonProps {
   question: Question;
   apartments: Apartment[];
@@ -726,46 +1201,45 @@ export function QuestionAssociationButton({
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
-      <div className='bg-background w-full max-w-md rounded-2xl p-6 shadow-xl'>
-        <div className='space-y-4'>
-          <h3 className='text-foreground/90 text-lg font-semibold'>
-            Edit Apartment Associations
-          </h3>
-          <p className='text-foreground/60 text-sm'>
-            Select which apartments this question should appear for.
-          </p>
+    <Modal
+      isOpen={isEditing}
+      onClose={handleCancel}
+      title='Edit Apartment Associations'
+    >
+      <div className='space-y-4'>
+        <p className='text-foreground/60 text-sm'>
+          Select which apartments this question should appear for.
+        </p>
 
-          <Form
-            initialData={formData}
-            form={[
-              checkboxGroup({
-                name: 'associatedApartments',
-                label: 'Associate...',
-                description:
-                  'If no apartments are selected, this question will be deleted.',
-                selectAll: true,
-                options: apartments.map((apartment) => ({
-                  value: apartment.id,
-                  label: apartment.name,
-                })),
-              }),
-            ]}
-            onDataChange={(data) => {
-              setFormData(data);
-            }}
-          />
+        <Form
+          initialData={formData}
+          form={[
+            checkboxGroup({
+              name: 'associatedApartments',
+              label: 'Associate...',
+              description:
+                'If no apartments are selected, this question will be deleted.',
+              selectAll: true,
+              options: apartments.map((apartment) => ({
+                value: apartment.id,
+                label: apartment.name,
+              })),
+            }),
+          ]}
+          onDataChange={(data) => {
+            setFormData(data);
+          }}
+        />
 
-          <div className='flex gap-2 pt-2'>
-            <Button onClick={handleSave} size='sm'>
-              Save
-            </Button>
-            <Button onClick={handleCancel} variant='outline' size='sm'>
-              Cancel
-            </Button>
-          </div>
+        <div className='flex gap-2 pt-2'>
+          <Button onClick={handleSave} size='sm'>
+            Save
+          </Button>
+          <Button onClick={handleCancel} variant='outline' size='sm'>
+            Cancel
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

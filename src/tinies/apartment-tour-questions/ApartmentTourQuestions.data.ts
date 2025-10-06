@@ -1,4 +1,14 @@
-import { Question } from './ApartmentTourQuestions.types';
+import { Question, CostItem } from './ApartmentTourQuestions.types';
+
+// Building-wide default cost categories (not associated with units)
+// Note: Rent is handled separately and can be unit-specific
+export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
+  { label: 'Water', isCustom: false },
+  { label: 'Electricity', isCustom: false },
+  { label: 'Gas', isCustom: false },
+  { label: 'Pet Fee', isCustom: false },
+  { label: 'Parking', isCustom: false },
+];
 
 export const QUESTIONS: Question[] = [
   // Building & Location

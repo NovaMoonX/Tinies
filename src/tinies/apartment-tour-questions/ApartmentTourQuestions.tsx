@@ -15,6 +15,7 @@ import {
   ApartmentSelector,
   FollowUpSection,
   NoteSection,
+  PricingSection,
   QuestionAssociationButton,
 } from './ApartmentTourQuestions.components';
 import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
@@ -42,6 +43,15 @@ export function ApartmentTourQuestions() {
     addCustomLink,
     deleteCustomLink,
     getApartment,
+    getCosts,
+    updateCost,
+    addCustomCost,
+    deleteCustomCost,
+    addUnit,
+    deleteUnit,
+    getUnits,
+    renameUnit,
+    updateUnitRentPrice,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(() => {
@@ -171,6 +181,7 @@ export function ApartmentTourQuestions() {
             variant='underline'
             tabsList={[
               { value: 'details', label: '🏠 Details' },
+              { value: 'pricing', label: '💰 Pricing' },
               { value: 'questions', label: '❓ Questions' },
               { value: 'notes', label: '📝 Notes' },
               { value: 'followups', label: '📋 Follow-ups' },
@@ -192,6 +203,40 @@ export function ApartmentTourQuestions() {
                     }
                   />
                 )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value='pricing'>
+              <div className='pt-6'>
+                <PricingSection
+                  apartmentName={
+                    apartments.find((a) => a.id === selectedApartment)?.name ||
+                    ''
+                  }
+                  units={getUnits(selectedApartment)}
+                  getCosts={(unitId) => getCosts(selectedApartment, unitId)}
+                  onUpdateCost={(costId, amount) =>
+                    updateCost(selectedApartment, costId, amount)
+                  }
+                  onAddCustomCost={(label, unitId) =>
+                    addCustomCost(selectedApartment, label, unitId)
+                  }
+                  onDeleteCustomCost={(costId) =>
+                    deleteCustomCost(selectedApartment, costId)
+                  }
+                  onAddUnit={(name) => {
+                    addUnit(selectedApartment, name);
+                  }}
+                  onDeleteUnit={(unitId) =>
+                    deleteUnit(selectedApartment, unitId)
+                  }
+                  onRenameUnit={(unitId, newName) =>
+                    renameUnit(unitId, newName)
+                  }
+                  onUpdateUnitRentPrice={(unitId, rentPrice) =>
+                    updateUnitRentPrice(unitId, rentPrice)
+                  }
+                />
               </div>
             </TabsContent>
 
