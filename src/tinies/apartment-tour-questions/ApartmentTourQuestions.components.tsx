@@ -1228,16 +1228,14 @@ export function PricingSection({
       )}
 
       {/* One-Time Total Section */}
-      {totalOneTimeCost > 0 && (
-        <div className='bg-secondary/10 flex items-center justify-between rounded-xl p-4'>
-          <span className='text-foreground/90 text-lg font-semibold'>
-            Total One-Time Costs
-          </span>
-          <span className='text-secondary text-2xl font-bold'>
-            ${totalOneTimeCost.toFixed(2)}
-          </span>
-        </div>
-      )}
+      <div className='bg-muted/50 flex items-center justify-between rounded-xl p-4'>
+        <span className='text-foreground/90 text-lg font-semibold'>
+          Total One-Time Costs
+        </span>
+        <span className='text-foreground/80 text-2xl font-bold'>
+          ${totalOneTimeCost.toFixed(2)}
+        </span>
+      </div>
 
       {/* Unit Management Modal */}
       <Modal

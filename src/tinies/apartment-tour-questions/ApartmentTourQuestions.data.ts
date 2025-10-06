@@ -6,6 +6,8 @@ export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
   { label: 'Water', isCustom: false },
   { label: 'Electricity', isCustom: false },
   { label: 'Gas', isCustom: false },
+  { label: 'Internet', isCustom: false },
+  { label: 'Trash', isCustom: false },
   { label: 'Pet Fee', isCustom: false },
   { label: 'Parking', isCustom: false },
 ];
@@ -37,28 +39,25 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
     category: 'Pricing & Lease Terms',
     question: 'What are the lease term lengths available?',
   },
-
+  
   // Building & Security
   {
     category: 'Building & Security',
-    question:
-      "What are the building's security features? Is there controlled access, security cameras, or on-site security?",
+    question: "What are the building's security features? Is there controlled access, security cameras, or on-site security?",
   },
   {
     category: 'Building & Security',
     question: "What are the building's policies on noise and quiet hours?",
   },
-
-  // Parking
-  {
-    category: 'Parking',
+    {
+    category: 'Building & Security',
     question: 'Is there assigned or unassigned parking?',
   },
   {
-    category: 'Parking',
+    category: 'Building & Security',
     question: 'How does guest access and parking work?',
   },
-
+  
   // Amenities & Services
   {
     category: 'Amenities & Services',
@@ -76,12 +75,11 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
     category: 'Amenities & Services',
     question: 'What are the hours for all amenities?',
   },
-
+  
   // Apartment Condition
   {
     category: 'Apartment Condition',
-    question:
-      'Are there any current maintenance issues that need to be addressed?',
+    question: 'Are there any current maintenance issues that need to be addressed?',
   },
   {
     category: 'Apartment Condition',
@@ -103,33 +101,29 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
     category: 'Apartment Condition',
     question: 'Is there sufficient storage space (closets, cabinets)?',
   },
-  {
+    {
     category: 'Apartment Condition',
     question: 'When was the apartment last renovated or updated?',
   },
   {
     category: 'Apartment Condition',
-    question:
-      'Do all appliances work properly (stove, refrigerator, dishwasher, etc.)?',
+    question: 'Do all appliances work properly (stove, refrigerator, dishwasher, etc.)?',
   },
-
+  
   // Utilities & Services
   {
     category: 'Utilities & Services',
-    question:
-      'Is internet/cable included or available? What providers service the building?',
+    question: 'Is internet/cable included or available? What providers service the building?',
   },
   {
     category: 'Utilities & Services',
-    question:
-      'Is there air conditioning and heating? What type and who controls it?',
+    question: 'Is there air conditioning and heating? What type and who controls it?',
   },
   {
     category: 'Utilities & Services',
-    question:
-      'Is laundry available? Is it in-unit, in the building, or off-site?',
+    question: 'Is laundry available? Is it in-unit, in the building, or off-site?',
   },
-
+  
   // Management & Maintenance
   {
     category: 'Management & Maintenance',
@@ -137,8 +131,7 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     category: 'Management & Maintenance',
-    question:
-      'Are there any upcoming renovations or construction planned for the building?',
+    question: 'Are there any upcoming renovations or construction planned for the building?',
   },
   {
     category: 'Management & Maintenance',
@@ -148,7 +141,7 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
     category: 'Management & Maintenance',
     question: 'Who do I contact for maintenance issues or emergencies?',
   },
-
+  
   // Policies & Rules
   {
     category: 'Policies & Rules',
@@ -164,14 +157,13 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     category: 'Policies & Rules',
-    question:
-      'What is the pet policy (allowed pets, size/breed restrictions, fees)?',
+    question: 'What is the pet policy (allowed pets, size/breed restrictions, fees)?',
   },
   {
     category: 'Policies & Rules',
     question: 'What is the smoking policy for the building and unit?',
   },
-
+  
   // Location & Transportation
   {
     category: 'Location & Transportation',
@@ -179,8 +171,7 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     category: 'Location & Transportation',
-    question:
-      'How close is the apartment to grocery stores and other shopping areas?',
+    question: 'How close is the apartment to grocery stores and other shopping areas?',
   },
   {
     category: 'Location & Transportation',
