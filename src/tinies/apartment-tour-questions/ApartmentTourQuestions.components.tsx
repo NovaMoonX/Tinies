@@ -566,6 +566,68 @@ export function ApartmentDetailsSection({
           </div>
         </div>
 
+        {/* Phone Number */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Phone Number
+          </label>
+
+          <div className='flex items-center gap-1'>
+            <div className='flex-1'>
+              <Input
+                placeholder='(555) 123-4567'
+                variant='outline'
+                value={apartment.phoneNumber || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateDetails({ phoneNumber: value })
+                }
+              />
+            </div>
+            {apartment.phoneNumber && (
+              <Button
+                href={`tel:${apartment.phoneNumber}`}
+                variant='tertiary'
+                size='fitted'
+                className='p-1'
+                title='Call this number'
+              >
+                <ExternalLink size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className='text-foreground/70 mb-2 block text-sm font-medium'>
+            Email
+          </label>
+
+          <div className='flex items-center gap-1'>
+            <div className='flex-1'>
+              <Input
+                placeholder='contact@example.com'
+                variant='outline'
+                value={apartment.email || ''}
+                onChange={({ target: { value } }) =>
+                  onUpdateDetails({ email: value })
+                }
+              />
+            </div>
+            {apartment.email && (
+              <Button
+                href={`mailto:${apartment.email}`}
+                variant='tertiary'
+                size='fitted'
+                className='p-1'
+                title='Send email'
+              >
+                <ExternalLink size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+
         {/* Custom Links */}
         <div>
           <div className='mb-2 flex items-center justify-between'>
