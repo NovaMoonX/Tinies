@@ -509,36 +509,11 @@ export function useApartmentTourData() {
     });
   };
 
-  const addUnitCosts = (apartmentId: string, unitId: string) => {
-    setCosts((prev) => {
-      const existing = prev.find((c) => c.apartmentId === apartmentId);
-
-      // Only add "Rent" for units, not all the default categories
-      const unitCosts: CostItem[] = [
-        {
-          id: `unit-${unitId}-rent`,
-          label: 'Rent',
-          amount: 0,
-          isCustom: false,
-          unitId,
-        },
-      ];
-
-      if (existing) {
-        return prev.map((c) =>
-          c.apartmentId === apartmentId
-            ? { ...c, costs: [...c.costs, ...unitCosts] }
-            : c,
-        );
-      }
-      
-      const newApartmentCost: ApartmentCost = {
-        apartmentId,
-        costs: unitCosts,
-      };
-
-      return [...prev, newApartmentCost];
-    });
+  // This function is no longer needed since rent is now stored on the Unit object
+  // Keeping it for backward compatibility but it does nothing
+  const addUnitCosts = () => {
+    // Rent is now stored directly on the Unit object via rentPrice
+    // Custom costs can still be added via addCustomCost
   };
 
   const deleteCustomCost = (apartmentId: string, costId: string) => {
@@ -604,6 +579,14 @@ export function useApartmentTourData() {
     );
   };
 
+  const updateUnitRentPrice = (unitId: string, rentPrice: number) => {
+    setUnits((prev) =>
+      prev.map((unit) =>
+        unit.id === unitId ? { ...unit, rentPrice } : unit,
+      ),
+    );
+  };
+
   return {
     allQuestions,
     customQuestions,
@@ -639,5 +622,6 @@ export function useApartmentTourData() {
     getUnits,
     addUnitCosts,
     renameUnit,
+    updateUnitRentPrice,
   };
 }

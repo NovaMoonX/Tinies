@@ -50,8 +50,8 @@ export function ApartmentTourQuestions() {
     addUnit,
     deleteUnit,
     getUnits,
-    addUnitCosts,
     renameUnit,
+    updateUnitRentPrice,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(() => {
@@ -225,14 +225,16 @@ export function ApartmentTourQuestions() {
                     deleteCustomCost(selectedApartment, costId)
                   }
                   onAddUnit={(name) => {
-                    const unitId = addUnit(selectedApartment, name);
-                    addUnitCosts(selectedApartment, unitId);
+                    addUnit(selectedApartment, name);
                   }}
                   onDeleteUnit={(unitId) =>
                     deleteUnit(selectedApartment, unitId)
                   }
                   onRenameUnit={(unitId, newName) =>
                     renameUnit(unitId, newName)
+                  }
+                  onUpdateUnitRentPrice={(unitId, rentPrice) =>
+                    updateUnitRentPrice(unitId, rentPrice)
                   }
                 />
               </div>

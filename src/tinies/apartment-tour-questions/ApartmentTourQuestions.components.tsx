@@ -676,6 +676,7 @@ interface PricingSectionProps {
   onAddUnit: (name: string) => void;
   onDeleteUnit: (unitId: string) => void;
   onRenameUnit: (unitId: string, newName: string) => void;
+  onUpdateUnitRentPrice: (unitId: string, rentPrice: number) => void;
 }
 
 function PricingSectionInput({
@@ -715,6 +716,7 @@ export function PricingSection({
   onAddUnit,
   onDeleteUnit,
   onRenameUnit,
+  onUpdateUnitRentPrice,
 }: PricingSectionProps) {
   const [isAddingCost, setIsAddingCost] = useState(false);
   const [newCostLabel, setNewCostLabel] = useState('');
@@ -777,14 +779,14 @@ export function PricingSection({
   };
 
   const buildingCosts = getCosts();
-  const nonRentFees = buildingCosts.filter((cost) => cost.label !== 'Rent');
-  const defaultFees = nonRentFees.filter((cost) => !cost.isCustom);
-  const customFees = nonRentFees.filter((cost) => cost.isCustom);
+  const defaultFees = buildingCosts.filter((cost) => !cost.isCustom);
+  const customFees = buildingCosts.filter((cost) => cost.isCustom);
 
-  const rentCosts = getCosts(selectedRentUnit).filter((cost) => cost.label === 'Rent')
-
-  const allCosts = [...buildingCosts, ...rentCosts];
-  const totalMonthlyCost = allCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  // Calculate total: building costs + rent from selected unit
+  const buildingTotal = buildingCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  const selectedUnit = units.find((u) => u.id === selectedRentUnit);
+  const rentAmount = selectedUnit?.rentPrice || 0;
+  const totalMonthlyCost = buildingTotal + rentAmount;
 
   return (
     <div className='space-y-6'>
@@ -931,24 +933,36 @@ export function PricingSection({
               ))}
             </div>
 
-            {rentCosts.map((cost) => (
+            {selectedRentUnit && selectedUnit && (
               <div
-                key={cost.id}
                 className='bg-background flex items-center gap-3 rounded-xl p-3'
               >
                 <div className='flex-1'>
                   <label className='text-foreground/90 text-sm font-medium'>
-                    {cost.label}
-                    {selectedRentUnit && (
-                      <span className='text-foreground/60 ml-1'>
-                        ({units.find((u) => u.id === selectedRentUnit)?.name})
-                      </span>
-                    )}
+                    Rent
+                    <span className='text-foreground/60 ml-1'>
+                      ({selectedUnit.name})
+                    </span>
                   </label>
                 </div>
-                <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
+                <div className='flex items-center gap-2'>
+                  <span className='text-foreground/50 text-sm'>$</span>
+                  <Input
+                    type='number'
+                    placeholder='0'
+                    variant='outline'
+                    value={selectedUnit.rentPrice || ''}
+                    onChange={({ target: { value } }) =>
+                      onUpdateUnitRentPrice(selectedRentUnit, parseFloat(value) || 0)
+                    }
+                    className='max-w-32'
+                    min='0'
+                    step='0.01'
+                    autoComplete='off'
+                  />
+                </div>
               </div>
-            ))}
+            )}
           </>
         )}
       </div>
@@ -1005,7 +1019,7 @@ export function PricingSection({
       )}
 
       {/* Total Section */}
-      {allCosts.length > 0 && (
+      {(buildingCosts.length > 0 || units.length > 0) && (
         <div className='bg-primary/10 flex items-center justify-between rounded-xl p-4'>
           <span className='text-foreground/90 text-lg font-semibold'>
             Total Monthly Cost

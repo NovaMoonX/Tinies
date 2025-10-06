@@ -16,6 +16,7 @@ export interface Unit {
   id: string;
   name: string;
   apartmentId: string;
+  rentPrice?: number;
 }
 
 export interface Apartment {
