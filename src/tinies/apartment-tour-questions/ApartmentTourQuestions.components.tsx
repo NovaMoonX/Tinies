@@ -734,6 +734,7 @@ interface PricingSectionProps {
   getCosts: (unitId?: string) => CostItem[];
   onUpdateCost: (costId: string, amount: number) => void;
   onAddCustomCost: (label: string, unitId?: string) => void;
+  onAddCustomOneTimeFee: (label: string) => void;
   onDeleteCustomCost: (costId: string) => void;
   onAddUnit: (name: string) => void;
   onDeleteUnit: (unitId: string) => void;
@@ -774,6 +775,7 @@ export function PricingSection({
   getCosts,
   onUpdateCost,
   onAddCustomCost,
+  onAddCustomOneTimeFee,
   onDeleteCustomCost,
   onAddUnit,
   onDeleteUnit,
@@ -782,6 +784,8 @@ export function PricingSection({
 }: PricingSectionProps) {
   const [isAddingCost, setIsAddingCost] = useState(false);
   const [newCostLabel, setNewCostLabel] = useState('');
+  const [isAddingOneTimeFee, setIsAddingOneTimeFee] = useState(false);
+  const [newOneTimeFeeLabel, setNewOneTimeFeeLabel] = useState('');
   const [isAddingUnit, setIsAddingUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
   const [selectedRentUnit, setSelectedRentUnit] = useState<string | undefined>(
@@ -814,6 +818,14 @@ export function PricingSection({
     }
   };
 
+  const handleAddOneTimeFee = () => {
+    if (newOneTimeFeeLabel.trim()) {
+      onAddCustomOneTimeFee(newOneTimeFeeLabel.trim());
+      setNewOneTimeFeeLabel('');
+      setIsAddingOneTimeFee(false);
+    }
+  };
+
   const handleAddUnit = () => {
     if (newUnitName.trim()) {
       onAddUnit(newUnitName.trim());
@@ -841,17 +853,28 @@ export function PricingSection({
   };
 
   const buildingCosts = getCosts();
-  const defaultFees = buildingCosts.filter((cost) => !cost.isCustom);
-  const customFees = buildingCosts.filter((cost) => cost.isCustom);
 
-  // Calculate total: building costs + rent from selected unit
-  const buildingTotal = buildingCosts.reduce(
+  // Separate monthly costs from one-time fees
+  const monthlyCosts = buildingCosts.filter((cost) => !cost.isOneTime);
+  const oneTimeFees = buildingCosts.filter((cost) => cost.isOneTime);
+
+  // Separate default and custom for each category
+  const defaultMonthlyCosts = monthlyCosts.filter((cost) => !cost.isCustom);
+  const customMonthlyCosts = monthlyCosts.filter((cost) => cost.isCustom);
+  const defaultOneTimeFees = oneTimeFees.filter((cost) => !cost.isCustom);
+  const customOneTimeFees = oneTimeFees.filter((cost) => cost.isCustom);
+
+  // Calculate monthly total: monthly costs + rent from selected unit
+  const monthlyTotal = monthlyCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  const selectedUnit = units.find((u) => u.id === selectedRentUnit);
+  const rentAmount = selectedUnit?.rentPrice || 0;
+  const totalMonthlyCost = monthlyTotal + rentAmount;
+
+  // Calculate one-time total
+  const totalOneTimeCost = oneTimeFees.reduce(
     (sum, cost) => sum + cost.amount,
     0,
   );
-  const selectedUnit = units.find((u) => u.id === selectedRentUnit);
-  const rentAmount = selectedUnit?.rentPrice || 0;
-  const totalMonthlyCost = buildingTotal + rentAmount;
 
   return (
     <div className='space-y-6'>
@@ -889,7 +912,17 @@ export function PricingSection({
             disabled={isAddingCost}
           >
             <Plus className='mr-1 h-3 w-3' />
-            Add Custom Fee
+            Add Monthly Fee
+          </Button>
+          <Button
+            onClick={() => setIsAddingOneTimeFee(true)}
+            variant='outline'
+            size='sm'
+            className='inline-flex items-center'
+            disabled={isAddingOneTimeFee}
+          >
+            <Plus className='mr-1 h-3 w-3' />
+            Add One-Time Fee
           </Button>
         </div>
       </div>
@@ -936,7 +969,7 @@ export function PricingSection({
         <div className='bg-background rounded-xl p-4'>
           <div className='space-y-3'>
             <Input
-              placeholder='Custom fee label (e.g., "HOA Fee", "Storage Unit")'
+              placeholder='Monthly fee label (e.g., "HOA Fee", "Storage Unit")'
               variant='outline'
               value={newCostLabel}
               onChange={({ target: { value } }) => setNewCostLabel(value)}
@@ -953,12 +986,50 @@ export function PricingSection({
                 size='sm'
                 disabled={!newCostLabel.trim()}
               >
-                Add Custom Fee
+                Add Monthly Fee
               </Button>
               <Button
                 onClick={() => {
                   setIsAddingCost(false);
                   setNewCostLabel('');
+                }}
+                variant='outline'
+                size='sm'
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isAddingOneTimeFee && (
+        <div className='bg-background rounded-xl p-4'>
+          <div className='space-y-3'>
+            <Input
+              placeholder='One-time fee label (e.g., "Security Deposit", "Pet Fee")'
+              variant='outline'
+              value={newOneTimeFeeLabel}
+              onChange={({ target: { value } }) => setNewOneTimeFeeLabel(value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newOneTimeFeeLabel.trim()) {
+                  handleAddOneTimeFee();
+                }
+              }}
+            />
+            <div className='flex gap-2'>
+              <Button
+                onClick={handleAddOneTimeFee}
+                size='sm'
+                disabled={!newOneTimeFeeLabel.trim()}
+              >
+                Add One-Time Fee
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsAddingOneTimeFee(false);
+                  setNewOneTimeFeeLabel('');
                 }}
                 variant='outline'
                 size='sm'
@@ -1042,13 +1113,13 @@ export function PricingSection({
         )}
       </div>
 
-      {/* Default Fees Section */}
-      {defaultFees.length > 0 && (
+      {/* Default Monthly Fees Section */}
+      {defaultMonthlyCosts.length > 0 && (
         <div className='space-y-3'>
           <h3 className='text-foreground/90 text-lg font-semibold'>
-            Default Fees
+            Monthly Fees
           </h3>
-          {defaultFees.map((cost) => (
+          {defaultMonthlyCosts.map((cost) => (
             <div
               key={cost.id}
               className='bg-background flex items-center gap-3 rounded-xl p-3'
@@ -1064,13 +1135,13 @@ export function PricingSection({
         </div>
       )}
 
-      {/* Custom Fees Section */}
-      {customFees.length > 0 && (
+      {/* Custom Monthly Fees Section */}
+      {customMonthlyCosts.length > 0 && (
         <div className='space-y-3'>
           <h3 className='text-foreground/90 text-lg font-semibold'>
-            Custom Fees
+            Custom Monthly Fees
           </h3>
-          {customFees.map((cost) => (
+          {customMonthlyCosts.map((cost) => (
             <div
               key={cost.id}
               className='bg-background flex items-center gap-3 rounded-xl p-3'
@@ -1093,7 +1164,7 @@ export function PricingSection({
         </div>
       )}
 
-      {/* Total Section */}
+      {/* Monthly Total Section */}
       {(buildingCosts.length > 0 || units.length > 0) && (
         <div className='bg-primary/10 flex items-center justify-between rounded-xl p-4'>
           <span className='text-foreground/90 text-lg font-semibold'>
@@ -1104,6 +1175,67 @@ export function PricingSection({
           </span>
         </div>
       )}
+
+      {/* Default One-Time Fees Section */}
+      {defaultOneTimeFees.length > 0 && (
+        <div className='space-y-3'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            One-Time Fees
+          </h3>
+          {defaultOneTimeFees.map((cost) => (
+            <div
+              key={cost.id}
+              className='bg-background flex items-center gap-3 rounded-xl p-3'
+            >
+              <div className='flex-1'>
+                <label className='text-foreground/90 text-sm font-medium'>
+                  {cost.label}
+                </label>
+              </div>
+              <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Custom One-Time Fees Section */}
+      {customOneTimeFees.length > 0 && (
+        <div className='space-y-3'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Custom One-Time Fees
+          </h3>
+          {customOneTimeFees.map((cost) => (
+            <div
+              key={cost.id}
+              className='bg-background flex items-center gap-3 rounded-xl p-3'
+            >
+              <div className='flex-1'>
+                <label className='text-foreground/90 text-sm font-medium'>
+                  {cost.label}
+                </label>
+              </div>
+              <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
+              <Button
+                onClick={() => onDeleteCustomCost(cost.id)}
+                variant='destructive'
+                size='sm'
+              >
+                <Trash className='h-4 w-4' />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* One-Time Total Section */}
+      <div className='bg-muted/50 flex items-center justify-between rounded-xl p-4'>
+        <span className='text-foreground/90 text-lg font-semibold'>
+          Total One-Time Costs
+        </span>
+        <span className='text-foreground/80 text-2xl font-bold'>
+          ${totalOneTimeCost.toFixed(2)}
+        </span>
+      </div>
 
       {/* Unit Management Modal */}
       <Modal

@@ -46,6 +46,7 @@ export function ApartmentTourQuestions() {
     getCosts,
     updateCost,
     addCustomCost,
+    addCustomOneTimeFee,
     deleteCustomCost,
     addUnit,
     deleteUnit,
@@ -220,6 +221,9 @@ export function ApartmentTourQuestions() {
                   }
                   onAddCustomCost={(label, unitId) =>
                     addCustomCost(selectedApartment, label, unitId)
+                  }
+                  onAddCustomOneTimeFee={(label) =>
+                    addCustomOneTimeFee(selectedApartment, label)
                   }
                   onDeleteCustomCost={(costId) =>
                     deleteCustomCost(selectedApartment, costId)

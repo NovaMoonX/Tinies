@@ -6,205 +6,180 @@ export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
   { label: 'Water', isCustom: false },
   { label: 'Electricity', isCustom: false },
   { label: 'Gas', isCustom: false },
+  { label: 'Internet', isCustom: false },
+  { label: 'Trash', isCustom: false },
   { label: 'Pet Fee', isCustom: false },
   { label: 'Parking', isCustom: false },
 ];
 
-export const QUESTIONS: Question[] = [
-  // Building & Location
+// Default one-time fees (paid once, not monthly)
+export const DEFAULT_ONE_TIME_FEES: Omit<CostItem, 'id' | 'amount'>[] = [
+  { label: 'Security Deposit', isCustom: false, isOneTime: true },
+  { label: 'Application Fee', isCustom: false, isOneTime: true },
+  { label: 'Admin Fee', isCustom: false, isOneTime: true },
+  { label: 'Pet Deposit', isCustom: false, isOneTime: true },
+  { label: 'Key Fee', isCustom: false, isOneTime: true },
+];
+
+const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
+  // Pricing & Lease Terms
   {
-    id: 'q1',
-    category: 'Building & Location',
-    question: 'What is the rent amount and what does it include (utilities, parking, etc.)?',
+    category: 'Pricing & Lease Terms',
+    question: 'What is included in the rent?',
   },
   {
-    id: 'q2',
-    category: 'Building & Location',
-    question: 'What is the security deposit amount and is it refundable?',
+    category: 'Pricing & Lease Terms',
+    question: 'Are any fees refundable (i.e. security deposit)?',
   },
   {
-    id: 'q3',
-    category: 'Building & Location',
-    question: 'When is rent due each month and what payment methods are accepted?',
+    category: 'Pricing & Lease Terms',
+    question: 'Are there any move-in specials or promotions?',
   },
   {
-    id: 'q4',
-    category: 'Building & Location',
-    question: 'Are there any additional fees (pet fees, amenity fees, parking fees)?',
+    category: 'Pricing & Lease Terms',
+    question: 'What are the lease term lengths available?',
+  },
+  
+  // Building & Security
+  {
+    category: 'Building & Security',
+    question: "What are the building's security features? Is there controlled access, security cameras, or on-site security?",
   },
   {
-    id: 'q5',
-    category: 'Building & Location',
-    question: 'What is the lease term and are there options for renewal?',
+    category: 'Building & Security',
+    question: "What are the building's policies on noise and quiet hours?",
+  },
+    {
+    category: 'Building & Security',
+    question: 'Is there assigned or unassigned parking?',
   },
   {
-    id: 'q6',
-    category: 'Building & Location',
-    question: 'Is there a penalty for breaking the lease early?',
+    category: 'Building & Security',
+    question: 'How does guest access and parking work?',
+  },
+  
+  // Amenities & Services
+  {
+    category: 'Amenities & Services',
+    question: 'What is the process for getting packages or mail?',
   },
   {
-    id: 'q7',
-    category: 'Building & Location',
-    question: 'What are the quiet hours and noise policies?',
+    category: 'Amenities & Services',
+    question: 'How is trash and recycling handled? How to handle bulk items?',
   },
   {
-    id: 'q8',
-    category: 'Building & Location',
-    question: 'Is the neighborhood safe? Are there recent crime statistics?',
+    category: 'Amenities & Services',
+    question: 'What size is the gym and what equipment is available?',
   },
   {
-    id: 'q9',
-    category: 'Building & Location',
-    question: 'How close is public transportation, grocery stores, and other amenities?',
+    category: 'Amenities & Services',
+    question: 'What are the hours for all amenities?',
   },
   
   // Apartment Condition
   {
-    id: 'q10',
     category: 'Apartment Condition',
     question: 'Are there any current maintenance issues that need to be addressed?',
   },
   {
-    id: 'q11',
     category: 'Apartment Condition',
-    question: 'When was the apartment last renovated or updated?',
+    question: 'What is the size of the fridge/freezer?',
   },
   {
-    id: 'q12',
-    category: 'Apartment Condition',
-    question: 'Do all appliances work properly (stove, refrigerator, dishwasher, etc.)?',
-  },
-  {
-    id: 'q13',
     category: 'Apartment Condition',
     question: 'Is there adequate water pressure in the shower and sinks?',
   },
   {
-    id: 'q14',
     category: 'Apartment Condition',
     question: 'Are there any signs of pests, mold, or water damage?',
   },
   {
-    id: 'q15',
     category: 'Apartment Condition',
     question: 'Do all windows and doors close and lock properly?',
   },
   {
-    id: 'q16',
     category: 'Apartment Condition',
     question: 'Is there sufficient storage space (closets, cabinets)?',
+  },
+    {
+    category: 'Apartment Condition',
+    question: 'When was the apartment last renovated or updated?',
+  },
+  {
+    category: 'Apartment Condition',
+    question: 'Do all appliances work properly (stove, refrigerator, dishwasher, etc.)?',
   },
   
   // Utilities & Services
   {
-    id: 'q17',
-    category: 'Utilities & Services',
-    question: 'What utilities am I responsible for paying?',
-  },
-  {
-    id: 'q18',
-    category: 'Utilities & Services',
-    question: 'What is the average monthly cost for utilities?',
-  },
-  {
-    id: 'q19',
     category: 'Utilities & Services',
     question: 'Is internet/cable included or available? What providers service the building?',
   },
   {
-    id: 'q20',
     category: 'Utilities & Services',
     question: 'Is there air conditioning and heating? What type and who controls it?',
   },
   {
-    id: 'q21',
     category: 'Utilities & Services',
     question: 'Is laundry available? Is it in-unit, in the building, or off-site?',
-  },
-  {
-    id: 'q22',
-    category: 'Utilities & Services',
-    question: 'Are trash and recycling services provided? Where are the bins located?',
-  },
-  
-  // Policies & Rules
-  {
-    id: 'q23',
-    category: 'Policies & Rules',
-    question: 'What is the pet policy (allowed pets, size/breed restrictions, fees)?',
-  },
-  {
-    id: 'q24',
-    category: 'Policies & Rules',
-    question: 'Are guests allowed to stay overnight? Are there visitor parking spots?',
-  },
-  {
-    id: 'q25',
-    category: 'Policies & Rules',
-    question: 'Can I make modifications (paint walls, install shelves, etc.)?',
-  },
-  {
-    id: 'q26',
-    category: 'Policies & Rules',
-    question: 'Is subletting allowed if I need to move before the lease ends?',
-  },
-  {
-    id: 'q27',
-    category: 'Policies & Rules',
-    question: 'What is the smoking policy for the building and unit?',
-  },
-  
-  // Building Amenities
-  {
-    id: 'q28',
-    category: 'Building Amenities',
-    question: 'What amenities are available (gym, pool, rooftop, etc.)?',
-  },
-  {
-    id: 'q29',
-    category: 'Building Amenities',
-    question: 'Is parking available? Is it included in rent or an additional cost?',
-  },
-  {
-    id: 'q30',
-    category: 'Building Amenities',
-    question: 'Is there secure package delivery or a mailroom?',
-  },
-  {
-    id: 'q31',
-    category: 'Building Amenities',
-    question: 'What security features are in place (cameras, security staff, key fob access)?',
-  },
-  {
-    id: 'q32',
-    category: 'Building Amenities',
-    question: 'Is there bike storage available?',
   },
   
   // Management & Maintenance
   {
-    id: 'q33',
+    category: 'Management & Maintenance',
+    question: 'What is the policy for emergency repairs?',
+  },
+  {
+    category: 'Management & Maintenance',
+    question: 'Are there any upcoming renovations or construction planned for the building?',
+  },
+  {
     category: 'Management & Maintenance',
     question: 'How quickly does maintenance respond to repair requests?',
   },
   {
-    id: 'q34',
-    category: 'Management & Maintenance',
-    question: 'Is there 24/7 emergency maintenance available?',
-  },
-  {
-    id: 'q35',
     category: 'Management & Maintenance',
     question: 'Who do I contact for maintenance issues or emergencies?',
   },
+  
+  // Policies & Rules
   {
-    id: 'q36',
-    category: 'Management & Maintenance',
-    question: 'How often does the landlord or management conduct inspections?',
+    category: 'Policies & Rules',
+    question: 'What is the early-termination process and fee?',
   },
   {
-    id: 'q37',
-    category: 'Management & Maintenance',
-    question: 'Are there any planned renovations or construction that might cause disruption?',
+    category: 'Policies & Rules',
+    question: "What is the department's policy on subletting?",
+  },
+  {
+    category: 'Policies & Rules',
+    question: 'What is the policy on holes in the wall?',
+  },
+  {
+    category: 'Policies & Rules',
+    question: 'What is the pet policy (allowed pets, size/breed restrictions, fees)?',
+  },
+  {
+    category: 'Policies & Rules',
+    question: 'What is the smoking policy for the building and unit?',
+  },
+  
+  // Location & Transportation
+  {
+    category: 'Location & Transportation',
+    question: 'What is public transportation like in the area?',
+  },
+  {
+    category: 'Location & Transportation',
+    question: 'How close is the apartment to grocery stores and other shopping areas?',
+  },
+  {
+    category: 'Location & Transportation',
+    question: 'Is there areas to go for walks or runs nearby?',
   },
 ];
+
+export const QUESTIONS = BASE_QUESTIONS.map((q, index) => ({
+  ...q,
+  id: `q${index + 1}`,
+}));
