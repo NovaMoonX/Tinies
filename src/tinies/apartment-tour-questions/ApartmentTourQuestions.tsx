@@ -232,7 +232,7 @@ export function ApartmentTourQuestions() {
                     deleteUnit(selectedApartment, unitId)
                   }
                   onRenameUnit={(unitId, newName) =>
-                    renameUnit(selectedApartment, unitId, newName)
+                    renameUnit(unitId, newName)
                   }
                 />
               </div>

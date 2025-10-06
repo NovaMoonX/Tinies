@@ -24,7 +24,6 @@ export interface Apartment {
   address?: string;
   website?: string;
   customLinks?: CustomLink[];
-  units?: Unit[];
 }
 
 export interface Answer {

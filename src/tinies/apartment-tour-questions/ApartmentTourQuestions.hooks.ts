@@ -28,6 +28,7 @@ export function useApartmentTourData() {
   const [notes, setNotes] = useState<ApartmentNote[]>([]);
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [costs, setCosts] = useState<ApartmentCost[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 
@@ -81,7 +82,7 @@ export function useApartmentTourData() {
 
     const confirmed = await actionModal.confirm({
       title: 'Delete Apartment',
-      message: `Are you sure you want to delete "${apartment.name}"? This will also remove all answers for this apartment.`,
+      message: `Are you sure you want to delete "${apartment.name}"? This will also remove all answers, units, and costs for this apartment.`,
     });
 
     if (confirmed) {
@@ -92,6 +93,10 @@ export function useApartmentTourData() {
       setNotes((prev) => prev.filter((n) => n.apartmentId !== apartmentId));
       // Remove follow-ups for this apartment
       setFollowUps((prev) => prev.filter((f) => f.apartmentId !== apartmentId));
+      // Remove units for this apartment
+      setUnits((prev) => prev.filter((u) => u.apartmentId !== apartmentId));
+      // Remove costs for this apartment
+      setCosts((prev) => prev.filter((c) => c.apartmentId !== apartmentId));
       // Clear selection if this was the selected apartment
       if (selectedApartment === apartmentId) {
         setSelectedApartment(null);
@@ -554,22 +559,13 @@ export function useApartmentTourData() {
       apartmentId,
     };
 
-    setApartments((prev) =>
-      prev.map((apt) => {
-        if (apt.id === apartmentId) {
-          const currentUnits = apt.units || [];
-          return { ...apt, units: [...currentUnits, newUnit] };
-        }
-        return apt;
-      }),
-    );
+    setUnits((prev) => [...prev, newUnit]);
 
     return newUnit.id;
   };
 
   const deleteUnit = async (apartmentId: string, unitId: string) => {
-    const apartment = apartments.find((a) => a.id === apartmentId);
-    const unit = apartment?.units?.find((u) => u.id === unitId);
+    const unit = units.find((u) => u.id === unitId);
 
     if (!unit) return;
 
@@ -579,18 +575,7 @@ export function useApartmentTourData() {
     });
 
     if (confirmed) {
-      setApartments((prev) =>
-        prev.map((apt) => {
-          if (apt.id === apartmentId && apt.units) {
-            const updatedUnits = apt.units.filter((u) => u.id !== unitId);
-            return {
-              ...apt,
-              units: updatedUnits.length > 0 ? updatedUnits : undefined,
-            };
-          }
-          return apt;
-        }),
-      );
+      setUnits((prev) => prev.filter((u) => u.id !== unitId));
 
       // Remove costs associated with this unit
       setCosts((prev) =>
@@ -608,21 +593,14 @@ export function useApartmentTourData() {
   };
 
   const getUnits = (apartmentId: string): Unit[] => {
-    const apartment = apartments.find((a) => a.id === apartmentId);
-    return apartment?.units || [];
+    return units.filter((u) => u.apartmentId === apartmentId);
   };
 
-  const renameUnit = (apartmentId: string, unitId: string, newName: string) => {
-    setApartments((prev) =>
-      prev.map((apt) => {
-        if (apt.id === apartmentId && apt.units) {
-          const updatedUnits = apt.units.map((unit) =>
-            unit.id === unitId ? { ...unit, name: newName } : unit,
-          );
-          return { ...apt, units: updatedUnits };
-        }
-        return apt;
-      }),
+  const renameUnit = (unitId: string, newName: string) => {
+    setUnits((prev) =>
+      prev.map((unit) =>
+        unit.id === unitId ? { ...unit, name: newName } : unit,
+      ),
     );
   };
 
