@@ -4,6 +4,7 @@ import {
   Form,
   FormFactories,
   Input,
+  Modal,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
 import {
@@ -677,6 +678,33 @@ interface PricingSectionProps {
   onRenameUnit: (unitId: string, newName: string) => void;
 }
 
+function PricingSectionInput({
+  cost,
+  onUpdateCost,
+}: {
+  cost: CostItem;
+  onUpdateCost: (costId: string, amount: number, unitId?: string) => void;
+}) {
+  return (
+    <div className='flex items-center gap-2'>
+      <span className='text-foreground/50 text-sm'>$</span>
+      <Input
+        type='number'
+        placeholder='0'
+        variant='outline'
+        value={cost.amount || ''}
+        onChange={({ target: { value } }) =>
+          onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
+        }
+        className='max-w-32'
+        min='0'
+        step='0.01'
+        autoComplete='off'
+      />
+    </div>
+  );
+}
+
 export function PricingSection({
   apartmentName,
   units,
@@ -692,7 +720,9 @@ export function PricingSection({
   const [newCostLabel, setNewCostLabel] = useState('');
   const [isAddingUnit, setIsAddingUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
-  const [selectedRentUnit, setSelectedRentUnit] = useState<string | undefined>(undefined);
+  const [selectedRentUnit, setSelectedRentUnit] = useState<string | undefined>(
+    undefined,
+  );
   const [isManagingUnits, setIsManagingUnits] = useState(false);
   const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
   const [editingUnitName, setEditingUnitName] = useState('');
@@ -703,7 +733,10 @@ export function PricingSection({
       setSelectedRentUnit(units[0].id);
     } else if (units.length === 0) {
       setSelectedRentUnit(undefined);
-    } else if (selectedRentUnit && !units.find(u => u.id === selectedRentUnit)) {
+    } else if (
+      selectedRentUnit &&
+      !units.find((u) => u.id === selectedRentUnit)
+    ) {
       // Selected unit was deleted, select first available
       setSelectedRentUnit(units[0]?.id);
     }
@@ -722,11 +755,6 @@ export function PricingSection({
       onAddUnit(newUnitName.trim());
       setNewUnitName('');
       setIsAddingUnit(false);
-      // Auto-select the new unit for rent
-      if (units.length === 0) {
-        // This will be the first unit, so we'll need to update after it's created
-        // The parent component will handle this via a useEffect or similar
-      }
     }
   };
 
@@ -748,17 +776,14 @@ export function PricingSection({
     setEditingUnitName('');
   };
 
-  // Get all building-wide costs (non-rent costs)
   const buildingCosts = getCosts();
-  const defaultFees = buildingCosts.filter(cost => cost.label !== 'Rent');
-  
-  // Get rent costs - for selected unit if units exist, otherwise building-wide
-  const rentCosts = units.length > 0 
-    ? getCosts(selectedRentUnit).filter(cost => cost.label === 'Rent')
-    : buildingCosts.filter(cost => cost.label === 'Rent');
-  
-  // Combine all costs for total calculation
-  const allCosts = [...rentCosts, ...defaultFees];
+  const nonRentFees = buildingCosts.filter((cost) => cost.label !== 'Rent');
+  const defaultFees = nonRentFees.filter((cost) => !cost.isCustom);
+  const customFees = nonRentFees.filter((cost) => cost.isCustom);
+
+  const rentCosts = getCosts(selectedRentUnit).filter((cost) => cost.label === 'Rent')
+
+  const allCosts = [...buildingCosts, ...rentCosts];
   const totalMonthlyCost = allCosts.reduce((sum, cost) => sum + cost.amount, 0);
 
   return (
@@ -873,7 +898,7 @@ export function PricingSection({
       {/* Rent Section */}
       <div className='space-y-3'>
         <h3 className='text-foreground/90 text-lg font-semibold'>Rent</h3>
-        
+
         {units.length === 0 ? (
           <div className='bg-muted/30 rounded-xl p-6 text-center'>
             <div className='space-y-3'>
@@ -893,7 +918,7 @@ export function PricingSection({
           </div>
         ) : (
           <>
-            <div className='flex flex-wrap gap-2'>
+            <div className='flex flex-wrap gap-2 min-h-8'> {/* min height prevents shifting when variant changes */}
               {units.map((unit) => (
                 <Button
                   key={unit.id}
@@ -905,7 +930,7 @@ export function PricingSection({
                 </Button>
               ))}
             </div>
-            
+
             {rentCosts.map((cost) => (
               <div
                 key={cost.id}
@@ -916,27 +941,12 @@ export function PricingSection({
                     {cost.label}
                     {selectedRentUnit && (
                       <span className='text-foreground/60 ml-1'>
-                        ({units.find(u => u.id === selectedRentUnit)?.name})
+                        ({units.find((u) => u.id === selectedRentUnit)?.name})
                       </span>
                     )}
                   </label>
                 </div>
-                <div className='flex items-center gap-2'>
-                  <span className='text-foreground/50 text-sm'>$</span>
-                  <Input
-                    type='number'
-                    placeholder='0'
-                    variant='outline'
-                    value={cost.amount || ''}
-                    onChange={({ target: { value } }) =>
-                      onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
-                    }
-                    className='max-w-32'
-                    min='0'
-                    step='0.01'
-                    autoComplete='off'
-                  />
-                </div>
+                <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
               </div>
             ))}
           </>
@@ -944,10 +954,12 @@ export function PricingSection({
       </div>
 
       {/* Default Fees Section */}
-      {defaultFees.filter(cost => !cost.isCustom).length > 0 && (
+      {defaultFees.length > 0 && (
         <div className='space-y-3'>
-          <h3 className='text-foreground/90 text-lg font-semibold'>Default Fees</h3>
-          {defaultFees.filter(cost => !cost.isCustom).map((cost) => (
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Default Fees
+          </h3>
+          {defaultFees.map((cost) => (
             <div
               key={cost.id}
               className='bg-background flex items-center gap-3 rounded-xl p-3'
@@ -957,32 +969,19 @@ export function PricingSection({
                   {cost.label}
                 </label>
               </div>
-              <div className='flex items-center gap-2'>
-                <span className='text-foreground/50 text-sm'>$</span>
-                <Input
-                  type='number'
-                  placeholder='0'
-                  variant='outline'
-                  value={cost.amount || ''}
-                  onChange={({ target: { value } }) =>
-                    onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
-                  }
-                  className='max-w-32'
-                  min='0'
-                  step='0.01'
-                  autoComplete='off'
-                />
-              </div>
+              <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
             </div>
           ))}
         </div>
       )}
 
       {/* Custom Fees Section */}
-      {defaultFees.filter(cost => cost.isCustom).length > 0 && (
+      {customFees.length > 0 && (
         <div className='space-y-3'>
-          <h3 className='text-foreground/90 text-lg font-semibold'>Custom Fees</h3>
-          {defaultFees.filter(cost => cost.isCustom).map((cost) => (
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Custom Fees
+          </h3>
+          {customFees.map((cost) => (
             <div
               key={cost.id}
               className='bg-background flex items-center gap-3 rounded-xl p-3'
@@ -992,22 +991,7 @@ export function PricingSection({
                   {cost.label}
                 </label>
               </div>
-              <div className='flex items-center gap-2'>
-                <span className='text-foreground/50 text-sm'>$</span>
-                <Input
-                  type='number'
-                  placeholder='0'
-                  variant='outline'
-                  value={cost.amount || ''}
-                  onChange={({ target: { value } }) =>
-                    onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
-                  }
-                  className='max-w-32'
-                  min='0'
-                  step='0.01'
-                  autoComplete='off'
-                />
-              </div>
+              <PricingSectionInput cost={cost} onUpdateCost={onUpdateCost} />
               <Button
                 onClick={() => onDeleteCustomCost(cost.id)}
                 variant='destructive'
@@ -1033,106 +1017,97 @@ export function PricingSection({
       )}
 
       {/* Unit Management Modal */}
-      {isManagingUnits && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
-          <div className='bg-background w-full max-w-md rounded-2xl p-6 shadow-xl'>
-            <div className='space-y-4'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-foreground/90 text-lg font-semibold'>
-                  Manage Units
-                </h3>
-                <Button
-                  onClick={() => setIsManagingUnits(false)}
-                  variant='outline'
-                  size='sm'
+      <Modal
+        isOpen={isManagingUnits}
+        onClose={() => setIsManagingUnits(false)}
+        title='Manage Units'
+      >
+        <div className='space-y-4'>
+          {units.length > 0 && (
+            <div className='space-y-2'>
+              {units.map((unit) => (
+                <div
+                  key={unit.id}
+                  className='bg-muted/30 flex items-center gap-3 rounded-xl p-3'
                 >
-                  <X className='h-4 w-4' />
-                </Button>
-              </div>
-
-              <div className='space-y-2'>
-                {units.map((unit) => (
-                  <div
-                    key={unit.id}
-                    className='bg-muted/30 flex items-center gap-3 rounded-xl p-3'
-                  >
-                    {editingUnitId === unit.id ? (
-                      <>
-                        <Input
-                          value={editingUnitName}
-                          onChange={({ target: { value } }) => setEditingUnitName(value)}
-                          variant='outline'
-                          className='flex-1'
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              handleSaveEdit();
-                            } else if (e.key === 'Escape') {
-                              handleCancelEdit();
-                            }
-                          }}
-                          autoFocus
-                        />
-                        <div className='flex gap-1'>
-                          <Button
-                            onClick={handleSaveEdit}
-                            variant='outline'
-                            size='sm'
-                            disabled={!editingUnitName.trim()}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            onClick={handleCancelEdit}
-                            variant='outline'
-                            size='sm'
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleStartEdit(unit.id, unit.name)}
-                          className='text-foreground/90 flex-1 text-left font-medium hover:text-foreground transition-colors'
-                        >
-                          {unit.name}
-                        </button>
+                  {editingUnitId === unit.id ? (
+                    <>
+                      <Input
+                        value={editingUnitName}
+                        onChange={({ target: { value } }) =>
+                          setEditingUnitName(value)
+                        }
+                        variant='outline'
+                        className='flex-1'
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEdit();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEdit();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <div className='flex gap-1'>
                         <Button
-                          onClick={() => {
-                            onDeleteUnit(unit.id);
-                            setIsManagingUnits(false);
-                          }}
-                          variant='destructive'
+                          onClick={handleSaveEdit}
+                          variant='outline'
+                          size='sm'
+                          disabled={!editingUnitName.trim()}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          onClick={handleCancelEdit}
+                          variant='outline'
                           size='sm'
                         >
-                          <Trash className='h-4 w-4' />
+                          Cancel
                         </Button>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {units.length === 0 && (
-                <p className='text-foreground/60 py-4 text-center text-sm'>
-                  No units added yet.
-                </p>
-              )}
-
-              <div className='flex justify-end pt-2'>
-                <Button
-                  onClick={() => setIsManagingUnits(false)}
-                  variant='outline'
-                  size='sm'
-                >
-                  Done
-                </Button>
-              </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleStartEdit(unit.id, unit.name)}
+                        className='text-foreground/90 hover:text-foreground flex-1 text-left font-medium transition-colors'
+                      >
+                        {unit.name}
+                      </button>
+                      <Button
+                        onClick={() => {
+                          onDeleteUnit(unit.id);
+                          setIsManagingUnits(false);
+                        }}
+                        variant='destructive'
+                        size='sm'
+                      >
+                        <Trash className='h-4 w-4' />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
+          )}
+
+          {units.length === 0 && (
+            <p className='text-foreground/60 py-4 text-center text-sm'>
+              No units added yet.
+            </p>
+          )}
+
+          <div className='flex justify-end pt-2'>
+            <Button
+              onClick={() => setIsManagingUnits(false)}
+              variant='outline'
+              size='sm'
+            >
+              Done
+            </Button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
@@ -1200,46 +1175,45 @@ export function QuestionAssociationButton({
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
-      <div className='bg-background w-full max-w-md rounded-2xl p-6 shadow-xl'>
-        <div className='space-y-4'>
-          <h3 className='text-foreground/90 text-lg font-semibold'>
-            Edit Apartment Associations
-          </h3>
-          <p className='text-foreground/60 text-sm'>
-            Select which apartments this question should appear for.
-          </p>
+    <Modal
+      isOpen={isEditing}
+      onClose={handleCancel}
+      title='Edit Apartment Associations'
+    >
+      <div className='space-y-4'>
+        <p className='text-foreground/60 text-sm'>
+          Select which apartments this question should appear for.
+        </p>
 
-          <Form
-            initialData={formData}
-            form={[
-              checkboxGroup({
-                name: 'associatedApartments',
-                label: 'Associate...',
-                description:
-                  'If no apartments are selected, this question will be deleted.',
-                selectAll: true,
-                options: apartments.map((apartment) => ({
-                  value: apartment.id,
-                  label: apartment.name,
-                })),
-              }),
-            ]}
-            onDataChange={(data) => {
-              setFormData(data);
-            }}
-          />
+        <Form
+          initialData={formData}
+          form={[
+            checkboxGroup({
+              name: 'associatedApartments',
+              label: 'Associate...',
+              description:
+                'If no apartments are selected, this question will be deleted.',
+              selectAll: true,
+              options: apartments.map((apartment) => ({
+                value: apartment.id,
+                label: apartment.name,
+              })),
+            }),
+          ]}
+          onDataChange={(data) => {
+            setFormData(data);
+          }}
+        />
 
-          <div className='flex gap-2 pt-2'>
-            <Button onClick={handleSave} size='sm'>
-              Save
-            </Button>
-            <Button onClick={handleCancel} variant='outline' size='sm'>
-              Cancel
-            </Button>
-          </div>
+        <div className='flex gap-2 pt-2'>
+          <Button onClick={handleSave} size='sm'>
+            Save
+          </Button>
+          <Button onClick={handleCancel} variant='outline' size='sm'>
+            Cancel
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
