@@ -1,7 +1,7 @@
 import { Question, CostItem } from './ApartmentTourQuestions.types';
 
+// Building-wide default cost categories (not associated with units)
 export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
-  { label: 'Rent', isCustom: false },
   { label: 'Water', isCustom: false },
   { label: 'Electricity', isCustom: false },
   { label: 'Gas', isCustom: false },

@@ -261,10 +261,24 @@ export function useApartmentTourData() {
         return apartmentCost.costs.filter(cost => cost.unitId === unitId);
       }
       // Return costs without unitId (apartment-level costs)
-      return apartmentCost.costs.filter(cost => !cost.unitId);
+      const buildingWideCosts = apartmentCost.costs.filter(cost => !cost.unitId);
+      
+      // If no building-wide costs exist yet, return defaults
+      if (buildingWideCosts.length === 0) {
+        const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
+          id: `default-${apartmentId}-${index}`,
+          label: category.label,
+          amount: 0,
+          isCustom: category.isCustom,
+        }));
+        return defaultCosts;
+      }
+      
+      return buildingWideCosts;
     }
     
     // Return default cost categories with 0 amounts (only if no unitId specified)
+    // For units, we don't return defaults - they're created when the unit is added
     if (!unitId) {
       const defaultCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
         id: `default-${apartmentId}-${index}`,
@@ -354,13 +368,14 @@ export function useApartmentTourData() {
     setCosts(prev => {
       const existing = prev.find(c => c.apartmentId === apartmentId);
       
-      const unitCosts: CostItem[] = DEFAULT_COST_CATEGORIES.map((category, index) => ({
-        id: `unit-${unitId}-${index}`,
-        label: category.label,
+      // Only add "Rent" for units, not all the default categories
+      const unitCosts: CostItem[] = [{
+        id: `unit-${unitId}-rent`,
+        label: 'Rent',
         amount: 0,
-        isCustom: category.isCustom,
+        isCustom: false,
         unitId,
-      }));
+      }];
       
       if (existing) {
         return prev.map(c =>
