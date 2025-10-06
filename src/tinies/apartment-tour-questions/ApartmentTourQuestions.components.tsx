@@ -14,7 +14,7 @@ import {
   X,
 } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Apartment,
   FollowUpItem,
@@ -674,6 +674,7 @@ interface PricingSectionProps {
   onDeleteCustomCost: (costId: string) => void;
   onAddUnit: (name: string) => void;
   onDeleteUnit: (unitId: string) => void;
+  onRenameUnit: (unitId: string, newName: string) => void;
 }
 
 export function PricingSection({
@@ -685,16 +686,32 @@ export function PricingSection({
   onDeleteCustomCost,
   onAddUnit,
   onDeleteUnit,
+  onRenameUnit,
 }: PricingSectionProps) {
   const [isAddingCost, setIsAddingCost] = useState(false);
   const [newCostLabel, setNewCostLabel] = useState('');
   const [isAddingUnit, setIsAddingUnit] = useState(false);
   const [newUnitName, setNewUnitName] = useState('');
-  const [selectedUnitId, setSelectedUnitId] = useState<string | undefined>(undefined);
+  const [selectedRentUnit, setSelectedRentUnit] = useState<string | undefined>(undefined);
+  const [isManagingUnits, setIsManagingUnits] = useState(false);
+  const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
+  const [editingUnitName, setEditingUnitName] = useState('');
+
+  // Auto-select first unit when units are available
+  useEffect(() => {
+    if (units.length > 0 && !selectedRentUnit) {
+      setSelectedRentUnit(units[0].id);
+    } else if (units.length === 0) {
+      setSelectedRentUnit(undefined);
+    } else if (selectedRentUnit && !units.find(u => u.id === selectedRentUnit)) {
+      // Selected unit was deleted, select first available
+      setSelectedRentUnit(units[0]?.id);
+    }
+  }, [units, selectedRentUnit]);
 
   const handleAddCost = () => {
     if (newCostLabel.trim()) {
-      onAddCustomCost(newCostLabel.trim(), selectedUnitId);
+      onAddCustomCost(newCostLabel.trim(), undefined); // All custom costs are building-wide
       setNewCostLabel('');
       setIsAddingCost(false);
     }
@@ -705,22 +722,63 @@ export function PricingSection({
       onAddUnit(newUnitName.trim());
       setNewUnitName('');
       setIsAddingUnit(false);
+      // Auto-select the new unit for rent
+      if (units.length === 0) {
+        // This will be the first unit, so we'll need to update after it's created
+        // The parent component will handle this via a useEffect or similar
+      }
     }
   };
 
-  const currentCosts = getCosts(selectedUnitId);
-  const totalMonthlyCost = currentCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  const handleStartEdit = (unitId: string, currentName: string) => {
+    setEditingUnitId(unitId);
+    setEditingUnitName(currentName);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingUnitId && editingUnitName.trim()) {
+      onRenameUnit(editingUnitId, editingUnitName.trim());
+      setEditingUnitId(null);
+      setEditingUnitName('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUnitId(null);
+    setEditingUnitName('');
+  };
+
+  // Get all building-wide costs (non-rent costs)
+  const buildingCosts = getCosts();
+  const defaultFees = buildingCosts.filter(cost => cost.label !== 'Rent');
   
-  const selectedUnit = selectedUnitId ? units.find(u => u.id === selectedUnitId) : undefined;
-  const displayName = selectedUnit ? `${apartmentName} - ${selectedUnit.name}` : apartmentName;
+  // Get rent costs - for selected unit if units exist, otherwise building-wide
+  const rentCosts = units.length > 0 
+    ? getCosts(selectedRentUnit).filter(cost => cost.label === 'Rent')
+    : buildingCosts.filter(cost => cost.label === 'Rent');
+  
+  // Combine all costs for total calculation
+  const allCosts = [...rentCosts, ...defaultFees];
+  const totalMonthlyCost = allCosts.reduce((sum, cost) => sum + cost.amount, 0);
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <h2 className='text-foreground/90 text-xl font-semibold'>
-          Pricing for {displayName}
+          Pricing for {apartmentName}
         </h2>
         <div className='flex gap-2'>
+          {units.length > 0 && (
+            <Button
+              onClick={() => setIsManagingUnits(true)}
+              variant='outline'
+              size='sm'
+              className='inline-flex items-center'
+            >
+              <DotsVertical className='mr-1 h-3 w-3' />
+              Manage Units
+            </Button>
+          )}
           {!isAddingUnit && (
             <Button
               onClick={() => setIsAddingUnit(true)}
@@ -740,7 +798,7 @@ export function PricingSection({
               className='inline-flex items-center'
             >
               <Plus className='mr-1 h-3 w-3' />
-              Add Cost
+              Add Custom Fee
             </Button>
           )}
         </div>
@@ -783,7 +841,7 @@ export function PricingSection({
         <div className='bg-background rounded-xl p-4'>
           <div className='space-y-3'>
             <Input
-              placeholder='Cost label (e.g., "HOA Fee", "Storage Unit")'
+              placeholder='Custom fee label (e.g., "HOA Fee", "Storage Unit")'
               variant='outline'
               value={newCostLabel}
               onChange={({ target: { value } }) => setNewCostLabel(value)}
@@ -795,7 +853,7 @@ export function PricingSection({
                 size='sm'
                 disabled={!newCostLabel.trim()}
               >
-                Add Cost
+                Add Custom Fee
               </Button>
               <Button
                 onClick={() => {
@@ -812,71 +870,144 @@ export function PricingSection({
         </div>
       )}
 
-      {/* Unit selector */}
-      {units.length > 0 && (
-        <div className='space-y-2'>
-          <label className='text-foreground/70 text-sm font-medium'>
-            Select Unit (optional)
-          </label>
-          <div className='flex flex-wrap gap-2'>
-            <Button
-              onClick={() => setSelectedUnitId(undefined)}
-              variant={selectedUnitId === undefined ? 'primary' : 'outline'}
-              size='sm'
-            >
-              Building-wide
-            </Button>
-            {units.map((unit) => (
-              <div key={unit.id} className='flex items-center gap-1'>
+      {/* Rent Section */}
+      <div className='space-y-3'>
+        <h3 className='text-foreground/90 text-lg font-semibold'>Rent</h3>
+        
+        {units.length === 0 ? (
+          <div className='bg-muted/30 rounded-xl p-6 text-center'>
+            <div className='space-y-3'>
+              <p className='text-foreground/70 text-sm'>
+                Add a unit to track rent for specific apartments or floor plans.
+              </p>
+              <Button
+                onClick={() => setIsAddingUnit(true)}
+                variant='primary'
+                size='sm'
+                className='inline-flex items-center'
+              >
+                <Plus className='mr-1 h-3 w-3' />
+                Add Your First Unit
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className='flex flex-wrap gap-2'>
+              {units.map((unit) => (
                 <Button
-                  onClick={() => setSelectedUnitId(unit.id)}
-                  variant={selectedUnitId === unit.id ? 'primary' : 'outline'}
+                  key={unit.id}
+                  onClick={() => setSelectedRentUnit(unit.id)}
+                  variant={selectedRentUnit === unit.id ? 'primary' : 'outline'}
                   size='sm'
                 >
                   {unit.name}
                 </Button>
-                <Button
-                  onClick={() => onDeleteUnit(unit.id)}
-                  variant='destructive'
-                  size='sm'
-                  className='px-1!'
-                >
-                  <Trash className='h-3 w-3' />
-                </Button>
+              ))}
+            </div>
+            
+            {rentCosts.map((cost) => (
+              <div
+                key={cost.id}
+                className='bg-background flex items-center gap-3 rounded-xl p-3'
+              >
+                <div className='flex-1'>
+                  <label className='text-foreground/90 text-sm font-medium'>
+                    {cost.label}
+                    {selectedRentUnit && (
+                      <span className='text-foreground/60 ml-1'>
+                        ({units.find(u => u.id === selectedRentUnit)?.name})
+                      </span>
+                    )}
+                  </label>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <span className='text-foreground/50 text-sm'>$</span>
+                  <Input
+                    type='number'
+                    placeholder='0'
+                    variant='outline'
+                    value={cost.amount || ''}
+                    onChange={({ target: { value } }) =>
+                      onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
+                    }
+                    className='max-w-32'
+                    min='0'
+                    step='0.01'
+                    autoComplete='off'
+                  />
+                </div>
               </div>
             ))}
-          </div>
+          </>
+        )}
+      </div>
+
+      {/* Default Fees Section */}
+      {defaultFees.filter(cost => !cost.isCustom).length > 0 && (
+        <div className='space-y-3'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>Default Fees</h3>
+          {defaultFees.filter(cost => !cost.isCustom).map((cost) => (
+            <div
+              key={cost.id}
+              className='bg-background flex items-center gap-3 rounded-xl p-3'
+            >
+              <div className='flex-1'>
+                <label className='text-foreground/90 text-sm font-medium'>
+                  {cost.label}
+                </label>
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className='text-foreground/50 text-sm'>$</span>
+                <Input
+                  type='number'
+                  placeholder='0'
+                  variant='outline'
+                  value={cost.amount || ''}
+                  onChange={({ target: { value } }) =>
+                    onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
+                  }
+                  className='max-w-32'
+                  min='0'
+                  step='0.01'
+                  autoComplete='off'
+                />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      <div className='space-y-2'>
-        {currentCosts.map((cost) => (
-          <div
-            key={cost.id}
-            className='bg-background flex items-center gap-3 rounded-xl p-3'
-          >
-            <div className='flex-1'>
-              <label className='text-foreground/90 text-sm font-medium'>
-                {cost.label}
-              </label>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className='text-foreground/50 text-sm'>$</span>
-              <Input
-                type='number'
-                placeholder='0'
-                variant='outline'
-                value={cost.amount || ''}
-                onChange={({ target: { value } }) =>
-                  onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
-                }
-                className='max-w-32'
-                min='0'
-                step='0.01'
-                autoComplete='off'
-              />
-            </div>
-            {cost.isCustom && (
+      {/* Custom Fees Section */}
+      {defaultFees.filter(cost => cost.isCustom).length > 0 && (
+        <div className='space-y-3'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>Custom Fees</h3>
+          {defaultFees.filter(cost => cost.isCustom).map((cost) => (
+            <div
+              key={cost.id}
+              className='bg-background flex items-center gap-3 rounded-xl p-3'
+            >
+              <div className='flex-1'>
+                <label className='text-foreground/90 text-sm font-medium'>
+                  {cost.label}
+                </label>
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className='text-foreground/50 text-sm'>$</span>
+                <Input
+                  type='number'
+                  placeholder='0'
+                  variant='outline'
+                  value={cost.amount || ''}
+                  onChange={({ target: { value } }) =>
+                    onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
+                  }
+                  className='max-w-32'
+                  min='0'
+                  step='0.01'
+                  autoComplete='off'
+                />
+              </div>
               <Button
                 onClick={() => onDeleteCustomCost(cost.id)}
                 variant='destructive'
@@ -884,12 +1015,13 @@ export function PricingSection({
               >
                 <Trash className='h-4 w-4' />
               </Button>
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {currentCosts.length > 0 && (
+      {/* Total Section */}
+      {allCosts.length > 0 && (
         <div className='bg-primary/10 flex items-center justify-between rounded-xl p-4'>
           <span className='text-foreground/90 text-lg font-semibold'>
             Total Monthly Cost
@@ -897,6 +1029,108 @@ export function PricingSection({
           <span className='text-primary text-2xl font-bold'>
             ${totalMonthlyCost.toFixed(2)}
           </span>
+        </div>
+      )}
+
+      {/* Unit Management Modal */}
+      {isManagingUnits && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
+          <div className='bg-background w-full max-w-md rounded-2xl p-6 shadow-xl'>
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <h3 className='text-foreground/90 text-lg font-semibold'>
+                  Manage Units
+                </h3>
+                <Button
+                  onClick={() => setIsManagingUnits(false)}
+                  variant='outline'
+                  size='sm'
+                >
+                  <X className='h-4 w-4' />
+                </Button>
+              </div>
+
+              <div className='space-y-2'>
+                {units.map((unit) => (
+                  <div
+                    key={unit.id}
+                    className='bg-muted/30 flex items-center gap-3 rounded-xl p-3'
+                  >
+                    {editingUnitId === unit.id ? (
+                      <>
+                        <Input
+                          value={editingUnitName}
+                          onChange={({ target: { value } }) => setEditingUnitName(value)}
+                          variant='outline'
+                          className='flex-1'
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSaveEdit();
+                            } else if (e.key === 'Escape') {
+                              handleCancelEdit();
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <div className='flex gap-1'>
+                          <Button
+                            onClick={handleSaveEdit}
+                            variant='outline'
+                            size='sm'
+                            disabled={!editingUnitName.trim()}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            onClick={handleCancelEdit}
+                            variant='outline'
+                            size='sm'
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleStartEdit(unit.id, unit.name)}
+                          className='text-foreground/90 flex-1 text-left font-medium hover:text-foreground transition-colors'
+                        >
+                          {unit.name}
+                        </button>
+                        <Button
+                          onClick={() => {
+                            onDeleteUnit(unit.id);
+                            setIsManagingUnits(false);
+                          }}
+                          variant='destructive'
+                          size='sm'
+                        >
+                          <Trash className='h-4 w-4' />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {units.length === 0 && (
+                <p className='text-foreground/60 py-4 text-center text-sm'>
+                  No units added yet.
+                </p>
+              )}
+
+              <div className='flex justify-end pt-2'>
+                <Button
+                  onClick={() => setIsManagingUnits(false)}
+                  variant='outline'
+                  size='sm'
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

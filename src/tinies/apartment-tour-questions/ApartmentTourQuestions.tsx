@@ -51,6 +51,7 @@ export function ApartmentTourQuestions() {
     deleteUnit,
     getUnits,
     addUnitCosts,
+    renameUnit,
   } = useApartmentTourData();
 
   const questionsByCategory = useMemo(() => {
@@ -229,6 +230,9 @@ export function ApartmentTourQuestions() {
                   }}
                   onDeleteUnit={(unitId) =>
                     deleteUnit(selectedApartment, unitId)
+                  }
+                  onRenameUnit={(unitId, newName) =>
+                    renameUnit(selectedApartment, unitId, newName)
                   }
                 />
               </div>
