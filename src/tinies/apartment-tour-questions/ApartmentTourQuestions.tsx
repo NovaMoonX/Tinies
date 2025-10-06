@@ -215,8 +215,8 @@ export function ApartmentTourQuestions() {
                   }
                   units={getUnits(selectedApartment)}
                   getCosts={(unitId) => getCosts(selectedApartment, unitId)}
-                  onUpdateCost={(costId, amount, unitId) =>
-                    updateCost(selectedApartment, costId, amount, unitId)
+                  onUpdateCost={(costId, amount) =>
+                    updateCost(selectedApartment, costId, amount)
                   }
                   onAddCustomCost={(label, unitId) =>
                     addCustomCost(selectedApartment, label, unitId)

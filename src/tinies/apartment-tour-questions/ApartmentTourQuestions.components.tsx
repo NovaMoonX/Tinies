@@ -670,7 +670,7 @@ interface PricingSectionProps {
   apartmentName: string;
   units: Unit[];
   getCosts: (unitId?: string) => CostItem[];
-  onUpdateCost: (costId: string, amount: number, unitId?: string) => void;
+  onUpdateCost: (costId: string, amount: number) => void;
   onAddCustomCost: (label: string, unitId?: string) => void;
   onDeleteCustomCost: (costId: string) => void;
   onAddUnit: (name: string) => void;
@@ -783,7 +783,10 @@ export function PricingSection({
   const customFees = buildingCosts.filter((cost) => cost.isCustom);
 
   // Calculate total: building costs + rent from selected unit
-  const buildingTotal = buildingCosts.reduce((sum, cost) => sum + cost.amount, 0);
+  const buildingTotal = buildingCosts.reduce(
+    (sum, cost) => sum + cost.amount,
+    0,
+  );
   const selectedUnit = units.find((u) => u.id === selectedRentUnit);
   const rentAmount = selectedUnit?.rentPrice || 0;
   const totalMonthlyCost = buildingTotal + rentAmount;
@@ -806,28 +809,26 @@ export function PricingSection({
               Manage Units
             </Button>
           )}
-          {!isAddingUnit && (
-            <Button
-              onClick={() => setIsAddingUnit(true)}
-              variant='outline'
-              size='sm'
-              className='inline-flex items-center'
-            >
-              <Plus className='mr-1 h-3 w-3' />
-              Add Unit
-            </Button>
-          )}
-          {!isAddingCost && (
-            <Button
-              onClick={() => setIsAddingCost(true)}
-              variant='outline'
-              size='sm'
-              className='inline-flex items-center'
-            >
-              <Plus className='mr-1 h-3 w-3' />
-              Add Custom Fee
-            </Button>
-          )}
+          <Button
+            onClick={() => setIsAddingUnit(true)}
+            variant='outline'
+            size='sm'
+            className='inline-flex items-center'
+            disabled={isAddingUnit}
+          >
+            <Plus className='mr-1 h-3 w-3' />
+            Add Unit
+          </Button>
+          <Button
+            onClick={() => setIsAddingCost(true)}
+            variant='outline'
+            size='sm'
+            className='inline-flex items-center'
+            disabled={isAddingCost}
+          >
+            <Plus className='mr-1 h-3 w-3' />
+            Add Custom Fee
+          </Button>
         </div>
       </div>
 
@@ -840,6 +841,11 @@ export function PricingSection({
               value={newUnitName}
               onChange={({ target: { value } }) => setNewUnitName(value)}
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newUnitName.trim()) {
+                  handleAddUnit();
+                }
+              }}
             />
             <div className='flex gap-2'>
               <Button
@@ -873,6 +879,11 @@ export function PricingSection({
               value={newCostLabel}
               onChange={({ target: { value } }) => setNewCostLabel(value)}
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newCostLabel.trim()) {
+                  handleAddCost();
+                }
+              }}
             />
             <div className='flex gap-2'>
               <Button
@@ -920,7 +931,8 @@ export function PricingSection({
           </div>
         ) : (
           <>
-            <div className='flex flex-wrap gap-2 min-h-8'> {/* min height prevents shifting when variant changes */}
+            <div className='flex min-h-8 flex-wrap gap-2'>
+              {/* min height prevents shifting when variant changes */}
               {units.map((unit) => (
                 <Button
                   key={unit.id}
@@ -934,9 +946,7 @@ export function PricingSection({
             </div>
 
             {selectedRentUnit && selectedUnit && (
-              <div
-                className='bg-background flex items-center gap-3 rounded-xl p-3'
-              >
+              <div className='bg-background flex items-center gap-3 rounded-xl p-3'>
                 <div className='flex-1'>
                   <label className='text-foreground/90 text-sm font-medium'>
                     Rent
@@ -953,7 +963,10 @@ export function PricingSection({
                     variant='outline'
                     value={selectedUnit.rentPrice || ''}
                     onChange={({ target: { value } }) =>
-                      onUpdateUnitRentPrice(selectedRentUnit, parseFloat(value) || 0)
+                      onUpdateUnitRentPrice(
+                        selectedRentUnit,
+                        parseFloat(value) || 0,
+                      )
                     }
                     className='max-w-32'
                     min='0'
@@ -1032,7 +1045,7 @@ export function PricingSection({
 
       {/* Unit Management Modal */}
       <Modal
-        isOpen={isManagingUnits}
+        isOpen={units.length > 0 && isManagingUnits}
         onClose={() => setIsManagingUnits(false)}
         title='Manage Units'
       >
@@ -1091,7 +1104,6 @@ export function PricingSection({
                       <Button
                         onClick={() => {
                           onDeleteUnit(unit.id);
-                          setIsManagingUnits(false);
                         }}
                         variant='destructive'
                         size='sm'
