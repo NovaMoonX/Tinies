@@ -58,14 +58,14 @@ export function useApartmentTourData() {
         );
 
         if (data) {
-          setCustomQuestions(data.customQuestions || []);
-          setApartments(data.apartments || []);
-          setSelectedApartment(data.selectedApartment || null);
-          setAnswers(data.answers || []);
-          setNotes(data.notes || []);
-          setFollowUps(data.followUps || []);
-          setCosts(data.costs || []);
-          setUnits(data.units || []);
+          setCustomQuestions(prev => data.customQuestions || prev || []);
+          setApartments(prev => data.apartments || prev || []);
+          setSelectedApartment(prev => data.selectedApartment || prev || null);
+          setAnswers(prev => data.answers || prev || []);
+          setNotes(prev => data.notes || prev || []);
+          setFollowUps(prev => data.followUps || prev || []);
+          setCosts(prev => data.costs || prev || []);
+          setUnits(prev => data.units || prev || []);
         }
       } catch (error) {
         console.error('Error loading apartment tour data:', error);
@@ -87,7 +87,7 @@ export function useApartmentTourData() {
       clearTimeout(saveTimerRef.current);
     }
 
-    // Set new timer to save after 1 second of inactivity
+    // Set new timer to save after 2 seconds of inactivity
     saveTimerRef.current = setTimeout(() => {
       const dataToSave: ApartmentTourQuestionsData = {
         customQuestions,
@@ -107,7 +107,7 @@ export function useApartmentTourData() {
       ).catch((error) => {
         console.error('Error saving apartment tour data:', error);
       });
-    }, 1000);
+    }, 2000);
 
     // Cleanup function
     return () => {
@@ -133,7 +133,7 @@ export function useApartmentTourData() {
   const addCustomQuestion = (
     question: string,
     category: string,
-    associatedApartments?: string[],
+    associatedApartments: string[] = [],
   ) => {
     const newQuestion: Question = {
       id: `custom-${Date.now()}`,
@@ -165,6 +165,11 @@ export function useApartmentTourData() {
     const newApartment: Apartment = {
       id: `apt-${Date.now()}`,
       name,
+      address: '',
+      website: '',
+      phoneNumber: '',
+      email: '',
+      customLinks: [],
     };
     setApartments((prev) => [...prev, newApartment]);
     // Auto-select if it's the first apartment
@@ -303,8 +308,7 @@ export function useApartmentTourData() {
 
           const result = {
             ...q,
-            associatedApartments:
-              newAssociations.length > 0 ? newAssociations : undefined,
+            associatedApartments: newAssociations,
           };
           return result;
         }
@@ -315,7 +319,7 @@ export function useApartmentTourData() {
 
   const updateQuestionAssociations = (
     questionId: string,
-    associatedApartments?: string[],
+    associatedApartments: string[] = [],
   ) => {
     // If associatedApartments is an empty array, delete the question
     if (associatedApartments && associatedApartments.length === 0) {
@@ -382,7 +386,7 @@ export function useApartmentTourData() {
           );
           return {
             ...apt,
-            customLinks: updatedLinks.length > 0 ? updatedLinks : undefined,
+            customLinks: updatedLinks,
           };
         }
         return apt;
@@ -416,6 +420,8 @@ export function useApartmentTourData() {
             label: category.label,
             amount: 0,
             isCustom: category.isCustom,
+            unitId: null,
+            isOneTime: false,
           }),
         );
         const defaultOneTimeFees: CostItem[] = DEFAULT_ONE_TIME_FEES.map(
@@ -425,6 +431,7 @@ export function useApartmentTourData() {
             amount: 0,
             isCustom: fee.isCustom,
             isOneTime: fee.isOneTime,
+            unitId: null,
           }),
         );
         return [...defaultMonthlyCosts, ...defaultOneTimeFees];
@@ -442,6 +449,8 @@ export function useApartmentTourData() {
           label: category.label,
           amount: 0,
           isCustom: category.isCustom,
+          unitId: null,
+          isOneTime: false,
         }),
       );
       const defaultOneTimeFees: CostItem[] = DEFAULT_ONE_TIME_FEES.map(
@@ -451,6 +460,7 @@ export function useApartmentTourData() {
           amount: 0,
           isCustom: fee.isCustom,
           isOneTime: fee.isOneTime,
+          unitId: null,
         }),
       );
 
@@ -489,7 +499,8 @@ export function useApartmentTourData() {
           label: category.label,
           amount: 0,
           isCustom: category.isCustom,
-          unitId: undefined, // Default fees are always building-wide
+          unitId: null, // Default fees are always building-wide
+          isOneTime: false,
         }));
         const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
           id: `onetime-${apartmentId}-${index}`,
@@ -497,7 +508,7 @@ export function useApartmentTourData() {
           amount: 0,
           isCustom: fee.isCustom,
           isOneTime: fee.isOneTime,
-          unitId: undefined, // One-time fees are always building-wide
+          unitId: null, // One-time fees are always building-wide
         }));
         const allDefaults = [...defaultMonthlyCosts, ...defaultOneTimeFees];
 
@@ -527,7 +538,8 @@ export function useApartmentTourData() {
         label: category.label,
         amount: 0,
         isCustom: category.isCustom,
-        unitId: undefined, // Default fees are always building-wide
+        unitId: null, // Default fees are always building-wide
+        isOneTime: false,
       }));
       const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
         id: `onetime-${apartmentId}-${index}`,
@@ -535,7 +547,7 @@ export function useApartmentTourData() {
         amount: 0,
         isCustom: fee.isCustom,
         isOneTime: fee.isOneTime,
-        unitId: undefined, // One-time fees are always building-wide
+        unitId: null, // One-time fees are always building-wide
       }));
       const allDefaults = [...defaultMonthlyCosts, ...defaultOneTimeFees];
 
@@ -555,8 +567,8 @@ export function useApartmentTourData() {
   const addCustomCost = (
     apartmentId: string,
     label: string,
-    unitId?: string,
-    isOneTime?: boolean,
+    unitId: string | null = null,
+    isOneTime: boolean = false,
   ) => {
     setCosts((prev) => {
       const existing = prev.find((c) => c.apartmentId === apartmentId);
@@ -583,6 +595,8 @@ export function useApartmentTourData() {
         label: category.label,
         amount: 0,
         isCustom: category.isCustom,
+        unitId: null, // Default fees are always building-wide
+        isOneTime: false,
       }));
       const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
         id: `onetime-${apartmentId}-${index}`,
@@ -590,6 +604,7 @@ export function useApartmentTourData() {
         amount: 0,
         isCustom: fee.isCustom,
         isOneTime: fee.isOneTime,
+        unitId: null, // One-time fees are always building-wide
       }));
 
       const newApartmentCost: ApartmentCost = {
@@ -628,6 +643,7 @@ export function useApartmentTourData() {
       id: `unit-${Date.now()}`,
       name: unitName,
       apartmentId,
+      rentPrice: null,
     };
 
     setUnits((prev) => [...prev, newUnit]);

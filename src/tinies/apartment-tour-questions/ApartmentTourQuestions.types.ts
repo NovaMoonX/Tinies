@@ -2,8 +2,8 @@ export interface Question {
   id: string;
   category: string;
   question: string;
-  isCustom?: boolean;
-  associatedApartments?: string[]; // Array of apartment IDs this question is associated with
+  isCustom: boolean;
+  associatedApartments: string[]; // Array of apartment IDs this question is associated with
 }
 
 export interface CustomLink {
@@ -16,17 +16,17 @@ export interface Unit {
   id: string;
   name: string;
   apartmentId: string;
-  rentPrice?: number;
+  rentPrice: number | null;
 }
 
 export interface Apartment {
   id: string;
   name: string;
-  address?: string;
-  website?: string;
-  phoneNumber?: string;
-  email?: string;
-  customLinks?: CustomLink[];
+  address: string;
+  website: string;
+  phoneNumber: string;
+  email: string;
+  customLinks: CustomLink[];
 }
 
 export interface Answer {
@@ -51,9 +51,9 @@ export interface CostItem {
   id: string;
   label: string;
   amount: number;
-  isCustom?: boolean;
-  unitId?: string; // Optional: if specified, this cost is for a specific unit
-  isOneTime?: boolean; // True for one-time fees (security deposits, application fees), false/undefined for monthly costs
+  isCustom: boolean;
+  unitId: string | null; // Optional: if specified, this cost is for a specific unit
+  isOneTime: boolean; // True for one-time fees (security deposits, application fees), false/undefined for monthly costs
 }
 
 export interface ApartmentCost {

@@ -92,6 +92,8 @@ Create additional files as needed using the **exact file naming pattern**:
 
 **File:** `Calculator.types.ts`
 
+IMPORTANT: Never have `undefined` fields in your types. Use `null` instead.
+
 ```typescript
 export interface CalculatorOperation {
   type: 'add' | 'subtract' | 'multiply' | 'divide';
@@ -283,7 +285,7 @@ Add a new lazy-loaded route in `src/routes/AppRoutes.tsx`:
 ```
 src/tinies/calculator/
 ├── Calculator.tsx          # Main component (required)
-├── Calculator.types.ts     # Types and interfaces
+├── Calculator.types.ts     # Types and interfaces (never have undefined fields. Use null instead)
 ├── Calculator.data.ts      # Static data
 ├── Calculator.utils.ts     # Utility functions
 ├── Calculator.hooks.ts     # Custom hooks

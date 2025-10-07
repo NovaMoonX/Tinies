@@ -12,7 +12,7 @@ export async function getTinyData<T>(
   userId: string,
 ): Promise<T | null> {
   try {
-    const dataRef = ref(database, `${tinyPath}/${userId}`);
+    const dataRef = ref(database, `tinies/${tinyPath}/${userId}`);
     const snapshot = await get(dataRef);
 
     if (snapshot.exists()) {
@@ -37,7 +37,7 @@ export async function saveTinyData<T extends Record<string, unknown>>(
   data: T,
 ): Promise<void> {
   try {
-    const dataRef = ref(database, `${tinyPath}/${userId}`);
+    const dataRef = ref(database, `tinies/${tinyPath}/${userId}`);
     await set(dataRef, data);
   } catch (error) {
     console.error('Error saving tiny data:', error);
@@ -57,7 +57,7 @@ export async function updateTinyData<T extends Record<string, unknown>>(
   updates: Partial<T>,
 ): Promise<void> {
   try {
-    const dataRef = ref(database, `${tinyPath}/${userId}`);
+    const dataRef = ref(database, `tinies/${tinyPath}/${userId}`);
     await update(dataRef, updates as Record<string, unknown>);
   } catch (error) {
     console.error('Error updating tiny data:', error);
