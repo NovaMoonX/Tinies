@@ -498,6 +498,12 @@ export function ApartmentDetailsSection({
     (amenity) => !apartment.keyAmenities?.includes(amenity),
   );
 
+  // Reset amenity add state when apartment changes
+  useEffect(() => {
+    setIsAddingAmenity(false);
+    setShowAmenityDropdown(false);
+  }, [apartment.id]);
+
   return (
     <div className='space-y-6'>
       <h2 className='text-foreground/90 text-xl font-semibold'>
@@ -742,9 +748,9 @@ export function ApartmentDetailsSection({
               {apartment.keyAmenities.map((amenity) => (
                 <Badge
                   key={amenity}
+                  use='interactive'
                   variant='secondary'
                   className='group relative'
-                  aria-hidden={false}
                 >
                   {amenity}
                   <button
@@ -1595,22 +1601,6 @@ export function ComparisonSection({
   getCosts,
   getUnits,
 }: ComparisonSectionProps) {
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
-    new Set(),
-  );
-
-  const toggleQuestion = (questionId: string) => {
-    const newExpanded = new Set(expandedQuestions);
-
-    if (newExpanded.has(questionId)) {
-      newExpanded.delete(questionId);
-    } else {
-      newExpanded.add(questionId);
-    }
-
-    setExpandedQuestions(newExpanded);
-  };
-
   // Calculate total monthly cost for each apartment
   const calculateTotalMonthlyCost = (apartmentId: string): number => {
     const units = getUnits(apartmentId);
@@ -1746,7 +1736,7 @@ export function ComparisonSection({
               className='bg-muted/30 rounded-xl'
               buttonClassName='px-4 py-3'
             >
-              <div className='space-y-2 px-4 pb-4'>
+              <div className='space-y-2 px-4 pt-2 pb-4'>
                 {breakdown.length > 0 ? (
                   breakdown.map((item, index) => (
                     <div
@@ -1788,7 +1778,7 @@ export function ComparisonSection({
 
               {hasAmenities ? (
                 <div className='flex flex-wrap gap-2'>
-                  {apartment.keyAmenities.map((amenity, index) => (
+                  {apartment.keyAmenities.sort().map((amenity, index) => (
                     <Badge key={index} variant='secondary' size='sm'>
                       {amenity}
                     </Badge>
@@ -1824,59 +1814,45 @@ export function ComparisonSection({
                 </h4>
 
                 <div className='space-y-2'>
-                  {categoryQuestions.map((question) => {
-                    const isExpanded = expandedQuestions.has(question.id);
+                  {categoryQuestions.map((question) => (
+                    <Disclosure
+                      key={question.id}
+                      label={
+                        <span className='text-foreground/90 text-sm font-medium'>
+                          {question.question}
+                        </span>
+                      }
+                      className='bg-muted/30 rounded-xl'
+                      buttonClassName='p-4'
+                    >
+                      <div className='space-y-2 px-3 pb-4'>
+                        {apartments.map((apartment) => {
+                          const answer = getAnswer(
+                            question.id,
+                            apartment.id,
+                          );
 
-                    return (
-                      <div
-                        key={question.id}
-                        className='bg-muted/30 overflow-hidden rounded-xl'
-                      >
-                        <button
-                          onClick={() => toggleQuestion(question.id)}
-                          className='hover:bg-muted/40 w-full p-4 text-left transition-colors'
-                        >
-                          <div className='flex items-start justify-between gap-3'>
-                            <span className='text-foreground/90 flex-1 text-sm font-medium'>
-                              {question.question}
-                            </span>
-                            <span className='text-foreground/50 shrink-0 text-xs'>
-                              {isExpanded ? '▼' : '▶'}
-                            </span>
-                          </div>
-                        </button>
-
-                        {isExpanded && (
-                          <div className='border-foreground/10 space-y-3 border-t p-4'>
-                            {apartments.map((apartment) => {
-                              const answer = getAnswer(
-                                question.id,
-                                apartment.id,
-                              );
-
-                              return (
-                                <div
-                                  key={apartment.id}
-                                  className='bg-background rounded-lg p-3'
-                                >
-                                  <div className='text-foreground/70 mb-1 text-xs font-medium'>
-                                    {apartment.name}
-                                  </div>
-                                  <div className='text-foreground/90 text-sm'>
-                                    {answer || (
-                                      <span className='text-foreground/40 italic'>
-                                        No answer yet
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                          return (
+                            <div
+                              key={apartment.id}
+                              className='bg-background rounded-lg p-3'
+                            >
+                              <div className='text-foreground/70 mb-1 text-xs font-medium'>
+                                {apartment.name}
+                              </div>
+                              <div className='text-foreground/90 text-sm'>
+                                {answer || (
+                                  <span className='text-foreground/40 italic'>
+                                    No answer yet
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </Disclosure>
+                  ))}
                 </div>
               </div>
             );
