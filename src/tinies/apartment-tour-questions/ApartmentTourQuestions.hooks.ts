@@ -183,6 +183,7 @@ export function useApartmentTourData() {
       phoneNumber: '',
       email: '',
       customLinks: [],
+      keyAmenities: [],
     };
     setApartments((prev) => [...prev, newApartment]);
     // Auto-select if it's the first apartment
@@ -411,6 +412,44 @@ export function useApartmentTourData() {
     const result = apartments.find((a) => a.id === apartmentId);
     return result;
   };
+
+  // Amenities management
+  const addAmenity = (apartmentId: string, amenity: string) => {
+    setApartments((prev) =>
+      prev.map((apt) => {
+        if (apt.id === apartmentId) {
+          const currentAmenities = apt.keyAmenities || [];
+          // Only add if not already present
+          if (!currentAmenities.includes(amenity)) {
+            return { ...apt, keyAmenities: [...currentAmenities, amenity] };
+          }
+        }
+        return apt;
+      }),
+    );
+  };
+
+  const deleteAmenity = (apartmentId: string, amenity: string) => {
+    setApartments((prev) =>
+      prev.map((apt) => {
+        if (apt.id === apartmentId && apt.keyAmenities) {
+          const updatedAmenities = apt.keyAmenities.filter((a) => a !== amenity);
+          return {
+            ...apt,
+            keyAmenities: updatedAmenities,
+          };
+        }
+        return apt;
+      }),
+    );
+  };
+
+  const getAllAmenities = (): string[] => {
+    const allAmenities = apartments.flatMap((apt) => apt.keyAmenities || []);
+    const uniqueAmenities = Array.from(new Set(allAmenities)).sort();
+    return uniqueAmenities;
+  };
+
 
   // Cost management
   const getCosts = (apartmentId: string, unitId?: string): CostItem[] => {
@@ -738,6 +777,9 @@ export function useApartmentTourData() {
     addCustomLink,
     deleteCustomLink,
     getApartment,
+    addAmenity,
+    deleteAmenity,
+    getAllAmenities,
     getCosts,
     updateCost,
     addCustomCost,

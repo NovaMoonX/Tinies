@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Checkbox,
   CopyButton,
@@ -454,6 +455,9 @@ interface ApartmentDetailsSectionProps {
   onUpdateDetails: (updates: Partial<Apartment>) => void;
   onAddCustomLink: (label: string, url: string) => void;
   onDeleteCustomLink: (linkId: string) => void;
+  onAddAmenity: (amenity: string) => void;
+  onDeleteAmenity: (amenity: string) => void;
+  allAmenities: string[];
 }
 
 export function ApartmentDetailsSection({
@@ -461,10 +465,16 @@ export function ApartmentDetailsSection({
   onUpdateDetails,
   onAddCustomLink,
   onDeleteCustomLink,
+  onAddAmenity,
+  onDeleteAmenity,
+  allAmenities,
 }: ApartmentDetailsSectionProps) {
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [newLinkLabel, setNewLinkLabel] = useState('');
   const [newLinkUrl, setNewLinkUrl] = useState('');
+  const [isAddingAmenity, setIsAddingAmenity] = useState(false);
+  const [newAmenity, setNewAmenity] = useState('');
+  const [showAmenityDropdown, setShowAmenityDropdown] = useState(false);
 
   const handleAddLink = () => {
     if (newLinkLabel.trim() && newLinkUrl.trim()) {
@@ -474,6 +484,20 @@ export function ApartmentDetailsSection({
       setIsAddingLink(false);
     }
   };
+
+  const handleAddAmenity = (amenity: string) => {
+    if (amenity.trim()) {
+      onAddAmenity(amenity.trim());
+      setNewAmenity('');
+      setIsAddingAmenity(false);
+      setShowAmenityDropdown(false);
+    }
+  };
+
+  // Get amenities from other apartments that aren't in current apartment
+  const availableAmenities = allAmenities.filter(
+    (amenity) => !apartment.keyAmenities?.includes(amenity),
+  );
 
   return (
     <div className='space-y-6'>
@@ -624,6 +648,112 @@ export function ApartmentDetailsSection({
               />
             )}
           </div>
+        </div>
+
+        {/* Key Amenities */}
+        <div>
+          <div className='mb-2 flex items-center justify-between'>
+            <label className='text-foreground/70 text-sm font-medium'>
+              Key Amenities
+            </label>
+            {!isAddingAmenity && (
+              <Button
+                onClick={() => setIsAddingAmenity(true)}
+                variant='outline'
+                size='sm'
+                className='inline-flex items-center'
+              >
+                <Plus className='mr-1 h-3 w-3' />
+                Add Amenity
+              </Button>
+            )}
+          </div>
+
+          {isAddingAmenity && (
+            <div className='bg-background mb-3 rounded-xl p-4'>
+              <div className='space-y-3'>
+                <Input
+                  placeholder='Enter new amenity (e.g., "Pool", "Gym")'
+                  variant='outline'
+                  value={newAmenity}
+                  onChange={({ target: { value } }) => setNewAmenity(value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newAmenity.trim()) {
+                      handleAddAmenity(newAmenity);
+                    }
+                  }}
+                />
+                <div className='flex gap-2'>
+                  <Button
+                    onClick={() => handleAddAmenity(newAmenity)}
+                    size='sm'
+                    disabled={!newAmenity.trim()}
+                  >
+                    Add New
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsAddingAmenity(false);
+                      setNewAmenity('');
+                      setShowAmenityDropdown(false);
+                    }}
+                    variant='outline'
+                    size='sm'
+                  >
+                    Cancel
+                  </Button>
+                  {availableAmenities.length > 0 && (
+                    <Button
+                      onClick={() => setShowAmenityDropdown(!showAmenityDropdown)}
+                      variant='secondary'
+                      size='sm'
+                    >
+                      {showAmenityDropdown ? 'Hide' : 'Select From'} Existing (
+                      {availableAmenities.length})
+                    </Button>
+                  )}
+                </div>
+
+                {showAmenityDropdown && availableAmenities.length > 0 && (
+                  <div className='bg-muted/20 max-h-48 overflow-y-auto rounded-lg p-3'>
+                    <div className='flex flex-wrap gap-2'>
+                      {availableAmenities.map((amenity) => (
+                        <Badge
+                          key={amenity}
+                          variant='secondary'
+                          className='cursor-pointer hover:opacity-80'
+                          onClick={() => handleAddAmenity(amenity)}
+                        >
+                          + {amenity}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {apartment.keyAmenities && apartment.keyAmenities.length > 0 ? (
+            <div className='flex flex-wrap gap-2'>
+              {apartment.keyAmenities.map((amenity) => (
+                <Badge key={amenity} variant='secondary' className='group relative'>
+                  {amenity}
+                  <button
+                    onClick={() => onDeleteAmenity(amenity)}
+                    className='ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-red-500/20'
+                    title='Remove amenity'
+                  >
+                    <X className='h-3 w-3' />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          ) : !isAddingAmenity ? (
+            <p className='text-foreground/60 py-4 text-center text-sm'>
+              No key amenities yet. Add amenities like Pool, Gym, Parking, etc.
+            </p>
+          ) : null}
         </div>
 
         {/* Custom Links */}

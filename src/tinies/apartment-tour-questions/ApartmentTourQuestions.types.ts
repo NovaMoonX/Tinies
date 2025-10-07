@@ -27,6 +27,7 @@ export interface Apartment {
   phoneNumber: string;
   email: string;
   customLinks: CustomLink[];
+  keyAmenities: string[];
 }
 
 export interface Answer {
