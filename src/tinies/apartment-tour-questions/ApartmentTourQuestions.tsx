@@ -43,6 +43,9 @@ export function ApartmentTourQuestions() {
     addCustomLink,
     deleteCustomLink,
     getApartment,
+    addAmenity,
+    deleteAmenity,
+    getAllAmenities,
     getCosts,
     updateCost,
     addCustomCost,
@@ -202,6 +205,13 @@ export function ApartmentTourQuestions() {
                     onDeleteCustomLink={(linkId) =>
                       deleteCustomLink(selectedApartment, linkId)
                     }
+                    onAddAmenity={(amenity) =>
+                      addAmenity(selectedApartment, amenity)
+                    }
+                    onDeleteAmenity={(amenity) =>
+                      deleteAmenity(selectedApartment, amenity)
+                    }
+                    allAmenities={getAllAmenities()}
                   />
                 )}
               </div>
