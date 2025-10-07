@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import {
   Question,
@@ -10,15 +10,23 @@ import {
   ApartmentCost,
   CostItem,
   Unit,
+  ApartmentTourQuestionsData,
 } from './ApartmentTourQuestions.types';
 import {
   QUESTIONS,
   DEFAULT_COST_CATEGORIES,
   DEFAULT_ONE_TIME_FEES,
 } from './ApartmentTourQuestions.data';
+import { useAuth } from '@hooks/useAuth';
+import {
+  getTinyData,
+  saveTinyData,
+  FIRESTORE_COLLECTIONS,
+} from '@lib/firebase';
 
 export function useApartmentTourData() {
   const actionModal = useActionModal();
+  const { user } = useAuth();
 
   const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
@@ -30,6 +38,95 @@ export function useApartmentTourData() {
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [costs, setCosts] = useState<ApartmentCost[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Debounce timer ref
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load data from Firestore on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) {
+        setIsLoaded(true);
+        return;
+      }
+
+      try {
+        const data = await getTinyData<ApartmentTourQuestionsData>(
+          FIRESTORE_COLLECTIONS.APARTMENT_TOUR_QUESTIONS,
+          user.uid,
+        );
+
+        if (data) {
+          setCustomQuestions(data.customQuestions || []);
+          setApartments(data.apartments || []);
+          setSelectedApartment(data.selectedApartment || null);
+          setAnswers(data.answers || []);
+          setNotes(data.notes || []);
+          setFollowUps(data.followUps || []);
+          setCosts(data.costs || []);
+          setUnits(data.units || []);
+        }
+      } catch (error) {
+        console.error('Error loading apartment tour data:', error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // Save data to Firestore with debouncing
+  useEffect(() => {
+    // Don't save until initial data is loaded
+    if (!isLoaded || !user) return;
+
+    // Clear existing timer
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    // Set new timer to save after 1 second of inactivity
+    saveTimerRef.current = setTimeout(() => {
+      const dataToSave: ApartmentTourQuestionsData = {
+        customQuestions,
+        apartments,
+        selectedApartment,
+        answers,
+        notes,
+        followUps,
+        costs,
+        units,
+      };
+
+      saveTinyData(
+        FIRESTORE_COLLECTIONS.APARTMENT_TOUR_QUESTIONS,
+        user.uid,
+        dataToSave,
+      ).catch((error) => {
+        console.error('Error saving apartment tour data:', error);
+      });
+    }, 1000);
+
+    // Cleanup function
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [
+    customQuestions,
+    apartments,
+    selectedApartment,
+    answers,
+    notes,
+    followUps,
+    costs,
+    units,
+    isLoaded,
+    user,
+  ]);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 

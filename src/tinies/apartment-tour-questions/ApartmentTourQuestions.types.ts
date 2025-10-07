@@ -60,3 +60,18 @@ export interface ApartmentCost {
   apartmentId: string;
   costs: CostItem[];
 }
+
+/**
+ * Firestore document structure for Apartment Tour Questions
+ * This represents all the data for a user's apartment tour questions
+ */
+export interface ApartmentTourQuestionsData extends Record<string, unknown> {
+  customQuestions: Question[];
+  apartments: Apartment[];
+  selectedApartment: string | null;
+  answers: Answer[];
+  notes: ApartmentNote[];
+  followUps: FollowUpItem[];
+  costs: ApartmentCost[];
+  units: Unit[];
+}
