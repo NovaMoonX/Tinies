@@ -1,0 +1,22 @@
+{
+  "name": "Tinies",
+  "short_name": "Tinies",
+  "description": "Where dreams take their first breath. These are my tinies—concept apps, MVPs, whimsical experiments, and those late-night 'wouldn't it be cool if…' sparks.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+}
