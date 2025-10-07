@@ -1601,13 +1601,13 @@ export function ComparisonSection({
 
   const toggleQuestion = (questionId: string) => {
     const newExpanded = new Set(expandedQuestions);
-    
+
     if (newExpanded.has(questionId)) {
       newExpanded.delete(questionId);
     } else {
       newExpanded.add(questionId);
     }
-    
+
     setExpandedQuestions(newExpanded);
   };
 
@@ -1637,7 +1637,7 @@ export function ComparisonSection({
   const getMonthlyCostsBreakdown = (apartmentId: string) => {
     const units = getUnits(apartmentId);
     const allCosts = getCosts(apartmentId);
-    
+
     const breakdown: { label: string; amount: number }[] = [];
 
     // Add rent
@@ -1661,22 +1661,6 @@ export function ComparisonSection({
     return breakdown;
   };
 
-  // Calculate answered questions count for each apartment
-  const getAnsweredCount = (apartmentId: string): number => {
-    const relevantQuestions = allQuestions.filter((question) => {
-      if (!question.associatedApartments || question.associatedApartments.length === 0) {
-        return true;
-      }
-      return question.associatedApartments.includes(apartmentId);
-    });
-
-    const answeredCount = relevantQuestions.filter(
-      (q) => getAnswer(q.id, apartmentId) !== '',
-    ).length;
-
-    return answeredCount;
-  };
-
   if (apartments.length < 2) {
     return (
       <div className='bg-muted/30 rounded-2xl p-12 text-center'>
@@ -1685,7 +1669,8 @@ export function ComparisonSection({
             Add at least 2 apartments to compare
           </p>
           <p className='text-sm'>
-            Comparison view helps you see pricing, amenities, and answers side by side.
+            Comparison view helps you see pricing, amenities, and answers side
+            by side.
           </p>
         </div>
       </div>
@@ -1695,15 +1680,18 @@ export function ComparisonSection({
   // Get only questions that are shared amongst ALL apartments (default questions or questions associated with all apartments)
   const sharedQuestions = allQuestions.filter((question) => {
     // Default questions (no associations) are shared
-    if (!question.associatedApartments || question.associatedApartments.length === 0) {
+    if (
+      !question.associatedApartments ||
+      question.associatedApartments.length === 0
+    ) {
       return true;
     }
-    
+
     // Custom questions are only shared if they're associated with ALL apartments being compared
     const isAssociatedWithAll = apartments.every((apt) =>
       question.associatedApartments!.includes(apt.id),
     );
-    
+
     return isAssociatedWithAll;
   });
 
@@ -1737,7 +1725,7 @@ export function ComparisonSection({
         <h3 className='text-foreground/90 text-lg font-semibold'>
           💰 Price Comparison
         </h3>
-        
+
         {apartments.map((apartment) => {
           const totalMonthlyCost = calculateTotalMonthlyCost(apartment.id);
           const breakdown = getMonthlyCostsBreakdown(apartment.id);
@@ -1746,7 +1734,7 @@ export function ComparisonSection({
             <Disclosure
               key={apartment.id}
               label={
-                <div className='flex items-center justify-between w-full pr-3'>
+                <div className='flex w-full items-center justify-between pr-3'>
                   <span className='text-foreground/90 font-medium'>
                     {apartment.name}
                   </span>
@@ -1758,7 +1746,7 @@ export function ComparisonSection({
               className='bg-muted/30 rounded-xl'
               buttonClassName='px-4 py-3'
             >
-              <div className='px-4 pb-4 space-y-2'>
+              <div className='space-y-2 px-4 pb-4'>
                 {breakdown.length > 0 ? (
                   breakdown.map((item, index) => (
                     <div
@@ -1787,27 +1775,21 @@ export function ComparisonSection({
         <h3 className='text-foreground/90 text-lg font-semibold'>
           ✨ Amenities Comparison
         </h3>
-        
+
         {apartments.map((apartment) => {
-          const hasAmenities = apartment.keyAmenities && apartment.keyAmenities.length > 0;
+          const hasAmenities =
+            apartment.keyAmenities && apartment.keyAmenities.length > 0;
 
           return (
-            <div
-              key={apartment.id}
-              className='bg-muted/30 rounded-xl p-4'
-            >
-              <h4 className='text-foreground/90 font-medium mb-3'>
+            <div key={apartment.id} className='bg-muted/30 rounded-xl p-4'>
+              <h4 className='text-foreground/90 mb-3 font-medium'>
                 {apartment.name}
               </h4>
-              
+
               {hasAmenities ? (
                 <div className='flex flex-wrap gap-2'>
                   {apartment.keyAmenities.map((amenity, index) => (
-                    <Badge
-                      key={index}
-                      variant='secondary'
-                      size='sm'
-                    >
+                    <Badge key={index} variant='secondary' size='sm'>
                       {amenity}
                     </Badge>
                   ))}
@@ -1848,33 +1830,36 @@ export function ComparisonSection({
                     return (
                       <div
                         key={question.id}
-                        className='bg-muted/30 rounded-xl overflow-hidden'
+                        className='bg-muted/30 overflow-hidden rounded-xl'
                       >
                         <button
                           onClick={() => toggleQuestion(question.id)}
-                          className='w-full text-left p-4 hover:bg-muted/40 transition-colors'
+                          className='hover:bg-muted/40 w-full p-4 text-left transition-colors'
                         >
                           <div className='flex items-start justify-between gap-3'>
-                            <span className='text-foreground/90 text-sm font-medium flex-1'>
+                            <span className='text-foreground/90 flex-1 text-sm font-medium'>
                               {question.question}
                             </span>
-                            <span className='text-foreground/50 text-xs shrink-0'>
+                            <span className='text-foreground/50 shrink-0 text-xs'>
                               {isExpanded ? '▼' : '▶'}
                             </span>
                           </div>
                         </button>
 
                         {isExpanded && (
-                          <div className='border-t border-foreground/10 p-4 space-y-3'>
+                          <div className='border-foreground/10 space-y-3 border-t p-4'>
                             {apartments.map((apartment) => {
-                              const answer = getAnswer(question.id, apartment.id);
+                              const answer = getAnswer(
+                                question.id,
+                                apartment.id,
+                              );
 
                               return (
                                 <div
                                   key={apartment.id}
                                   className='bg-background rounded-lg p-3'
                                 >
-                                  <div className='text-foreground/70 text-xs font-medium mb-1'>
+                                  <div className='text-foreground/70 mb-1 text-xs font-medium'>
                                     {apartment.name}
                                   </div>
                                   <div className='text-foreground/90 text-sm'>
@@ -1902,7 +1887,8 @@ export function ComparisonSection({
       {categories.length === 0 && (
         <div className='bg-muted/30 rounded-2xl p-8 text-center'>
           <p className='text-foreground/60 text-sm'>
-            No shared questions have been answered yet. Answer questions to see comparisons here.
+            No shared questions have been answered yet. Answer questions to see
+            comparisons here.
           </p>
         </div>
       )}

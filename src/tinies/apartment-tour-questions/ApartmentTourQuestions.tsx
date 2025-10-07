@@ -76,7 +76,7 @@ export function ApartmentTourQuestions() {
     // Filter questions based on apartment associations
     const filteredQuestions = allQuestions.filter((question) => {
       // Show default questions (no associatedApartments) for all apartments
-      if (!question.associatedApartments) {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
         return true;
       }
       // Show custom questions only if they're associated with the selected apartment
@@ -105,7 +105,7 @@ export function ApartmentTourQuestions() {
 
     // Only count questions that are relevant for this apartment
     const relevantQuestions = allQuestions.filter((question) => {
-      if (!question.associatedApartments) {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
         return true; // Default questions show for all apartments
       }
       return question.associatedApartments.includes(selectedApartment);
@@ -121,7 +121,7 @@ export function ApartmentTourQuestions() {
 
     // Only count questions that are relevant for this apartment
     return allQuestions.filter((question) => {
-      if (!question.associatedApartments) {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
         return true; // Default questions show for all apartments
       }
       return question.associatedApartments.includes(selectedApartment);

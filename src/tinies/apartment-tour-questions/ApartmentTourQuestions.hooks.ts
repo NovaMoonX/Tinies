@@ -355,7 +355,7 @@ export function useApartmentTourData() {
     apartmentId: string,
   ): boolean => {
     const question = customQuestions.find((q) => q.id === questionId);
-    if (!question || !question.associatedApartments) {
+    if (!question || !question.associatedApartments || question.associatedApartments.length === 0) {
       return true; // Default questions and non-associated custom questions show for all apartments
     }
     const result = question.associatedApartments.includes(apartmentId);
