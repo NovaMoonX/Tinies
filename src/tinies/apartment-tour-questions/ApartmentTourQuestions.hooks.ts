@@ -21,7 +21,7 @@ import { useAuth } from '@hooks/useAuth';
 import {
   getTinyData,
   saveTinyData,
-  FIRESTORE_COLLECTIONS,
+  DATABASE_PATHS,
 } from '@lib/firebase';
 
 export function useApartmentTourData() {
@@ -43,7 +43,7 @@ export function useApartmentTourData() {
   // Debounce timer ref
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load data from Firestore on mount
+  // Load data from Firebase Realtime Database on mount
   useEffect(() => {
     const loadData = async () => {
       if (!user) {
@@ -53,7 +53,7 @@ export function useApartmentTourData() {
 
       try {
         const data = await getTinyData<ApartmentTourQuestionsData>(
-          FIRESTORE_COLLECTIONS.APARTMENT_TOUR_QUESTIONS,
+          DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
           user.uid,
         );
 
@@ -77,7 +77,7 @@ export function useApartmentTourData() {
     loadData();
   }, [user]);
 
-  // Save data to Firestore with debouncing
+  // Save data to Firebase Realtime Database with debouncing
   useEffect(() => {
     // Don't save until initial data is loaded
     if (!isLoaded || !user) return;
@@ -101,7 +101,7 @@ export function useApartmentTourData() {
       };
 
       saveTinyData(
-        FIRESTORE_COLLECTIONS.APARTMENT_TOUR_QUESTIONS,
+        DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
         user.uid,
         dataToSave,
       ).catch((error) => {
