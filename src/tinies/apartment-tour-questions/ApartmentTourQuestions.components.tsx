@@ -1437,3 +1437,287 @@ export function QuestionAssociationButton({
     </Modal>
   );
 }
+
+interface ComparisonSectionProps {
+  apartments: Apartment[];
+  allQuestions: Question[];
+  getAnswer: (questionId: string, apartmentId: string) => string;
+  getCosts: (apartmentId: string, unitId?: string) => CostItem[];
+  getUnits: (apartmentId: string) => Unit[];
+}
+
+export function ComparisonSection({
+  apartments,
+  allQuestions,
+  getAnswer,
+  getCosts,
+  getUnits,
+}: ComparisonSectionProps) {
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const toggleQuestion = (questionId: string) => {
+    const newExpanded = new Set(expandedQuestions);
+    
+    if (newExpanded.has(questionId)) {
+      newExpanded.delete(questionId);
+    } else {
+      newExpanded.add(questionId);
+    }
+    
+    setExpandedQuestions(newExpanded);
+  };
+
+  // Calculate total monthly cost for each apartment
+  const calculateTotalMonthlyCost = (apartmentId: string): number => {
+    const units = getUnits(apartmentId);
+    const allCosts = getCosts(apartmentId);
+
+    let total = 0;
+
+    // Add rent from first unit if available
+    if (units.length > 0 && units[0].rentPrice) {
+      total += units[0].rentPrice;
+    }
+
+    // Add monthly costs (not one-time fees)
+    allCosts.forEach((cost) => {
+      if (!cost.isOneTime && cost.amount) {
+        total += cost.amount;
+      }
+    });
+
+    return total;
+  };
+
+  // Calculate answered questions count for each apartment
+  const getAnsweredCount = (apartmentId: string): number => {
+    const relevantQuestions = allQuestions.filter((question) => {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
+        return true;
+      }
+      return question.associatedApartments.includes(apartmentId);
+    });
+
+    const answeredCount = relevantQuestions.filter(
+      (q) => getAnswer(q.id, apartmentId) !== '',
+    ).length;
+
+    return answeredCount;
+  };
+
+  if (apartments.length < 2) {
+    return (
+      <div className='bg-muted/30 rounded-2xl p-12 text-center'>
+        <div className='text-foreground/60 space-y-2'>
+          <p className='text-lg font-medium'>
+            Add at least 2 apartments to compare
+          </p>
+          <p className='text-sm'>
+            Comparison view helps you see pricing and answers side by side.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Get questions with at least one answer across all apartments
+  const questionsWithAnswers = allQuestions.filter((question) => {
+    const hasAnswer = apartments.some((apt) => {
+      const isRelevant =
+        !question.associatedApartments ||
+        question.associatedApartments.length === 0 ||
+        question.associatedApartments.includes(apt.id);
+
+      const answer = getAnswer(question.id, apt.id);
+      
+      return isRelevant && answer !== '';
+    });
+
+    return hasAnswer;
+  });
+
+  // Group questions by category
+  const questionsByCategory = questionsWithAnswers.reduce(
+    (acc, question) => {
+      if (!acc[question.category]) {
+        acc[question.category] = [];
+      }
+      acc[question.category].push(question);
+      return acc;
+    },
+    {} as Record<string, Question[]>,
+  );
+
+  const categories = Object.keys(questionsByCategory);
+
+  return (
+    <div className='space-y-6'>
+      {/* Apartment Cards - Stacked vertically for mobile */}
+      <div className='space-y-4'>
+        {apartments.map((apartment) => {
+          const units = getUnits(apartment.id);
+          const totalMonthlyCost = calculateTotalMonthlyCost(apartment.id);
+          const answeredCount = getAnsweredCount(apartment.id);
+          const relevantQuestions = allQuestions.filter((question) => {
+            if (!question.associatedApartments || question.associatedApartments.length === 0) {
+              return true;
+            }
+            return question.associatedApartments.includes(apartment.id);
+          });
+          const totalCount = relevantQuestions.length;
+
+          return (
+            <div
+              key={apartment.id}
+              className='bg-muted/30 rounded-2xl p-6 space-y-4'
+            >
+              <div className='space-y-2'>
+                <h3 className='text-foreground/90 text-xl font-semibold'>
+                  {apartment.name}
+                </h3>
+                {apartment.address && (
+                  <p className='text-foreground/60 text-sm'>
+                    {apartment.address}
+                  </p>
+                )}
+              </div>
+
+              {/* Pricing Summary */}
+              <div className='bg-background rounded-xl p-4 space-y-3'>
+                <div className='flex items-baseline justify-between'>
+                  <span className='text-foreground/70 text-sm font-medium'>
+                    Total Monthly Cost
+                  </span>
+                  <span className='text-foreground/90 text-2xl font-bold'>
+                    ${totalMonthlyCost.toFixed(2)}
+                  </span>
+                </div>
+                
+                {units.length > 0 && units[0].rentPrice !== null && (
+                  <div className='flex items-center justify-between text-sm'>
+                    <span className='text-foreground/60'>Rent</span>
+                    <span className='text-foreground/80'>
+                      ${units[0].rentPrice.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                {totalMonthlyCost > 0 && units.length > 0 && units[0].rentPrice !== null && (
+                  <div className='flex items-center justify-between text-sm'>
+                    <span className='text-foreground/60'>Other Fees</span>
+                    <span className='text-foreground/80'>
+                      ${(totalMonthlyCost - (units[0].rentPrice || 0)).toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Questions Progress */}
+              <div className='bg-background rounded-xl p-4'>
+                <div className='flex items-center justify-between'>
+                  <span className='text-foreground/70 text-sm font-medium'>
+                    Questions Answered
+                  </span>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-foreground/90 text-lg font-semibold'>
+                      {answeredCount} / {totalCount}
+                    </span>
+                    <span className='bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-medium'>
+                      {totalCount > 0
+                        ? Math.round((answeredCount / totalCount) * 100)
+                        : 0}
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Questions Comparison */}
+      {categories.length > 0 && (
+        <div className='space-y-6'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            Question Answers
+          </h3>
+
+          {categories.map((category) => {
+            const categoryQuestions = questionsByCategory[category];
+
+            return (
+              <div key={category} className='space-y-3'>
+                <h4 className='text-foreground/80 text-base font-medium'>
+                  {category}
+                </h4>
+
+                <div className='space-y-2'>
+                  {categoryQuestions.map((question) => {
+                    const isExpanded = expandedQuestions.has(question.id);
+
+                    return (
+                      <div
+                        key={question.id}
+                        className='bg-muted/30 rounded-xl overflow-hidden'
+                      >
+                        <button
+                          onClick={() => toggleQuestion(question.id)}
+                          className='w-full text-left p-4 hover:bg-muted/40 transition-colors'
+                        >
+                          <div className='flex items-start justify-between gap-3'>
+                            <span className='text-foreground/90 text-sm font-medium flex-1'>
+                              {question.question}
+                            </span>
+                            <span className='text-foreground/50 text-xs shrink-0'>
+                              {isExpanded ? '▼' : '▶'}
+                            </span>
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className='border-t border-foreground/10 p-4 space-y-3'>
+                            {apartments.map((apartment) => {
+                              const isRelevant =
+                                !question.associatedApartments ||
+                                question.associatedApartments.length === 0 ||
+                                question.associatedApartments.includes(apartment.id);
+
+                              const answer = getAnswer(question.id, apartment.id);
+
+                              if (!isRelevant) return null;
+
+                              return (
+                                <div
+                                  key={apartment.id}
+                                  className='bg-background rounded-lg p-3'
+                                >
+                                  <div className='text-foreground/70 text-xs font-medium mb-1'>
+                                    {apartment.name}
+                                  </div>
+                                  <div className='text-foreground/90 text-sm'>
+                                    {answer || (
+                                      <span className='text-foreground/40 italic'>
+                                        No answer yet
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

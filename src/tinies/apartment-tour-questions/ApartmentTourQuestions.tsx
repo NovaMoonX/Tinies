@@ -13,6 +13,7 @@ import {
   AddQuestionForm,
   ApartmentDetailsSection,
   ApartmentSelector,
+  ComparisonSection,
   FollowUpSection,
   NoteSection,
   PricingSection,
@@ -176,36 +177,43 @@ export function ApartmentTourQuestions() {
         />
 
         {/* Questions by Category */}
-        {selectedApartment ? (
+        {apartments.length > 0 ? (
           <Tabs
-            defaultValue='details'
+            defaultValue={selectedApartment ? 'details' : 'compare'}
             variant='underline'
             tabsList={[
-              { value: 'details', label: '🏠 Details' },
-              { value: 'pricing', label: '💰 Pricing' },
-              { value: 'questions', label: '❓ Questions' },
-              { value: 'notes', label: '📝 Notes' },
-              { value: 'followups', label: '📋 Follow-ups' },
+              ...(selectedApartment
+                ? [
+                    { value: 'details', label: '🏠 Details' },
+                    { value: 'pricing', label: '💰 Pricing' },
+                    { value: 'questions', label: '❓ Questions' },
+                    { value: 'notes', label: '📝 Notes' },
+                    { value: 'followups', label: '📋 Follow-ups' },
+                  ]
+                : []),
+              { value: 'compare', label: '🔄 Compare' },
             ]}
           >
-            <TabsContent value='details'>
-              <div className='pt-6'>
-                {getApartment(selectedApartment) && (
-                  <ApartmentDetailsSection
-                    apartment={getApartment(selectedApartment)!}
-                    onUpdateDetails={(updates) =>
-                      updateApartmentDetails(selectedApartment, updates)
-                    }
-                    onAddCustomLink={(label, url) =>
-                      addCustomLink(selectedApartment, label, url)
-                    }
-                    onDeleteCustomLink={(linkId) =>
-                      deleteCustomLink(selectedApartment, linkId)
-                    }
-                  />
-                )}
-              </div>
-            </TabsContent>
+            {selectedApartment && (
+              <>
+                <TabsContent value='details'>
+                  <div className='pt-6'>
+                    {getApartment(selectedApartment) && (
+                      <ApartmentDetailsSection
+                        apartment={getApartment(selectedApartment)!}
+                        onUpdateDetails={(updates) =>
+                          updateApartmentDetails(selectedApartment, updates)
+                        }
+                        onAddCustomLink={(label, url) =>
+                          addCustomLink(selectedApartment, label, url)
+                        }
+                        onDeleteCustomLink={(linkId) =>
+                          deleteCustomLink(selectedApartment, linkId)
+                        }
+                      />
+                    )}
+                  </div>
+                </TabsContent>
 
             <TabsContent value='pricing'>
               <div className='pt-6'>
@@ -405,6 +413,20 @@ export function ApartmentTourQuestions() {
                   onAddFollowUp={(text) => addFollowUp(selectedApartment, text)}
                   onToggleFollowUp={toggleFollowUp}
                   onDeleteFollowUp={deleteFollowUp}
+                />
+              </div>
+            </TabsContent>
+              </>
+            )}
+
+            <TabsContent value='compare'>
+              <div className='pt-6'>
+                <ComparisonSection
+                  apartments={apartments}
+                  allQuestions={allQuestions}
+                  getAnswer={getAnswer}
+                  getCosts={getCosts}
+                  getUnits={getUnits}
                 />
               </div>
             </TabsContent>
