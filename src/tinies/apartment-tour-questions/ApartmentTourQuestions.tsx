@@ -13,6 +13,7 @@ import {
   AddQuestionForm,
   ApartmentDetailsSection,
   ApartmentSelector,
+  ComparisonSection,
   FollowUpSection,
   NoteSection,
   PricingSection,
@@ -75,7 +76,7 @@ export function ApartmentTourQuestions() {
     // Filter questions based on apartment associations
     const filteredQuestions = allQuestions.filter((question) => {
       // Show default questions (no associatedApartments) for all apartments
-      if (!question.associatedApartments) {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
         return true;
       }
       // Show custom questions only if they're associated with the selected apartment
@@ -104,7 +105,7 @@ export function ApartmentTourQuestions() {
 
     // Only count questions that are relevant for this apartment
     const relevantQuestions = allQuestions.filter((question) => {
-      if (!question.associatedApartments) {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
         return true; // Default questions show for all apartments
       }
       return question.associatedApartments.includes(selectedApartment);
@@ -120,7 +121,7 @@ export function ApartmentTourQuestions() {
 
     // Only count questions that are relevant for this apartment
     return allQuestions.filter((question) => {
-      if (!question.associatedApartments) {
+      if (!question.associatedApartments || question.associatedApartments.length === 0) {
         return true; // Default questions show for all apartments
       }
       return question.associatedApartments.includes(selectedApartment);
@@ -179,33 +180,40 @@ export function ApartmentTourQuestions() {
         />
 
         {/* Questions by Category */}
-        {selectedApartment ? (
+        {apartments.length > 0 ? (
           <Tabs
-            defaultValue='details'
+            defaultValue={selectedApartment ? 'details' : 'compare'}
             variant='underline'
             tabsList={[
-              { value: 'details', label: '🏠 Details' },
-              { value: 'pricing', label: '💰 Pricing' },
-              { value: 'questions', label: '❓ Questions' },
-              { value: 'notes', label: '📝 Notes' },
-              { value: 'followups', label: '📋 Follow-ups' },
+              ...(selectedApartment
+                ? [
+                    { value: 'details', label: '🏠 Details' },
+                    { value: 'pricing', label: '💰 Pricing' },
+                    { value: 'questions', label: '❓ Questions' },
+                    { value: 'notes', label: '📝 Notes' },
+                    { value: 'followups', label: '📋 Follow-ups' },
+                  ]
+                : []),
+              { value: 'compare', label: '🔄 Compare' },
             ]}
           >
-            <TabsContent value='details'>
-              <div className='pt-6'>
-                {getApartment(selectedApartment) && (
-                  <ApartmentDetailsSection
-                    apartment={getApartment(selectedApartment)!}
-                    onUpdateDetails={(updates) =>
-                      updateApartmentDetails(selectedApartment, updates)
-                    }
-                    onAddCustomLink={(label, url) =>
-                      addCustomLink(selectedApartment, label, url)
-                    }
-                    onDeleteCustomLink={(linkId) =>
-                      deleteCustomLink(selectedApartment, linkId)
-                    }
-                    onAddAmenity={(amenity) =>
+            {selectedApartment && (
+              <>
+                <TabsContent value='details'>
+                  <div className='pt-6'>
+                    {getApartment(selectedApartment) && (
+                      <ApartmentDetailsSection
+                        apartment={getApartment(selectedApartment)!}
+                        onUpdateDetails={(updates) =>
+                          updateApartmentDetails(selectedApartment, updates)
+                        }
+                        onAddCustomLink={(label, url) =>
+                          addCustomLink(selectedApartment, label, url)
+                        }
+                        onDeleteCustomLink={(linkId) =>
+                          deleteCustomLink(selectedApartment, linkId)
+                        }
+                        onAddAmenity={(amenity) =>
                       addAmenity(selectedApartment, amenity)
                     }
                     onDeleteAmenity={(amenity) =>
@@ -213,9 +221,9 @@ export function ApartmentTourQuestions() {
                     }
                     allAmenities={getAllAmenities()}
                   />
-                )}
-              </div>
-            </TabsContent>
+                    )}
+                  </div>
+                </TabsContent>
 
             <TabsContent value='pricing'>
               <div className='pt-6'>
@@ -415,6 +423,20 @@ export function ApartmentTourQuestions() {
                   onAddFollowUp={(text) => addFollowUp(selectedApartment, text)}
                   onToggleFollowUp={toggleFollowUp}
                   onDeleteFollowUp={deleteFollowUp}
+                />
+              </div>
+            </TabsContent>
+              </>
+            )}
+
+            <TabsContent value='compare'>
+              <div className='pt-6'>
+                <ComparisonSection
+                  apartments={apartments}
+                  allQuestions={allQuestions}
+                  getAnswer={getAnswer}
+                  getCosts={getCosts}
+                  getUnits={getUnits}
                 />
               </div>
             </TabsContent>

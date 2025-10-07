@@ -3,6 +3,7 @@ import {
   Button,
   Checkbox,
   CopyButton,
+  Disclosure,
   Form,
   FormFactories,
   Input,
@@ -497,6 +498,12 @@ export function ApartmentDetailsSection({
     (amenity) => !apartment.keyAmenities?.includes(amenity),
   );
 
+  // Reset amenity add state when apartment changes
+  useEffect(() => {
+    setIsAddingAmenity(false);
+    setShowAmenityDropdown(false);
+  }, [apartment.id]);
+
   return (
     <div className='space-y-6'>
       <h2 className='text-foreground/90 text-xl font-semibold'>
@@ -741,9 +748,9 @@ export function ApartmentDetailsSection({
               {apartment.keyAmenities.map((amenity) => (
                 <Badge
                   key={amenity}
+                  use='interactive'
                   variant='secondary'
                   className='group relative'
-                  aria-hidden={false}
                 >
                   {amenity}
                   <button
@@ -1576,5 +1583,291 @@ export function QuestionAssociationButton({
         </div>
       </div>
     </Modal>
+  );
+}
+
+interface ComparisonSectionProps {
+  apartments: Apartment[];
+  allQuestions: Question[];
+  getAnswer: (questionId: string, apartmentId: string) => string;
+  getCosts: (apartmentId: string, unitId?: string) => CostItem[];
+  getUnits: (apartmentId: string) => Unit[];
+}
+
+export function ComparisonSection({
+  apartments,
+  allQuestions,
+  getAnswer,
+  getCosts,
+  getUnits,
+}: ComparisonSectionProps) {
+  // Calculate total monthly cost for each apartment
+  const calculateTotalMonthlyCost = (apartmentId: string): number => {
+    const units = getUnits(apartmentId);
+    const allCosts = getCosts(apartmentId);
+
+    let total = 0;
+
+    // Add rent from first unit if available
+    if (units.length > 0 && units[0].rentPrice) {
+      total += units[0].rentPrice;
+    }
+
+    // Add monthly costs (not one-time fees)
+    allCosts.forEach((cost) => {
+      if (!cost.isOneTime && cost.amount) {
+        total += cost.amount;
+      }
+    });
+
+    return total;
+  };
+
+  // Get monthly costs breakdown for an apartment
+  const getMonthlyCostsBreakdown = (apartmentId: string) => {
+    const units = getUnits(apartmentId);
+    const allCosts = getCosts(apartmentId);
+
+    const breakdown: { label: string; amount: number }[] = [];
+
+    // Add rent
+    if (units.length > 0 && units[0].rentPrice) {
+      breakdown.push({
+        label: `Rent (${units[0].name})`,
+        amount: units[0].rentPrice,
+      });
+    }
+
+    // Add monthly costs (not one-time fees)
+    allCosts.forEach((cost) => {
+      if (!cost.isOneTime && cost.amount > 0) {
+        breakdown.push({
+          label: cost.label,
+          amount: cost.amount,
+        });
+      }
+    });
+
+    return breakdown;
+  };
+
+  if (apartments.length < 2) {
+    return (
+      <div className='bg-muted/30 rounded-2xl p-12 text-center'>
+        <div className='text-foreground/60 space-y-2'>
+          <p className='text-lg font-medium'>
+            Add at least 2 apartments to compare
+          </p>
+          <p className='text-sm'>
+            Comparison view helps you see pricing, amenities, and answers side
+            by side.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Get only questions that are shared amongst ALL apartments (default questions or questions associated with all apartments)
+  const sharedQuestions = allQuestions.filter((question) => {
+    // Default questions (no associations) are shared
+    if (
+      !question.associatedApartments ||
+      question.associatedApartments.length === 0
+    ) {
+      return true;
+    }
+
+    // Custom questions are only shared if they're associated with ALL apartments being compared
+    const isAssociatedWithAll = apartments.every((apt) =>
+      question.associatedApartments!.includes(apt.id),
+    );
+
+    return isAssociatedWithAll;
+  });
+
+  // Filter to only questions with at least one answer
+  const questionsWithAnswers = sharedQuestions.filter((question) => {
+    const hasAnswer = apartments.some((apt) => {
+      const answer = getAnswer(question.id, apt.id);
+      return answer !== '';
+    });
+    return hasAnswer;
+  });
+
+  // Group questions by category
+  const questionsByCategory = questionsWithAnswers.reduce(
+    (acc, question) => {
+      if (!acc[question.category]) {
+        acc[question.category] = [];
+      }
+      acc[question.category].push(question);
+      return acc;
+    },
+    {} as Record<string, Question[]>,
+  );
+
+  const categories = Object.keys(questionsByCategory);
+
+  return (
+    <div className='space-y-6'>
+      {/* Price Comparison */}
+      <div className='space-y-4'>
+        <h3 className='text-foreground/90 text-lg font-semibold'>
+          💰 Price Comparison
+        </h3>
+
+        {apartments.map((apartment) => {
+          const totalMonthlyCost = calculateTotalMonthlyCost(apartment.id);
+          const breakdown = getMonthlyCostsBreakdown(apartment.id);
+
+          return (
+            <Disclosure
+              key={apartment.id}
+              label={
+                <div className='flex w-full items-center justify-between pr-3'>
+                  <span className='text-foreground/90 font-medium'>
+                    {apartment.name}
+                  </span>
+                  <span className='text-foreground/90 text-lg font-bold'>
+                    ${totalMonthlyCost.toFixed(2)}/mo
+                  </span>
+                </div>
+              }
+              className='bg-muted/30 rounded-xl'
+              buttonClassName='px-4 py-3'
+            >
+              <div className='space-y-2 px-4 pt-2 pb-4'>
+                {breakdown.length > 0 ? (
+                  breakdown.map((item, index) => (
+                    <div
+                      key={index}
+                      className='flex items-center justify-between text-sm'
+                    >
+                      <span className='text-foreground/70'>{item.label}</span>
+                      <span className='text-foreground/80 font-medium'>
+                        ${item.amount.toFixed(2)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className='text-foreground/50 text-sm italic'>
+                    No pricing information available
+                  </p>
+                )}
+              </div>
+            </Disclosure>
+          );
+        })}
+      </div>
+
+      {/* Amenities Comparison */}
+      <div className='space-y-4'>
+        <h3 className='text-foreground/90 text-lg font-semibold'>
+          ✨ Amenities Comparison
+        </h3>
+
+        {apartments.map((apartment) => {
+          const hasAmenities =
+            apartment.keyAmenities && apartment.keyAmenities.length > 0;
+
+          return (
+            <div key={apartment.id} className='bg-muted/30 rounded-xl p-4'>
+              <h4 className='text-foreground/90 mb-3 font-medium'>
+                {apartment.name}
+              </h4>
+
+              {hasAmenities ? (
+                <div className='flex flex-wrap gap-2'>
+                  {apartment.keyAmenities.sort().map((amenity, index) => (
+                    <Badge key={index} variant='secondary' size='sm'>
+                      {amenity}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className='text-foreground/50 text-sm italic'>
+                  No amenities listed
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Questions Comparison - Only Shared Questions */}
+      {categories.length > 0 && (
+        <div className='space-y-4'>
+          <h3 className='text-foreground/90 text-lg font-semibold'>
+            ❓ Questions Comparison
+          </h3>
+          <p className='text-foreground/60 text-sm'>
+            Comparing answers to questions shared across all apartments
+          </p>
+
+          {categories.map((category) => {
+            const categoryQuestions = questionsByCategory[category];
+
+            return (
+              <div key={category} className='space-y-3'>
+                <h4 className='text-foreground/80 text-base font-medium'>
+                  {category}
+                </h4>
+
+                <div className='space-y-2'>
+                  {categoryQuestions.map((question) => (
+                    <Disclosure
+                      key={question.id}
+                      label={
+                        <span className='text-foreground/90 text-sm font-medium'>
+                          {question.question}
+                        </span>
+                      }
+                      className='bg-muted/30 rounded-xl'
+                      buttonClassName='p-4'
+                    >
+                      <div className='space-y-2 px-3 pb-4'>
+                        {apartments.map((apartment) => {
+                          const answer = getAnswer(
+                            question.id,
+                            apartment.id,
+                          );
+
+                          return (
+                            <div
+                              key={apartment.id}
+                              className='bg-background rounded-lg p-3'
+                            >
+                              <div className='text-foreground/70 mb-1 text-xs font-medium'>
+                                {apartment.name}
+                              </div>
+                              <div className='text-foreground/90 text-sm'>
+                                {answer || (
+                                  <span className='text-foreground/40 italic'>
+                                    No answer yet
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Disclosure>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {categories.length === 0 && (
+        <div className='bg-muted/30 rounded-2xl p-8 text-center'>
+          <p className='text-foreground/60 text-sm'>
+            No shared questions have been answered yet. Answer questions to see
+            comparisons here.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
