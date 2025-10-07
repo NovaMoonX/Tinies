@@ -1,24 +1,28 @@
-import { useState } from 'react';
+import { useAuth } from '@hooks/useAuth';
+import { DATABASE_PATHS, getTinyData, saveTinyData } from '@lib/firebase';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Question,
-  Apartment,
-  Answer,
-  ApartmentNote,
-  FollowUpItem,
-  CustomLink,
-  ApartmentCost,
-  CostItem,
-  Unit,
-} from './ApartmentTourQuestions.types';
-import {
-  QUESTIONS,
   DEFAULT_COST_CATEGORIES,
   DEFAULT_ONE_TIME_FEES,
+  QUESTIONS,
 } from './ApartmentTourQuestions.data';
+import {
+  Answer,
+  Apartment,
+  ApartmentCost,
+  ApartmentNote,
+  ApartmentTourQuestionsData,
+  CostItem,
+  CustomLink,
+  FollowUpItem,
+  Question,
+  Unit,
+} from './ApartmentTourQuestions.types';
 
 export function useApartmentTourData() {
   const actionModal = useActionModal();
+  const { user } = useAuth();
 
   const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
@@ -30,13 +34,119 @@ export function useApartmentTourData() {
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [costs, setCosts] = useState<ApartmentCost[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const resetData = useCallback(() => {
+    setCustomQuestions([]);
+    setApartments([]);
+    setSelectedApartment(null);
+    setAnswers([]);
+    setNotes([]);
+    setFollowUps([]);
+    setCosts([]);
+    setUnits([]);
+  }, []);
+
+  // Debounce timer ref
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load data from Firebase Realtime Database on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) {
+        setIsLoaded(true);
+        return;
+      }
+
+      try {
+        const data = await getTinyData<ApartmentTourQuestionsData>(
+          DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
+          user.uid,
+        );
+
+        if (data) {
+          setCustomQuestions((prev) => data.customQuestions || prev || []);
+          setApartments((prev) => data.apartments || prev || []);
+          setSelectedApartment(
+            (prev) => data.selectedApartment || prev || null,
+          );
+          setAnswers((prev) => data.answers || prev || []);
+          setNotes((prev) => data.notes || prev || []);
+          setFollowUps((prev) => data.followUps || prev || []);
+          setCosts((prev) => data.costs || prev || []);
+          setUnits((prev) => data.units || prev || []);
+        }
+      } catch (error) {
+        console.error('Error loading apartment tour data:', error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    if (!user) {
+      resetData();
+    }
+
+    loadData();
+  }, [user, resetData]);
+
+  // Save data to Firebase Realtime Database with debouncing
+  useEffect(() => {
+    // Don't save until initial data is loaded
+    if (!isLoaded || !user) return;
+
+    // Clear existing timer
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    // Set new timer to save after 2 seconds of inactivity
+    saveTimerRef.current = setTimeout(() => {
+      const dataToSave: ApartmentTourQuestionsData = {
+        customQuestions,
+        apartments,
+        selectedApartment,
+        answers,
+        notes,
+        followUps,
+        costs,
+        units,
+      };
+
+      saveTinyData(
+        DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
+        user.uid,
+        dataToSave,
+      ).catch((error) => {
+        console.error('Error saving apartment tour data:', error);
+      });
+    }, 2000);
+
+    // Cleanup function
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [
+    customQuestions,
+    apartments,
+    selectedApartment,
+    answers,
+    notes,
+    followUps,
+    costs,
+    units,
+    isLoaded,
+    user,
+  ]);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 
   const addCustomQuestion = (
     question: string,
     category: string,
-    associatedApartments?: string[],
+    associatedApartments: string[] = [],
   ) => {
     const newQuestion: Question = {
       id: `custom-${Date.now()}`,
@@ -68,6 +178,11 @@ export function useApartmentTourData() {
     const newApartment: Apartment = {
       id: `apt-${Date.now()}`,
       name,
+      address: '',
+      website: '',
+      phoneNumber: '',
+      email: '',
+      customLinks: [],
     };
     setApartments((prev) => [...prev, newApartment]);
     // Auto-select if it's the first apartment
@@ -206,8 +321,7 @@ export function useApartmentTourData() {
 
           const result = {
             ...q,
-            associatedApartments:
-              newAssociations.length > 0 ? newAssociations : undefined,
+            associatedApartments: newAssociations,
           };
           return result;
         }
@@ -218,7 +332,7 @@ export function useApartmentTourData() {
 
   const updateQuestionAssociations = (
     questionId: string,
-    associatedApartments?: string[],
+    associatedApartments: string[] = [],
   ) => {
     // If associatedApartments is an empty array, delete the question
     if (associatedApartments && associatedApartments.length === 0) {
@@ -285,7 +399,7 @@ export function useApartmentTourData() {
           );
           return {
             ...apt,
-            customLinks: updatedLinks.length > 0 ? updatedLinks : undefined,
+            customLinks: updatedLinks,
           };
         }
         return apt;
@@ -319,6 +433,8 @@ export function useApartmentTourData() {
             label: category.label,
             amount: 0,
             isCustom: category.isCustom,
+            unitId: null,
+            isOneTime: false,
           }),
         );
         const defaultOneTimeFees: CostItem[] = DEFAULT_ONE_TIME_FEES.map(
@@ -328,6 +444,7 @@ export function useApartmentTourData() {
             amount: 0,
             isCustom: fee.isCustom,
             isOneTime: fee.isOneTime,
+            unitId: null,
           }),
         );
         return [...defaultMonthlyCosts, ...defaultOneTimeFees];
@@ -345,6 +462,8 @@ export function useApartmentTourData() {
           label: category.label,
           amount: 0,
           isCustom: category.isCustom,
+          unitId: null,
+          isOneTime: false,
         }),
       );
       const defaultOneTimeFees: CostItem[] = DEFAULT_ONE_TIME_FEES.map(
@@ -354,6 +473,7 @@ export function useApartmentTourData() {
           amount: 0,
           isCustom: fee.isCustom,
           isOneTime: fee.isOneTime,
+          unitId: null,
         }),
       );
 
@@ -363,11 +483,7 @@ export function useApartmentTourData() {
     return [];
   };
 
-  const updateCost = (
-    apartmentId: string,
-    costId: string,
-    amount: number,
-  ) => {
+  const updateCost = (apartmentId: string, costId: string, amount: number) => {
     setCosts((prev) => {
       const existing = prev.find((c) => c.apartmentId === apartmentId);
 
@@ -387,20 +503,23 @@ export function useApartmentTourData() {
         }
 
         // Cost doesn't exist, need to add defaults first
-        const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
-          id: `default-${apartmentId}-${index}`,
-          label: category.label,
-          amount: 0,
-          isCustom: category.isCustom,
-          unitId: undefined, // Default fees are always building-wide
-        }));
+        const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map(
+          (category, index) => ({
+            id: `default-${apartmentId}-${index}`,
+            label: category.label,
+            amount: 0,
+            isCustom: category.isCustom,
+            unitId: null, // Default fees are always building-wide
+            isOneTime: false,
+          }),
+        );
         const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
           id: `onetime-${apartmentId}-${index}`,
           label: fee.label,
           amount: 0,
           isCustom: fee.isCustom,
           isOneTime: fee.isOneTime,
-          unitId: undefined, // One-time fees are always building-wide
+          unitId: null, // One-time fees are always building-wide
         }));
         const allDefaults = [...defaultMonthlyCosts, ...defaultOneTimeFees];
 
@@ -425,20 +544,23 @@ export function useApartmentTourData() {
       }
 
       // Create new apartment cost entry with default categories + one-time fees
-      const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
-        id: `default-${apartmentId}-${index}`,
-        label: category.label,
-        amount: 0,
-        isCustom: category.isCustom,
-        unitId: undefined, // Default fees are always building-wide
-      }));
+      const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map(
+        (category, index) => ({
+          id: `default-${apartmentId}-${index}`,
+          label: category.label,
+          amount: 0,
+          isCustom: category.isCustom,
+          unitId: null, // Default fees are always building-wide
+          isOneTime: false,
+        }),
+      );
       const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
         id: `onetime-${apartmentId}-${index}`,
         label: fee.label,
         amount: 0,
         isCustom: fee.isCustom,
         isOneTime: fee.isOneTime,
-        unitId: undefined, // One-time fees are always building-wide
+        unitId: null, // One-time fees are always building-wide
       }));
       const allDefaults = [...defaultMonthlyCosts, ...defaultOneTimeFees];
 
@@ -458,8 +580,8 @@ export function useApartmentTourData() {
   const addCustomCost = (
     apartmentId: string,
     label: string,
-    unitId?: string,
-    isOneTime?: boolean,
+    unitId: string | null = null,
+    isOneTime: boolean = false,
   ) => {
     setCosts((prev) => {
       const existing = prev.find((c) => c.apartmentId === apartmentId);
@@ -481,18 +603,23 @@ export function useApartmentTourData() {
       }
 
       // Initialize with default categories + one-time fees
-      const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map((category, index) => ({
-        id: `default-${apartmentId}-${index}`,
-        label: category.label,
-        amount: 0,
-        isCustom: category.isCustom,
-      }));
+      const defaultMonthlyCosts = DEFAULT_COST_CATEGORIES.map(
+        (category, index) => ({
+          id: `default-${apartmentId}-${index}`,
+          label: category.label,
+          amount: 0,
+          isCustom: category.isCustom,
+          unitId: null, // Default fees are always building-wide
+          isOneTime: false,
+        }),
+      );
       const defaultOneTimeFees = DEFAULT_ONE_TIME_FEES.map((fee, index) => ({
         id: `onetime-${apartmentId}-${index}`,
         label: fee.label,
         amount: 0,
         isCustom: fee.isCustom,
         isOneTime: fee.isOneTime,
+        unitId: null, // One-time fees are always building-wide
       }));
 
       const newApartmentCost: ApartmentCost = {
@@ -531,6 +658,7 @@ export function useApartmentTourData() {
       id: `unit-${Date.now()}`,
       name: unitName,
       apartmentId,
+      rentPrice: null,
     };
 
     setUnits((prev) => [...prev, newUnit]);
