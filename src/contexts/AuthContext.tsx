@@ -1,23 +1,15 @@
-import { createContext, useState, useEffect } from 'react';
-import { type User } from 'firebase/auth';
+import { AuthContext } from '@/hooks/useAuth';
 import { auth } from '@/lib/firebase';
+import { type User } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 
 export interface AuthContextValue {
   user: User | null;
 }
-
-// Create the context
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-// Export the context for use in hooks
-export { AuthContext };
-
-// Auth provider props
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
-// Auth provider component
 export function AuthProvider({ children }: AuthProviderProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -36,5 +28,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
       {children}
     </AuthContext.Provider>
   );
-};
-
+}
