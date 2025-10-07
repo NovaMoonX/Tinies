@@ -2,18 +2,18 @@ import { Question, CostItem } from './ApartmentTourQuestions.types';
 
 // Building-wide default cost categories (not associated with units)
 // Note: Rent is handled separately and can be unit-specific
-export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount'>[] = [
-  { label: 'Water', isCustom: false },
-  { label: 'Electricity', isCustom: false },
-  { label: 'Gas', isCustom: false },
-  { label: 'Internet', isCustom: false },
-  { label: 'Trash', isCustom: false },
-  { label: 'Pet Fee', isCustom: false },
-  { label: 'Parking', isCustom: false },
+export const DEFAULT_COST_CATEGORIES: Omit<CostItem, 'id' | 'amount' | 'unitId'>[] = [
+  { label: 'Water', isCustom: false, isOneTime: false },
+  { label: 'Electricity', isCustom: false, isOneTime: false },
+  { label: 'Gas', isCustom: false, isOneTime: false },
+  { label: 'Internet', isCustom: false, isOneTime: false },
+  { label: 'Trash', isCustom: false, isOneTime: false },
+  { label: 'Pet Fee', isCustom: false, isOneTime: false },
+  { label: 'Parking', isCustom: false, isOneTime: false },
 ];
 
 // Default one-time fees (paid once, not monthly)
-export const DEFAULT_ONE_TIME_FEES: Omit<CostItem, 'id' | 'amount'>[] = [
+export const DEFAULT_ONE_TIME_FEES: Omit<CostItem, 'id' | 'amount' | 'unitId'>[] = [
   { label: 'Security Deposit', isCustom: false, isOneTime: true },
   { label: 'Application Fee', isCustom: false, isOneTime: true },
   { label: 'Admin Fee', isCustom: false, isOneTime: true },
@@ -21,7 +21,7 @@ export const DEFAULT_ONE_TIME_FEES: Omit<CostItem, 'id' | 'amount'>[] = [
   { label: 'Key Fee', isCustom: false, isOneTime: true },
 ];
 
-const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
+const BASE_QUESTIONS: Omit<Question, 'id' | 'isCustom' | 'associatedApartments'>[] = [
   // Pricing & Lease Terms
   {
     category: 'Pricing & Lease Terms',
@@ -182,4 +182,6 @@ const BASE_QUESTIONS: Omit<Question, 'id'>[] = [
 export const QUESTIONS = BASE_QUESTIONS.map((q, index) => ({
   ...q,
   id: `q${index + 1}`,
+  isCustom: false,
+  associatedApartments: [],
 }));

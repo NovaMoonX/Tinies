@@ -747,7 +747,7 @@ function PricingSectionInput({
   onUpdateCost,
 }: {
   cost: CostItem;
-  onUpdateCost: (costId: string, amount: number, unitId?: string) => void;
+  onUpdateCost: (costId: string, amount: number, unitId?: string | null) => void;
 }) {
   return (
     <div className='flex items-center gap-2'>
@@ -758,7 +758,7 @@ function PricingSectionInput({
         variant='outline'
         value={cost.amount || ''}
         onChange={({ target: { value } }) =>
-          onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId)
+          onUpdateCost(cost.id, parseFloat(value) || 0, cost.unitId || null)
         }
         className='max-w-32'
         min='0'
