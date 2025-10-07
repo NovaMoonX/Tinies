@@ -489,8 +489,6 @@ export function ApartmentDetailsSection({
     if (amenity.trim()) {
       onAddAmenity(amenity.trim());
       setNewAmenity('');
-      setIsAddingAmenity(false);
-      setShowAmenityDropdown(false);
     }
   };
 
@@ -704,12 +702,16 @@ export function ApartmentDetailsSection({
                   </Button>
                   {availableAmenities.length > 0 && (
                     <Button
-                      onClick={() => setShowAmenityDropdown(!showAmenityDropdown)}
+                      onClick={() =>
+                        setShowAmenityDropdown(!showAmenityDropdown)
+                      }
                       variant='secondary'
                       size='sm'
                     >
-                      {showAmenityDropdown ? 'Hide' : 'Select From'} Existing (
-                      {availableAmenities.length})
+                      {showAmenityDropdown &&
+                        `Hide existing amenities (${availableAmenities.length})`}
+                      {!showAmenityDropdown &&
+                        `Select From Existing (${availableAmenities.length})`}
                     </Button>
                   )}
                 </div>
@@ -737,11 +739,16 @@ export function ApartmentDetailsSection({
           {apartment.keyAmenities && apartment.keyAmenities.length > 0 ? (
             <div className='flex flex-wrap gap-2'>
               {apartment.keyAmenities.map((amenity) => (
-                <Badge key={amenity} variant='secondary' className='group relative'>
+                <Badge
+                  key={amenity}
+                  variant='secondary'
+                  className='group relative'
+                  aria-hidden={false}
+                >
                   {amenity}
                   <button
                     onClick={() => onDeleteAmenity(amenity)}
-                    className='ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-red-500/20'
+                    className='hover:bg-destructive/20 ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full'
                     title='Remove amenity'
                   >
                     <X className='h-3 w-3' />
@@ -877,7 +884,11 @@ function PricingSectionInput({
   onUpdateCost,
 }: {
   cost: CostItem;
-  onUpdateCost: (costId: string, amount: number, unitId?: string | null) => void;
+  onUpdateCost: (
+    costId: string,
+    amount: number,
+    unitId?: string | null,
+  ) => void;
 }) {
   return (
     <div className='flex items-center gap-2'>
