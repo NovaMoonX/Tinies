@@ -1,13 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
 import {
   CarSelector,
   CarDetailsSection,
   AddServiceEntryForm,
+  EditServiceEntryForm,
   ServiceEntryCard,
 } from './CarMaintenance.components';
 import { useCarMaintenance } from './CarMaintenance.hooks';
 import { getServiceSummary } from './CarMaintenance.utils';
+import { ServiceEntry } from './CarMaintenance.types';
 
 export function CarMaintenance() {
   const {
@@ -22,9 +24,12 @@ export function CarMaintenance() {
     setSelectedCar,
     addServiceEntry,
     deleteServiceEntry,
+    updateServiceEntry,
     getServiceEntriesForCar,
     addServiceLocation,
   } = useCarMaintenance();
+
+  const [editingEntry, setEditingEntry] = useState<ServiceEntry | null>(null);
 
   const currentCar = selectedCar ? getCar(selectedCar) : null;
   const serviceEntries = useMemo(
@@ -45,6 +50,26 @@ export function CarMaintenance() {
     const result = getServiceSummary(serviceEntries.length, totalCost);
     return result;
   }, [selectedCar, serviceEntries]);
+
+  const handleUpdateService = (
+    entryId: string,
+    updates: {
+      serviceType: string;
+      isRoutine: boolean;
+      title: string;
+      description: string;
+      date: string;
+      time: string;
+      locationId: string | null;
+      mileage: number | null;
+      cost: number | null;
+      notes: string;
+      carParts: string[];
+    },
+  ) => {
+    updateServiceEntry(entryId, updates);
+    setEditingEntry(null);
+  };
 
   return (
     <div className='tiny-page'>
@@ -100,13 +125,24 @@ export function CarMaintenance() {
           >
             <TabsContent value='services'>
               <div className='space-y-6 pt-6'>
-                <AddServiceEntryForm
-                  carId={selectedCar}
-                  serviceLocations={serviceLocations}
-                  allCarParts={allCarParts}
-                  onAdd={addServiceEntry}
-                  onAddLocation={addServiceLocation}
-                />
+                {!editingEntry ? (
+                  <AddServiceEntryForm
+                    carId={selectedCar}
+                    serviceLocations={serviceLocations}
+                    allCarParts={allCarParts}
+                    onAdd={addServiceEntry}
+                    onAddLocation={addServiceLocation}
+                  />
+                ) : (
+                  <EditServiceEntryForm
+                    entry={editingEntry}
+                    serviceLocations={serviceLocations}
+                    allCarParts={allCarParts}
+                    onUpdate={handleUpdateService}
+                    onCancel={() => setEditingEntry(null)}
+                    onAddLocation={addServiceLocation}
+                  />
+                )}
 
                 {serviceEntries.length > 0 ? (
                   <div className='space-y-4'>
@@ -123,6 +159,7 @@ export function CarMaintenance() {
                             location={location}
                             allCarParts={allCarParts}
                             onDelete={deleteServiceEntry}
+                            onEdit={setEditingEntry}
                           />
                         );
                       })}
