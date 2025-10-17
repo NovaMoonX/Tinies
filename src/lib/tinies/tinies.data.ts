@@ -21,6 +21,16 @@ export const ALL_TINIES: Tiny[] = [
 		status: 'in-progress',
 		route: '/apartment-tour-questions',
 	},
+	{
+		id: 'car-maintenance',
+		title: 'Car Maintenance Tracker',
+		description: 'Track maintenance and service records for multiple vehicles. Log routine services like oil changes, track service locations, and automatically tag affected car parts.',
+		startDate: '2025-10-17',
+		tags: ['automotive', 'tools', 'tracking', 'maintenance'],
+		categories: ['lifestyle', 'utility'],
+		status: 'in-progress',
+		route: '/car-maintenance',
+	},
 ];
 
 export const ALL_TAGS = Array.from(
