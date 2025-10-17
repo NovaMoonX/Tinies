@@ -31,6 +31,15 @@ export const router = createBrowserRouter([
           return { Component: ApartmentTourQuestions };
         },
       },
+      // Recipe Book (lazy loaded)
+      {
+        path: 'recipe-book',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: RecipeBook } = await import('@tinies/recipe-book/RecipeBook');
+          return { Component: RecipeBook };
+        },
+      },
     ],
   },
 ]);
