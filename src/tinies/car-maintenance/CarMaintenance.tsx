@@ -92,6 +92,7 @@ export function CarMaintenance() {
           onSelectCar={setSelectedCar}
           onAddCar={addCar}
           onDeleteCar={deleteCar}
+          onUpdateCar={(carId, name) => updateCar(carId, { name })}
         />
 
         {/* Summary Card */}

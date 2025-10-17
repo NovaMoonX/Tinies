@@ -18,7 +18,7 @@ import {
   CarPart,
 } from './CarMaintenance.types';
 import { ROUTINE_SERVICE_TYPES } from './CarMaintenance.data';
-import { formatDate, formatCurrency, formatMileage } from './CarMaintenance.utils';
+import { formatDate, formatCurrency, formatMileage, autoDetectCarParts } from './CarMaintenance.utils';
 
 /* ===== Car Selector Component ===== */
 interface CarSelectorProps {
@@ -27,6 +27,7 @@ interface CarSelectorProps {
   onSelectCar: (carId: string | null) => void;
   onAddCar: (name: string) => void;
   onDeleteCar: (carId: string) => void;
+  onUpdateCar: (carId: string, name: string) => void;
 }
 
 export function CarSelector({
@@ -35,9 +36,12 @@ export function CarSelector({
   onSelectCar,
   onAddCar,
   onDeleteCar,
+  onUpdateCar,
 }: CarSelectorProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCarName, setNewCarName] = useState('');
+  const [editingCarId, setEditingCarId] = useState<string | null>(null);
+  const [editingCarName, setEditingCarName] = useState('');
 
   const handleAdd = () => {
     if (newCarName.trim()) {
@@ -45,6 +49,24 @@ export function CarSelector({
       setNewCarName('');
       setShowAddModal(false);
     }
+  };
+
+  const handleEdit = (carId: string, currentName: string) => {
+    setEditingCarId(carId);
+    setEditingCarName(currentName);
+  };
+
+  const handleSaveEdit = (carId: string) => {
+    if (editingCarName.trim()) {
+      onUpdateCar(carId, editingCarName.trim());
+    }
+    setEditingCarId(null);
+    setEditingCarName('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCarId(null);
+    setEditingCarName('');
   };
 
   return (
@@ -61,6 +83,8 @@ export function CarSelector({
         <div className='flex flex-wrap gap-2'>
           {cars.map((car) => {
             const isSelected = selectedCar === car.id;
+            const isEditing = editingCarId === car.id;
+            
             return (
               <div
                 key={car.id}
@@ -71,21 +95,64 @@ export function CarSelector({
                     : 'border-border bg-background hover:bg-muted/30',
                 )}
               >
-                <button
-                  onClick={() => onSelectCar(car.id)}
-                  className='flex items-center gap-2'
-                >
-                  <span>🚗</span>
-                  <span className='font-medium'>{car.name}</span>
-                </button>
-                <Button
-                  onClick={() => onDeleteCar(car.id)}
-                  variant='destructive'
-                  size='sm'
-                  className='h-6 w-6 p-0'
-                >
-                  <Trash className='h-3 w-3' />
-                </Button>
+                {isEditing ? (
+                  <>
+                    <Input
+                      value={editingCarName}
+                      onChange={(e) => setEditingCarName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveEdit(car.id);
+                        } else if (e.key === 'Escape') {
+                          handleCancelEdit();
+                        }
+                      }}
+                      className='h-8 w-32'
+                      autoFocus
+                    />
+                    <Button
+                      onClick={() => handleSaveEdit(car.id)}
+                      variant='secondary'
+                      size='sm'
+                      className='h-6 w-6 p-0'
+                    >
+                      ✓
+                    </Button>
+                    <Button
+                      onClick={handleCancelEdit}
+                      variant='outline'
+                      size='sm'
+                      className='h-6 w-6 p-0'
+                    >
+                      ✕
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => onSelectCar(car.id)}
+                      className='flex items-center gap-2'
+                    >
+                      <span className='font-medium'>{car.name}</span>
+                    </button>
+                    <Button
+                      onClick={() => handleEdit(car.id, car.name)}
+                      variant='secondary'
+                      size='sm'
+                      className='h-6 w-6 p-0'
+                    >
+                      ✏️
+                    </Button>
+                    <Button
+                      onClick={() => onDeleteCar(car.id)}
+                      variant='destructive'
+                      size='sm'
+                      className='h-7 w-7 p-0'
+                    >
+                      <Trash className='h-4 w-4' />
+                    </Button>
+                  </>
+                )}
               </div>
             );
           })}
@@ -220,6 +287,106 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
   );
 }
 
+/* ===== Car Parts Selector Component ===== */
+interface CarPartsSelectorProps {
+  allCarParts: CarPart[];
+  selectedParts: string[];
+  onTogglePart: (partId: string) => void;
+  onAutoDetect?: () => void;
+}
+
+export function CarPartsSelector({
+  allCarParts,
+  selectedParts,
+  onTogglePart,
+  onAutoDetect,
+}: CarPartsSelectorProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredInternalParts = allCarParts.filter(
+    (part) =>
+      part.category === 'internal' &&
+      part.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const filteredExternalParts = allCarParts.filter(
+    (part) =>
+      part.category === 'external' &&
+      part.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  return (
+    <div>
+      <div className='mb-2 flex items-center justify-between'>
+        <label className='block text-sm font-medium'>
+          Affected Car Parts (Optional - will auto-detect)
+        </label>
+        {onAutoDetect && (
+          <button
+            onClick={onAutoDetect}
+            className='text-xs text-primary hover:underline'
+            type='button'
+          >
+            Auto-detect now
+          </button>
+        )}
+      </div>
+      <Disclosure label='Select parts manually' buttonClassName='text-sm'>
+        <div className='mt-2 space-y-3'>
+          <Input
+            placeholder='Search car parts...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className='w-full'
+          />
+          
+          <div className='space-y-3'>
+            <div>
+              <h4 className='mb-2 text-sm font-semibold text-foreground/80'>
+                Internal Parts ({filteredInternalParts.length})
+              </h4>
+              <ScrollArea className='h-40'>
+                <div className='space-y-2 pr-4'>
+                  {filteredInternalParts.map((part) => (
+                    <label key={part.id} className='flex items-center gap-2'>
+                      <input
+                        type='checkbox'
+                        checked={selectedParts.includes(part.id)}
+                        onChange={() => onTogglePart(part.id)}
+                      />
+                      <span className='text-sm'>{part.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            <div>
+              <h4 className='mb-2 text-sm font-semibold text-foreground/80'>
+                External Parts ({filteredExternalParts.length})
+              </h4>
+              <ScrollArea className='h-40'>
+                <div className='space-y-2 pr-4'>
+                  {filteredExternalParts.map((part) => (
+                    <label key={part.id} className='flex items-center gap-2'>
+                      <input
+                        type='checkbox'
+                        checked={selectedParts.includes(part.id)}
+                        onChange={() => onTogglePart(part.id)}
+                      />
+                      <span className='text-sm'>{part.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        </div>
+      </Disclosure>
+    </div>
+  );
+}
+
 /* ===== Add Service Entry Form ===== */
 interface AddServiceEntryFormProps {
   carId: string;
@@ -276,6 +443,25 @@ export function AddServiceEntryForm({
   const [newLocationWebsite, setNewLocationWebsite] = useState('');
   const [newLocationEmail, setNewLocationEmail] = useState('');
   const [newLocationNotes, setNewLocationNotes] = useState('');
+
+  const autoDetectParts = () => {
+    // Auto-detect using imported function
+    const detectedPartIds = autoDetectCarParts(
+      title,
+      description,
+      notes,
+      allCarParts,
+    );
+    // Merge with manually selected parts
+    const allPartIds = Array.from(
+      new Set([...selectedParts, ...detectedPartIds]),
+    );
+    setSelectedParts(allPartIds);
+  };
+
+  const handleFieldBlur = () => {
+    autoDetectParts();
+  };
 
   const handleAddLocation = () => {
     if (newLocationName.trim()) {
@@ -376,6 +562,17 @@ export function AddServiceEntryForm({
                     // Format: "Service Type (MM/DD/YYYY)"
                     const formattedDate = new Date(date).toLocaleDateString('en-US');
                     setTitle(`${selectedType} (${formattedDate})`);
+                    // Auto-detect parts when service type changes
+                    setTimeout(() => {
+                      // Auto-detect using imported function
+                      const detectedPartIds = autoDetectCarParts(
+                        `${selectedType} (${formattedDate})`,
+                        description,
+                        notes,
+                        allCarParts,
+                      );
+                      setSelectedParts(detectedPartIds);
+                    }, 0);
                   }
                 }}
               >
@@ -396,6 +593,7 @@ export function AddServiceEntryForm({
               placeholder='e.g., Oil Change'
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleFieldBlur}
             />
           </div>
 
@@ -407,6 +605,7 @@ export function AddServiceEntryForm({
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onBlur={handleFieldBlur}
             />
           </div>
 
@@ -563,35 +762,16 @@ export function AddServiceEntryForm({
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              onBlur={handleFieldBlur}
             />
           </div>
 
-          <div>
-            <label className='mb-2 block text-sm font-medium'>
-              Affected Car Parts (Optional - will auto-detect)
-            </label>
-            <Disclosure label='Select parts manually' buttonClassName='text-sm'>
-              <ScrollArea className='mt-2 h-60'>
-                <div className='space-y-2 pr-4'>
-                  {allCarParts.map((part) => (
-                    <label key={part.id} className='flex items-center gap-2'>
-                      <input
-                        type='checkbox'
-                        checked={selectedParts.includes(part.id)}
-                        onChange={() => togglePart(part.id)}
-                      />
-                      <span className='text-sm'>
-                        {part.name}{' '}
-                        <Badge variant='secondary' size='xs'>
-                          {part.category}
-                        </Badge>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </ScrollArea>
-            </Disclosure>
-          </div>
+          <CarPartsSelector
+            allCarParts={allCarParts}
+            selectedParts={selectedParts}
+            onTogglePart={togglePart}
+            onAutoDetect={autoDetectParts}
+          />
 
           <div className='flex gap-2'>
             <Button onClick={handleSubmit} className='flex-1'>
@@ -670,6 +850,25 @@ export function EditServiceEntryForm({
   const [newLocationEmail, setNewLocationEmail] = useState('');
   const [newLocationNotes, setNewLocationNotes] = useState('');
 
+  const autoDetectParts = () => {
+    // Auto-detect using imported function
+    const detectedPartIds = autoDetectCarParts(
+      title,
+      description,
+      notes,
+      allCarParts,
+    );
+    // Merge with manually selected parts
+    const allPartIds = Array.from(
+      new Set([...selectedParts, ...detectedPartIds]),
+    );
+    setSelectedParts(allPartIds);
+  };
+
+  const handleFieldBlur = () => {
+    autoDetectParts();
+  };
+
   const handleAddLocation = () => {
     if (newLocationName.trim()) {
       const newId = onAddLocation(
@@ -746,6 +945,17 @@ export function EditServiceEntryForm({
                 // Format: "Service Type (MM/DD/YYYY)"
                 const formattedDate = new Date(date).toLocaleDateString('en-US');
                 setTitle(`${selectedType} (${formattedDate})`);
+                // Auto-detect parts when service type changes
+                setTimeout(() => {
+                  // Auto-detect using imported function
+                  const detectedPartIds = autoDetectCarParts(
+                    `${selectedType} (${formattedDate})`,
+                    description,
+                    notes,
+                    allCarParts,
+                  );
+                  setSelectedParts(detectedPartIds);
+                }, 0);
               }
             }}
           >
@@ -766,6 +976,7 @@ export function EditServiceEntryForm({
           placeholder='e.g., Oil Change'
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onBlur={handleFieldBlur}
         />
       </div>
 
@@ -777,6 +988,7 @@ export function EditServiceEntryForm({
           rows={3}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          onBlur={handleFieldBlur}
         />
       </div>
 
@@ -933,35 +1145,16 @@ export function EditServiceEntryForm({
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          onBlur={handleFieldBlur}
         />
       </div>
 
-      <div>
-        <label className='mb-2 block text-sm font-medium'>
-          Affected Car Parts
-        </label>
-        <Disclosure label='Select parts' buttonClassName='text-sm'>
-          <ScrollArea className='mt-2 h-60'>
-            <div className='space-y-2 pr-4'>
-              {allCarParts.map((part) => (
-                <label key={part.id} className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={selectedParts.includes(part.id)}
-                    onChange={() => togglePart(part.id)}
-                  />
-                  <span className='text-sm'>
-                    {part.name}{' '}
-                    <Badge variant='secondary' size='xs'>
-                      {part.category}
-                    </Badge>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </ScrollArea>
-        </Disclosure>
-      </div>
+      <CarPartsSelector
+        allCarParts={allCarParts}
+        selectedParts={selectedParts}
+        onTogglePart={togglePart}
+        onAutoDetect={autoDetectParts}
+      />
 
       <div className='flex gap-2'>
         <Button onClick={handleSubmit} className='flex-1'>
