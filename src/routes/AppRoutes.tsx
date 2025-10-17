@@ -31,6 +31,15 @@ export const router = createBrowserRouter([
           return { Component: ApartmentTourQuestions };
         },
       },
+      // Car Maintenance (lazy loaded)
+      {
+        path: 'car-maintenance',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: CarMaintenance } = await import('@tinies/car-maintenance/CarMaintenance');
+          return { Component: CarMaintenance };
+        },
+      },
     ],
   },
 ]);
