@@ -21,6 +21,16 @@ export const ALL_TINIES: Tiny[] = [
 		status: 'in-progress',
 		route: '/apartment-tour-questions',
 	},
+	{
+		id: 'travel-tracker',
+		title: 'Travel Tracker',
+		description: 'Track places you\'ve visited across the US and around the world. Add descriptions and photos for each destination.',
+		startDate: '2025-10-17',
+		tags: ['travel', 'lifestyle', 'tracking'],
+		categories: ['lifestyle'],
+		status: 'in-progress',
+		route: '/travel-tracker',
+	},
 ];
 
 export const ALL_TAGS = Array.from(
