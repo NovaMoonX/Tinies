@@ -1,14 +1,14 @@
 import {
-  Badge,
   Button,
-  Card,
+  Calendar,
   Input,
   Label,
   Modal,
+  Popover,
   Select,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
-import { CheckCircled, Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
+import { Plus, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useState } from 'react';
 import { US_STATES, COUNTRIES } from './TravelTracker.data';
@@ -151,67 +151,54 @@ export function DestinationSelector({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Your Destinations</h2>
-        <Button onClick={onAddDestination} size="sm">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Destinations</h2>
+        <Button onClick={onAddDestination} size="sm" variant="outline">
           <Plus className="h-4 w-4" />
-          Add Destination
+          Add
         </Button>
       </div>
 
       {destinations.length === 0 ? (
-        <Card className="p-6 text-center">
-          <p className="text-foreground/60">
-            No destinations added yet. Click "Add Destination" to get started!
+        <div className="border border-dashed border-foreground/20 rounded-lg p-8 text-center">
+          <p className="text-foreground/50 text-sm">
+            No destinations yet. Click "Add" to start tracking your travels!
           </p>
-        </Card>
+        </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* US States Section */}
           {usStates.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">US States</h3>
-                <Badge variant="secondary" size="sm">
+                <h3 className="text-sm font-medium text-foreground/70">US States</h3>
+                <span className="text-xs text-foreground/50">
                   {usStates.length} / {US_STATES.length}
-                </Badge>
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {usStates.map((dest) => (
-                  <div
+                  <button
                     key={dest.id}
-                    className={join(
-                      'cursor-pointer transition-all group',
-                    )}
                     onClick={() => onSelectDestination(dest.id)}
+                    className={join(
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all group relative',
+                      selectedDestination === dest.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted hover:bg-muted/80'
+                    )}
                   >
-                    <Card
-                      className={join(
-                        'p-3',
-                        selectedDestination === dest.id
-                          ? 'ring-2 ring-primary bg-primary/5'
-                          : 'hover:bg-muted/50'
-                      )}
+                    {dest.name}
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteDestination(dest.id);
+                      }}
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <CheckCircled className="h-4 w-4 text-primary" />
-                          <span className="font-medium text-sm">{dest.name}</span>
-                        </div>
-                        <Button
-                          variant="tertiary"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteDestination(dest.id);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </Card>
-                  </div>
+                      ×
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -221,50 +208,35 @@ export function DestinationSelector({
           {internationalCities.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-medium">International Cities</h3>
-                <Badge variant="secondary" size="sm">
+                <h3 className="text-sm font-medium text-foreground/70">International</h3>
+                <span className="text-xs text-foreground/50">
                   {internationalCities.length}
-                </Badge>
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {internationalCities.map((dest) => (
-                  <div
+                  <button
                     key={dest.id}
-                    className={join(
-                      'cursor-pointer transition-all group',
-                    )}
                     onClick={() => onSelectDestination(dest.id)}
+                    className={join(
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all group relative',
+                      selectedDestination === dest.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted hover:bg-muted/80'
+                    )}
                   >
-                    <Card
-                      className={join(
-                        'p-3',
-                        selectedDestination === dest.id
-                          ? 'ring-2 ring-primary bg-primary/5'
-                          : 'hover:bg-muted/50'
-                      )}
+                    <span>{dest.name}</span>
+                    <span className="text-xs ml-1 opacity-70">{dest.country}</span>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteDestination(dest.id);
+                      }}
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <CheckCircled className="h-4 w-4 text-primary" />
-                            <span className="font-medium text-sm">{dest.name}</span>
-                          </div>
-                          <p className="text-xs text-foreground/60 ml-6">{dest.country}</p>
-                        </div>
-                        <Button
-                          variant="tertiary"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteDestination(dest.id);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </Card>
-                  </div>
+                      ×
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -293,6 +265,7 @@ export function DestinationDetails({
   onUpdatePhotoCaption,
 }: DestinationDetailsProps) {
   const [showAddPhotoModal, setShowAddPhotoModal] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [newPhotoCaption, setNewPhotoCaption] = useState('');
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
@@ -306,111 +279,126 @@ export function DestinationDetails({
     }
   };
 
+  const handleDateSelect = (date: Date) => {
+    const isoDate = date.toISOString().split('T')[0];
+    onUpdateVisitDate(isoDate);
+    setShowCalendar(false);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const result = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    return result;
+  };
+
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">
-              {destination.name}
-              {destination.country && (
-                <span className="text-foreground/60 text-lg ml-2">
-                  • {destination.country}
-                </span>
-              )}
-            </h2>
-            <Badge variant={destination.type === 'us-state' ? 'primary' : 'secondary'}>
-              {destination.type === 'us-state' ? 'US State' : 'International City'}
-            </Badge>
-          </div>
-
-          <div>
-            <Label htmlFor="visit-date">Visit Date</Label>
-            <Input
-              id="visit-date"
-              type="date"
-              value={destination.visitDate}
-              onChange={(e) => onUpdateVisitDate(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Add notes about your visit..."
-              rows={4}
-              value={destination.description}
-              onChange={(e) => onUpdateDescription(e.target.value)}
-            />
-          </div>
+    <div className="space-y-4">
+      {/* Simplified destination header */}
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-2">
+          <h2 className="text-2xl font-bold">
+            {destination.name}
+          </h2>
+          {destination.country && (
+            <span className="text-foreground/50 text-base">
+              {destination.country}
+            </span>
+          )}
         </div>
-      </Card>
+        
+        {/* Visit date with calendar popover */}
+        <Popover
+          isOpen={showCalendar}
+          onOpenChange={setShowCalendar}
+          trigger={
+            <Button
+              variant="outline"
+              size="sm"
+            >
+              📅 {formatDate(destination.visitDate)}
+            </Button>
+          }
+        >
+          <Calendar
+            mode="single"
+            initialDate={new Date(destination.visitDate)}
+            onDateSelect={handleDateSelect}
+          />
+        </Popover>
+      </div>
 
-      <div className="space-y-4">
+      {/* Description */}
+      <div>
+        <Textarea
+          placeholder="Add notes about your visit..."
+          rows={3}
+          value={destination.description}
+          onChange={(e) => onUpdateDescription(e.target.value)}
+          variant="outline"
+        />
+      </div>
+
+      {/* Photos section with cleaner layout */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Photos</h3>
-          <Button onClick={() => setShowAddPhotoModal(true)} size="sm">
+          <h3 className="text-base font-semibold">Photos</h3>
+          <Button onClick={() => setShowAddPhotoModal(true)} size="sm" variant="outline">
             <Plus className="h-4 w-4" />
-            Add Photo
+            Add
           </Button>
         </div>
 
         {destination.photos.length === 0 ? (
-          <Card className="p-6 text-center">
-            <p className="text-foreground/60">
-              No photos added yet. Click "Add Photo" to upload your memories!
+          <div className="border border-dashed border-foreground/20 rounded-lg p-8 text-center">
+            <p className="text-foreground/50 text-sm">
+              No photos yet
             </p>
-          </Card>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {destination.photos.map((photo) => (
-              <Card key={photo.id} className="p-3 space-y-2">
-                <div className="relative group">
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || 'Travel photo'}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onDeletePhoto(photo.id)}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+              <div key={photo.id} className="relative group">
+                <img
+                  src={photo.url}
+                  alt={photo.caption || 'Travel photo'}
+                  className="w-full aspect-square object-cover rounded-lg"
+                />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDeletePhoto(photo.id)}
+                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
                 {editingCaption === photo.id ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={photo.caption}
-                      onChange={(e) => onUpdatePhotoCaption(photo.id, e.target.value)}
-                      placeholder="Add a caption..."
-                      autoFocus
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => setEditingCaption(null)}
-                      className="w-full"
-                    >
-                      Done
-                    </Button>
-                  </div>
+                  <Input
+                    value={photo.caption}
+                    onChange={(e) => onUpdatePhotoCaption(photo.id, e.target.value)}
+                    placeholder="Caption..."
+                    autoFocus
+                    onBlur={() => setEditingCaption(null)}
+                    className="mt-1 text-xs"
+                  />
                 ) : (
                   <p
-                    className="text-sm text-foreground/70 cursor-pointer hover:text-foreground"
+                    className="text-xs text-foreground/60 mt-1 cursor-pointer hover:text-foreground line-clamp-2"
                     onClick={() => setEditingCaption(photo.id)}
                   >
-                    {photo.caption || 'Click to add caption...'}
+                    {photo.caption || 'Add caption...'}
                   </p>
                 )}
-              </Card>
+              </div>
             ))}
           </div>
         )}
       </div>
 
+      {/* Add photo modal */}
       <Modal
         isOpen={showAddPhotoModal}
         onClose={() => setShowAddPhotoModal(false)}
