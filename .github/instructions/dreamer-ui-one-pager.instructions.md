@@ -35,6 +35,7 @@ All components are imported from `@moondreamsdev/dreamer-ui/components`.
 - **Clickable**: Generic clickable wrapper component with hover and focus states.
 - **Form**: Flexible form component using factory pattern with built-in validation and state management.
 - **Input**: Flexible input component with validation states and different types.
+  - IMPORTANT: The `name` prop should be provided for proper form integration.
 - **Label**: Form label component with proper accessibility attributes.
 - **Radio Group**: Group of radio buttons for single selection from multiple options.
 - **Select**: Dropdown selection component with search and keyboard navigation.

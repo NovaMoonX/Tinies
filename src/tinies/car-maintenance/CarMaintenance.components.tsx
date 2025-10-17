@@ -107,6 +107,7 @@ export function CarSelector({
           <div>
             <label className='mb-2 block text-sm font-medium'>Vehicle Name</label>
             <Input
+              name="newCarName"
               placeholder='e.g., My Honda Civic'
               value={newCarName}
               onChange={(e) => setNewCarName(e.target.value)}
@@ -145,6 +146,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
         <div>
           <label className='mb-2 block text-sm font-medium'>Make</label>
           <Input
+            name="make"
             placeholder='e.g., Honda'
             value={car.make}
             onChange={(e) => onUpdate({ make: e.target.value })}
@@ -153,6 +155,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
         <div>
           <label className='mb-2 block text-sm font-medium'>Model</label>
           <Input
+            name="model"
             placeholder='e.g., Civic'
             value={car.model}
             onChange={(e) => onUpdate({ model: e.target.value })}
@@ -161,6 +164,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
         <div>
           <label className='mb-2 block text-sm font-medium'>Year</label>
           <Input
+            name="year"
             type='number'
             placeholder='e.g., 2020'
             value={car.year?.toString() || ''}
@@ -172,6 +176,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
         <div>
           <label className='mb-2 block text-sm font-medium'>Current Mileage</label>
           <Input
+            name="mileage"
             type='number'
             placeholder='e.g., 45000'
             value={car.mileage?.toString() || ''}
@@ -185,6 +190,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
         <div>
           <label className='mb-2 block text-sm font-medium'>VIN</label>
           <Input
+            name="vin"
             placeholder='Vehicle Identification Number'
             value={car.vin}
             onChange={(e) => onUpdate({ vin: e.target.value })}
@@ -193,6 +199,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
         <div>
           <label className='mb-2 block text-sm font-medium'>License Plate</label>
           <Input
+            name="licensePlate"
             placeholder='e.g., ABC-1234'
             value={car.licensePlate}
             onChange={(e) => onUpdate({ licensePlate: e.target.value })}
@@ -202,6 +209,7 @@ export function CarDetailsSection({ car, onUpdate }: CarDetailsSectionProps) {
       <div>
         <label className='mb-2 block text-sm font-medium'>Notes</label>
         <Textarea
+          name="notes"
           placeholder='Additional notes about this vehicle...'
           rows={3}
           value={car.notes}
@@ -384,6 +392,7 @@ export function AddServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Title</label>
             <Input
+              name="title"
               placeholder='e.g., Oil Change'
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -393,6 +402,7 @@ export function AddServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Description</label>
             <Textarea
+              name="description"
               placeholder='Describe the service performed...'
               rows={3}
               value={description}
@@ -404,6 +414,7 @@ export function AddServiceEntryForm({
             <div>
               <label className='mb-2 block text-sm font-medium'>Date</label>
               <Input
+                name="date"
                 type='date'
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
@@ -412,6 +423,7 @@ export function AddServiceEntryForm({
             <div>
               <label className='mb-2 block text-sm font-medium'>Time</label>
               <Input
+                name="time"
                 type='time'
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
@@ -452,6 +464,7 @@ export function AddServiceEntryForm({
               <div>
                 <label className='mb-2 block text-sm font-medium'>Name</label>
                 <Input
+                  name="newLocationName"
                   placeholder='e.g., Jiffy Lube'
                   value={newLocationName}
                   onChange={(e) => setNewLocationName(e.target.value)}
@@ -460,6 +473,7 @@ export function AddServiceEntryForm({
               <div>
                 <label className='mb-2 block text-sm font-medium'>Address</label>
                 <Input
+                  name="newLocationAddress"
                   placeholder='Street address'
                   value={newLocationAddress}
                   onChange={(e) => setNewLocationAddress(e.target.value)}
@@ -468,6 +482,7 @@ export function AddServiceEntryForm({
               <div>
                 <label className='mb-2 block text-sm font-medium'>Phone</label>
                 <Input
+                  name="newLocationPhone"
                   placeholder='Phone number'
                   value={newLocationPhone}
                   onChange={(e) => setNewLocationPhone(e.target.value)}
@@ -476,6 +491,7 @@ export function AddServiceEntryForm({
               <div>
                 <label className='mb-2 block text-sm font-medium'>Website</label>
                 <Input
+                  name="newLocationWebsite"
                   placeholder='https://...'
                   value={newLocationWebsite}
                   onChange={(e) => setNewLocationWebsite(e.target.value)}
@@ -484,6 +500,7 @@ export function AddServiceEntryForm({
               <div>
                 <label className='mb-2 block text-sm font-medium'>Email</label>
                 <Input
+                  name="newLocationEmail"
                   type='email'
                   placeholder='email@example.com'
                   value={newLocationEmail}
@@ -493,6 +510,7 @@ export function AddServiceEntryForm({
               <div>
                 <label className='mb-2 block text-sm font-medium'>Notes</label>
                 <Textarea
+                  name="newLocationNotes"
                   rows={2}
                   value={newLocationNotes}
                   onChange={(e) => setNewLocationNotes(e.target.value)}
@@ -517,6 +535,7 @@ export function AddServiceEntryForm({
             <div>
               <label className='mb-2 block text-sm font-medium'>Mileage</label>
               <Input
+                name="mileage"
                 type='number'
                 placeholder='e.g., 45000'
                 value={mileage}
@@ -526,6 +545,7 @@ export function AddServiceEntryForm({
             <div>
               <label className='mb-2 block text-sm font-medium'>Cost</label>
               <Input
+                name="cost"
                 type='number'
                 step='0.01'
                 placeholder='e.g., 49.99'
@@ -538,6 +558,7 @@ export function AddServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Notes</label>
             <Textarea
+              name="notes"
               placeholder='Additional notes...'
               rows={3}
               value={notes}
@@ -741,6 +762,7 @@ export function EditServiceEntryForm({
       <div>
         <label className='mb-2 block text-sm font-medium'>Title</label>
         <Input
+          name="editTitle"
           placeholder='e.g., Oil Change'
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -750,6 +772,7 @@ export function EditServiceEntryForm({
       <div>
         <label className='mb-2 block text-sm font-medium'>Description</label>
         <Textarea
+          name="editDescription"
           placeholder='Describe the service performed...'
           rows={3}
           value={description}
@@ -761,6 +784,7 @@ export function EditServiceEntryForm({
         <div>
           <label className='mb-2 block text-sm font-medium'>Date</label>
           <Input
+            name="editDate"
             type='date'
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -769,6 +793,7 @@ export function EditServiceEntryForm({
         <div>
           <label className='mb-2 block text-sm font-medium'>Time</label>
           <Input
+            name="editTime"
             type='time'
             value={time}
             onChange={(e) => setTime(e.target.value)}
@@ -809,6 +834,7 @@ export function EditServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Name</label>
             <Input
+              name="editNewLocationName"
               placeholder='e.g., Jiffy Lube'
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
@@ -817,6 +843,7 @@ export function EditServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Address</label>
             <Input
+              name="editNewLocationAddress"
               placeholder='Street address'
               value={newLocationAddress}
               onChange={(e) => setNewLocationAddress(e.target.value)}
@@ -825,6 +852,7 @@ export function EditServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Phone</label>
             <Input
+              name="editNewLocationPhone"
               placeholder='Phone number'
               value={newLocationPhone}
               onChange={(e) => setNewLocationPhone(e.target.value)}
@@ -833,6 +861,7 @@ export function EditServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Website</label>
             <Input
+              name="editNewLocationWebsite"
               placeholder='https://...'
               value={newLocationWebsite}
               onChange={(e) => setNewLocationWebsite(e.target.value)}
@@ -841,6 +870,7 @@ export function EditServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Email</label>
             <Input
+              name="editNewLocationEmail"
               type='email'
               placeholder='email@example.com'
               value={newLocationEmail}
@@ -850,6 +880,7 @@ export function EditServiceEntryForm({
           <div>
             <label className='mb-2 block text-sm font-medium'>Notes</label>
             <Textarea
+              name="editNewLocationNotes"
               rows={2}
               value={newLocationNotes}
               onChange={(e) => setNewLocationNotes(e.target.value)}
@@ -874,6 +905,7 @@ export function EditServiceEntryForm({
         <div>
           <label className='mb-2 block text-sm font-medium'>Mileage</label>
           <Input
+            name="editMileage"
             type='number'
             placeholder='e.g., 45000'
             value={mileage}
@@ -883,6 +915,7 @@ export function EditServiceEntryForm({
         <div>
           <label className='mb-2 block text-sm font-medium'>Cost</label>
           <Input
+            name="editCost"
             type='number'
             step='0.01'
             placeholder='e.g., 49.99'
@@ -895,6 +928,7 @@ export function EditServiceEntryForm({
       <div>
         <label className='mb-2 block text-sm font-medium'>Notes</label>
         <Textarea
+          name="editNotes"
           placeholder='Additional notes...'
           rows={3}
           value={notes}
