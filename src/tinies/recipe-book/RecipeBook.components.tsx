@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Checkbox,
+  Disclosure,
   Input,
   Label,
   Modal,
@@ -31,7 +32,9 @@ export function RecipeCard({ recipe, onView, onDelete }: RecipeCardProps) {
         <div className='mb-3 flex items-start justify-between'>
           <div className='flex-1'>
             <div className='mb-1 flex items-center gap-2'>
-              <span className='text-2xl'>{recipeTypeConfig?.emoji}</span>
+              <span className='bg-muted flex h-8 w-8 items-center justify-center rounded-full text-xl'>
+                {recipeTypeConfig?.emoji}
+              </span>
               <Badge variant='secondary' size='sm'>
                 {recipeTypeConfig?.label}
               </Badge>
@@ -109,7 +112,9 @@ export function RecipeDetailsModal({ recipe, isOpen, onClose }: RecipeDetailsMod
         {/* Header Info */}
         <div className='space-y-3'>
           <div className='flex items-center gap-2'>
-            <span className='text-3xl'>{recipeTypeConfig?.emoji}</span>
+            <span className='bg-muted flex h-10 w-10 items-center justify-center rounded-full text-2xl'>
+              {recipeTypeConfig?.emoji}
+            </span>
             <Badge variant='secondary'>{recipeTypeConfig?.label}</Badge>
           </div>
           <p className='text-foreground/70'>{recipe.description}</p>
@@ -194,8 +199,6 @@ export function FilterSection({
   totalRecipes,
   filteredRecipes,
 }: FilterSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const handleTypeToggle = (type: RecipeType) => {
     const newTypes = filters.selectedTypes.includes(type)
       ? filters.selectedTypes.filter((t) => t !== type)
@@ -261,17 +264,8 @@ export function FilterSection({
         <Label>No Prep Time</Label>
       </div>
 
-      {/* Advanced Filters Toggle */}
-      <Button
-        onClick={() => setIsExpanded(!isExpanded)}
-        variant='outline'
-        size='sm'
-        className='mb-2 w-full'
-      >
-        {isExpanded ? '▼' : '▶'} Advanced Filters
-      </Button>
-
-      {isExpanded && (
+      {/* Advanced Filters with Disclosure */}
+      <Disclosure label='Advanced Filters' className='rounded-xl'>
         <div className='space-y-4 pt-2'>
           {/* Recipe Types */}
           <div>
@@ -286,8 +280,10 @@ export function FilterSection({
                     variant={isSelected ? 'secondary' : 'outline'}
                     size='sm'
                   >
-                    <span>{type.emoji}</span>
-                    <span>{type.label}</span>
+                    <span className='bg-muted flex h-6 w-6 items-center justify-center rounded-full'>
+                      {type.emoji}
+                    </span>
+                    <span className='ml-1'>{type.label}</span>
                   </Button>
                 );
               })}
@@ -300,10 +296,11 @@ export function FilterSection({
             <Input
               id='max-cook-time'
               type='number'
+              min='0'
               placeholder='e.g., 30'
               value={filters.maxCookTime?.toString() || ''}
               onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value) : null;
+                const value = e.target.value ? parseInt(e.target.value, 10) : null;
                 onFiltersChange({ ...filters, maxCookTime: value });
               }}
             />
@@ -315,16 +312,17 @@ export function FilterSection({
             <Input
               id='max-prep-time'
               type='number'
+              min='0'
               placeholder='e.g., 15'
               value={filters.maxPrepTime?.toString() || ''}
               onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value) : null;
+                const value = e.target.value ? parseInt(e.target.value, 10) : null;
                 onFiltersChange({ ...filters, maxPrepTime: value });
               }}
             />
           </div>
         </div>
-      )}
+      </Disclosure>
     </div>
   );
 }
