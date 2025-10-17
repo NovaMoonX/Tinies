@@ -9,7 +9,7 @@ import {
   Select,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
-import { Plus, Trash } from '@moondreamsdev/dreamer-ui/symbols';
+import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import { RECIPE_TYPES } from './RecipeBook.data';
 import { Recipe, RecipeType, Ingredient, RecipeFilters } from './RecipeBook.types';
@@ -333,9 +333,10 @@ interface AddRecipeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (recipe: Omit<Recipe, 'id' | 'dateAdded'>) => void;
+  allTags: string[];
 }
 
-export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) {
+export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeModalProps) {
   const [name, setName] = useState('');
   const [type, setType] = useState<RecipeType>('dinner');
   const [description, setDescription] = useState('');
@@ -346,7 +347,8 @@ export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) 
     { id: generateIngredientId(), name: '', amount: '', unit: '' },
   ]);
   const [instructions, setInstructions] = useState<string[]>(['']);
-  const [tags, setTags] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
 
   const handleAddIngredient = () => {
     setIngredients([
@@ -383,6 +385,18 @@ export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) 
     setInstructions(newInstructions);
   };
 
+  const handleAddTag = (tag: string) => {
+    if (tag.trim() && !selectedTags.includes(tag.trim())) {
+      setSelectedTags([...selectedTags, tag.trim()]);
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
+  const availableTags = allTags.filter((tag) => !selectedTags.includes(tag));
+
   const handleSubmit = () => {
     if (!name.trim()) return;
 
@@ -391,11 +405,6 @@ export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) 
     );
 
     const filteredInstructions = instructions.filter((inst) => inst.trim());
-
-    const tagsArray = tags
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
 
     onAdd({
       name: name.trim(),
@@ -406,7 +415,7 @@ export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) 
       servings: parseInt(servings) || 1,
       ingredients: filteredIngredients,
       instructions: filteredInstructions,
-      tags: tagsArray,
+      tags: selectedTags,
       imageUrl: null,
     });
 
@@ -419,7 +428,8 @@ export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) 
     setServings('4');
     setIngredients([{ id: generateIngredientId(), name: '', amount: '', unit: '' }]);
     setInstructions(['']);
-    setTags('');
+    setSelectedTags([]);
+    setShowTagDropdown(false);
     onClose();
   };
 
@@ -580,13 +590,75 @@ export function AddRecipeModal({ isOpen, onClose, onAdd }: AddRecipeModalProps) 
 
         {/* Tags */}
         <div>
-          <Label htmlFor='tags'>Tags (comma-separated)</Label>
-          <Input
-            id='tags'
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder='e.g., quick, easy, healthy'
-          />
+          <div className='mb-2 flex items-center justify-between'>
+            <Label>Tags</Label>
+            <Button
+              onClick={() => setShowTagDropdown(!showTagDropdown)}
+              variant='outline'
+              size='sm'
+            >
+              <Plus className='h-4 w-4' />
+              {showTagDropdown ? 'Hide' : 'Add Tag'}
+            </Button>
+          </div>
+
+          {showTagDropdown && (
+            <div className='bg-background mb-3 rounded-xl p-4'>
+              <div className='space-y-3'>
+                <Input
+                  placeholder='Enter new tag (e.g., "quick", "healthy")'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      handleAddTag(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+                {availableTags.length > 0 && (
+                  <>
+                    <div className='text-foreground/60 text-sm'>
+                      Or select from existing tags:
+                    </div>
+                    <div className='bg-muted/20 max-h-48 overflow-y-auto rounded-lg p-3'>
+                      <div className='flex flex-wrap gap-2'>
+                        {availableTags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant='secondary'
+                            className='cursor-pointer hover:opacity-80'
+                            onClick={() => handleAddTag(tag)}
+                          >
+                            + {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {selectedTags.length > 0 ? (
+            <div className='flex flex-wrap gap-2'>
+              {selectedTags.map((tag) => (
+                <Badge key={tag} variant='secondary' className='group relative'>
+                  {tag}
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className='hover:bg-destructive/20 ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full'
+                    title='Remove tag'
+                  >
+                    <X className='h-3 w-3' />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          ) : !showTagDropdown ? (
+            <p className='text-foreground/60 py-4 text-center text-sm'>
+              No tags yet. Add tags to categorize your recipe.
+            </p>
+          ) : null}
         </div>
 
         {/* Actions */}

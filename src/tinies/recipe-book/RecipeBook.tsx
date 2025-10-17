@@ -27,6 +27,12 @@ export function RecipeBook() {
     return filterRecipes(recipes, filters);
   }, [recipes, filters]);
 
+  const allTags = useMemo(() => {
+    const tags = recipes.flatMap((recipe) => recipe.tags);
+    const result = Array.from(new Set(tags)).sort();
+    return result;
+  }, [recipes]);
+
   const handleAddRecipe = (recipeData: Omit<Recipe, 'id' | 'dateAdded'>) => {
     const newRecipe: Recipe = {
       ...recipeData,
@@ -122,6 +128,7 @@ export function RecipeBook() {
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onAdd={handleAddRecipe}
+          allTags={allTags}
         />
 
         {/* Footer */}
