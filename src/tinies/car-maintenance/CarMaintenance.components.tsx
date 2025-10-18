@@ -8,6 +8,7 @@ import {
   Disclosure,
   RadioGroup,
   ScrollArea,
+  Checkbox,
 } from '@moondreamsdev/dreamer-ui/components';
 import { Plus, Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
@@ -335,11 +336,10 @@ export function CarPartsSelector({
               <ScrollArea className='h-40'>
                 <div className='space-y-2 pr-4'>
                   {filteredInternalParts.map((part) => (
-                    <label key={part.id} className='flex items-center gap-2'>
-                      <input
-                        type='checkbox'
+                    <label key={part.id} className='flex items-center gap-2 cursor-pointer'>
+                      <Checkbox
                         checked={selectedParts.includes(part.id)}
-                        onChange={() => onTogglePart(part.id)}
+                        onCheckedChange={() => onTogglePart(part.id)}
                       />
                       <span className='text-sm'>{part.name}</span>
                     </label>
@@ -355,11 +355,10 @@ export function CarPartsSelector({
               <ScrollArea className='h-40'>
                 <div className='space-y-2 pr-4'>
                   {filteredExternalParts.map((part) => (
-                    <label key={part.id} className='flex items-center gap-2'>
-                      <input
-                        type='checkbox'
+                    <label key={part.id} className='flex items-center gap-2 cursor-pointer'>
+                      <Checkbox
                         checked={selectedParts.includes(part.id)}
-                        onChange={() => onTogglePart(part.id)}
+                        onCheckedChange={() => onTogglePart(part.id)}
                       />
                       <span className='text-sm'>{part.name}</span>
                     </label>
