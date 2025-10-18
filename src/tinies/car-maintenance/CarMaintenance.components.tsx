@@ -292,14 +292,12 @@ interface CarPartsSelectorProps {
   allCarParts: CarPart[];
   selectedParts: string[];
   onTogglePart: (partId: string) => void;
-  onAutoDetect?: () => void;
 }
 
 export function CarPartsSelector({
   allCarParts,
   selectedParts,
   onTogglePart,
-  onAutoDetect,
 }: CarPartsSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -317,20 +315,9 @@ export function CarPartsSelector({
 
   return (
     <div>
-      <div className='mb-2 flex items-center justify-between'>
-        <label className='block text-sm font-medium'>
-          Affected Car Parts (Optional - will auto-detect)
-        </label>
-        {onAutoDetect && (
-          <button
-            onClick={onAutoDetect}
-            className='text-xs text-primary hover:underline'
-            type='button'
-          >
-            Auto-detect now
-          </button>
-        )}
-      </div>
+      <label className='mb-2 block text-sm font-medium'>
+        Affected Car Parts (Optional - will auto-detect)
+      </label>
       <Disclosure label='Select parts manually' buttonClassName='text-sm'>
         <div className='mt-2 space-y-3'>
           <Input
@@ -733,24 +720,40 @@ export function AddServiceEntryForm({
           <div className='grid gap-4 md:grid-cols-2'>
             <div>
               <label className='mb-2 block text-sm font-medium'>Mileage</label>
-              <Input
-                name="mileage"
-                type='number'
-                placeholder='e.g., 45000'
-                value={mileage}
-                onChange={(e) => setMileage(e.target.value)}
-              />
+              <div className='relative'>
+                <Input
+                  name="mileage"
+                  type='number'
+                  placeholder='e.g., 45000'
+                  value={mileage}
+                  onChange={(e) => setMileage(e.target.value)}
+                  className='pr-14'
+                />
+                {mileage && (
+                  <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-foreground/60'>
+                    miles
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className='mb-2 block text-sm font-medium'>Cost</label>
-              <Input
-                name="cost"
-                type='number'
-                step='0.01'
-                placeholder='e.g., 49.99'
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-              />
+              <div className='relative'>
+                <Input
+                  name="cost"
+                  type='number'
+                  step='0.01'
+                  placeholder='e.g., 49.99'
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                  className='pl-7'
+                />
+                {cost && (
+                  <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-foreground/60'>
+                    $
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -770,7 +773,6 @@ export function AddServiceEntryForm({
             allCarParts={allCarParts}
             selectedParts={selectedParts}
             onTogglePart={togglePart}
-            onAutoDetect={autoDetectParts}
           />
 
           <div className='flex gap-2'>
@@ -1116,24 +1118,40 @@ export function EditServiceEntryForm({
       <div className='grid gap-4 md:grid-cols-2'>
         <div>
           <label className='mb-2 block text-sm font-medium'>Mileage</label>
-          <Input
-            name="editMileage"
-            type='number'
-            placeholder='e.g., 45000'
-            value={mileage}
-            onChange={(e) => setMileage(e.target.value)}
-          />
+          <div className='relative'>
+            <Input
+              name="editMileage"
+              type='number'
+              placeholder='e.g., 45000'
+              value={mileage}
+              onChange={(e) => setMileage(e.target.value)}
+              className='pr-14'
+            />
+            {mileage && (
+              <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-foreground/60'>
+                miles
+              </div>
+            )}
+          </div>
         </div>
         <div>
           <label className='mb-2 block text-sm font-medium'>Cost</label>
-          <Input
-            name="editCost"
-            type='number'
-            step='0.01'
-            placeholder='e.g., 49.99'
-            value={cost}
-            onChange={(e) => setCost(e.target.value)}
-          />
+          <div className='relative'>
+            <Input
+              name="editCost"
+              type='number'
+              step='0.01'
+              placeholder='e.g., 49.99'
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              className='pl-7'
+            />
+            {cost && (
+              <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-foreground/60'>
+                $
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1153,7 +1171,6 @@ export function EditServiceEntryForm({
         allCarParts={allCarParts}
         selectedParts={selectedParts}
         onTogglePart={togglePart}
-        onAutoDetect={autoDetectParts}
       />
 
       <div className='flex gap-2'>
