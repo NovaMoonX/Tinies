@@ -8,6 +8,7 @@ import {
   RecipeDetailsModal,
   FilterSection,
   AddRecipeModal,
+  EditRecipeModal,
 } from './RecipeBook.components';
 import { filterRecipes, generateRecipeId } from './RecipeBook.utils';
 
@@ -15,6 +16,7 @@ export function RecipeBook() {
   const [recipes, setRecipes] = useState<Recipe[]>(SAMPLE_RECIPES);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filters, setFilters] = useState<RecipeFilters>({
     searchQuery: '',
     selectedTypes: [],
@@ -48,6 +50,17 @@ export function RecipeBook() {
     if (selectedRecipe?.id === id) {
       setSelectedRecipe(null);
     }
+  };
+
+  const handleUpdateRecipe = (updatedRecipe: Recipe) => {
+    setRecipes(recipes.map((r) => (r.id === updatedRecipe.id ? updatedRecipe : r)));
+    setSelectedRecipe(null);
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditClick = () => {
+    setSelectedRecipe(selectedRecipe);
+    setIsEditModalOpen(true);
   };
 
   return (
@@ -115,11 +128,26 @@ export function RecipeBook() {
         )}
 
         {/* Recipe Details Modal */}
-        {selectedRecipe && (
+        {selectedRecipe && !isEditModalOpen && (
           <RecipeDetailsModal
             recipe={selectedRecipe}
             isOpen={!!selectedRecipe}
             onClose={() => setSelectedRecipe(null)}
+            onEdit={handleEditClick}
+          />
+        )}
+
+        {/* Edit Recipe Modal */}
+        {selectedRecipe && isEditModalOpen && (
+          <EditRecipeModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedRecipe(null);
+            }}
+            onUpdate={handleUpdateRecipe}
+            recipe={selectedRecipe}
+            allTags={allTags}
           />
         )}
 

@@ -96,9 +96,10 @@ interface RecipeDetailsModalProps {
   recipe: Recipe;
   isOpen: boolean;
   onClose: () => void;
+  onEdit: () => void;
 }
 
-export function RecipeDetailsModal({ recipe, isOpen, onClose }: RecipeDetailsModalProps) {
+export function RecipeDetailsModal({ recipe, isOpen, onClose, onEdit }: RecipeDetailsModalProps) {
   const recipeTypeConfig = RECIPE_TYPES.find((t) => t.value === recipe.type);
   const totalTime = getTotalTime(recipe);
 
@@ -111,11 +112,16 @@ export function RecipeDetailsModal({ recipe, isOpen, onClose }: RecipeDetailsMod
       <div className='space-y-6'>
         {/* Header Info */}
         <div className='space-y-3'>
-          <div className='flex items-center gap-2'>
-            <span className='bg-muted flex h-10 w-10 items-center justify-center rounded-full text-2xl'>
-              {recipeTypeConfig?.emoji}
-            </span>
-            <Badge variant='secondary'>{recipeTypeConfig?.label}</Badge>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <span className='bg-muted flex h-10 w-10 items-center justify-center rounded-full text-2xl'>
+                {recipeTypeConfig?.emoji}
+              </span>
+              <Badge variant='secondary'>{recipeTypeConfig?.label}</Badge>
+            </div>
+            <Button onClick={onEdit} variant='outline' size='sm'>
+              Edit Recipe
+            </Button>
           </div>
           <p className='text-foreground/70'>{recipe.description}</p>
           
@@ -252,18 +258,6 @@ export function FilterSection({
         />
       </div>
 
-      {/* Quick Filters */}
-      <div className='mb-4 flex flex-wrap items-center gap-2'>
-        <Checkbox
-          checked={filters.noPrepTime}
-          onCheckedChange={(checked) =>
-            onFiltersChange({ ...filters, noPrepTime: checked })
-          }
-          size={16}
-        />
-        <Label>No Prep Time</Label>
-      </div>
-
       {/* Advanced Filters with Disclosure */}
       <Disclosure label='Advanced Filters' className='rounded-xl'>
         <div className='space-y-4 pt-2'>
@@ -320,6 +314,18 @@ export function FilterSection({
                 onFiltersChange({ ...filters, maxPrepTime: value });
               }}
             />
+          </div>
+
+          {/* No Prep Time */}
+          <div className='flex flex-wrap items-center gap-2'>
+            <Checkbox
+              checked={filters.noPrepTime}
+              onCheckedChange={(checked) =>
+                onFiltersChange({ ...filters, noPrepTime: checked })
+              }
+              size={16}
+            />
+            <Label>No Prep Time</Label>
           </div>
         </div>
       </Disclosure>
@@ -663,6 +669,340 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
         <div className='flex gap-2 pt-4'>
           <Button onClick={handleSubmit} disabled={!name.trim()} className='flex-1'>
             Add Recipe
+          </Button>
+          <Button onClick={onClose} variant='outline'>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+interface EditRecipeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (recipe: Recipe) => void;
+  recipe: Recipe;
+  allTags: string[];
+}
+
+export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: EditRecipeModalProps) {
+  const [name, setName] = useState(recipe.name);
+  const [type, setType] = useState<RecipeType>(recipe.type);
+  const [description, setDescription] = useState(recipe.description);
+  const [prepTime, setPrepTime] = useState(recipe.prepTime.toString());
+  const [cookTime, setCookTime] = useState(recipe.cookTime.toString());
+  const [servings, setServings] = useState(recipe.servings.toString());
+  const [ingredients, setIngredients] = useState<Ingredient[]>(recipe.ingredients);
+  const [instructions, setInstructions] = useState<string[]>(recipe.instructions);
+  const [selectedTags, setSelectedTags] = useState<string[]>(recipe.tags);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+
+  const handleAddIngredient = () => {
+    setIngredients([
+      ...ingredients,
+      { id: generateIngredientId(), name: '', amount: '', unit: '' },
+    ]);
+  };
+
+  const handleRemoveIngredient = (id: string) => {
+    setIngredients(ingredients.filter((ing) => ing.id !== id));
+  };
+
+  const handleUpdateIngredient = (
+    id: string,
+    field: keyof Ingredient,
+    value: string
+  ) => {
+    setIngredients(
+      ingredients.map((ing) => (ing.id === id ? { ...ing, [field]: value } : ing))
+    );
+  };
+
+  const handleAddInstruction = () => {
+    setInstructions([...instructions, '']);
+  };
+
+  const handleRemoveInstruction = (index: number) => {
+    setInstructions(instructions.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateInstruction = (index: number, value: string) => {
+    const newInstructions = [...instructions];
+    newInstructions[index] = value;
+    setInstructions(newInstructions);
+  };
+
+  const handleAddTag = (tag: string) => {
+    if (tag.trim() && !selectedTags.includes(tag.trim())) {
+      setSelectedTags([...selectedTags, tag.trim()]);
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
+  const availableTags = allTags.filter((tag) => !selectedTags.includes(tag));
+
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+
+    const filteredIngredients = ingredients.filter(
+      (ing) => ing.name.trim() && ing.amount.trim()
+    );
+
+    const filteredInstructions = instructions.filter((inst) => inst.trim());
+
+    onUpdate({
+      ...recipe,
+      name: name.trim(),
+      type,
+      description: description.trim(),
+      prepTime: parseInt(prepTime) || 0,
+      cookTime: parseInt(cookTime) || 0,
+      servings: parseInt(servings) || 1,
+      ingredients: filteredIngredients,
+      instructions: filteredInstructions,
+      tags: selectedTags,
+    });
+
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title='Edit Recipe'>
+      <div className='space-y-4'>
+        {/* Basic Info */}
+        <div>
+          <Label htmlFor='edit-recipe-name'>Recipe Name *</Label>
+          <Input
+            id='edit-recipe-name'
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder='e.g., Chocolate Chip Cookies'
+          />
+        </div>
+
+        <div>
+          <Label htmlFor='edit-recipe-type'>Recipe Type *</Label>
+          <Select
+            value={type}
+            onChange={(value) => setType(value as RecipeType)}
+            options={RECIPE_TYPES.map((t) => ({ value: t.value, text: t.label, icon: t.emoji }))}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor='edit-description'>Description</Label>
+          <Textarea
+            id='edit-description'
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder='Brief description of your recipe...'
+            rows={3}
+          />
+        </div>
+
+        {/* Time & Servings */}
+        <div className='grid grid-cols-3 gap-4'>
+          <div>
+            <Label htmlFor='edit-prep-time'>Prep Time (min)</Label>
+            <Input
+              id='edit-prep-time'
+              type='number'
+              min='0'
+              value={prepTime}
+              onChange={(e) => setPrepTime(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor='edit-cook-time'>Cook Time (min)</Label>
+            <Input
+              id='edit-cook-time'
+              type='number'
+              min='0'
+              value={cookTime}
+              onChange={(e) => setCookTime(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor='edit-servings'>Servings</Label>
+            <Input
+              id='edit-servings'
+              type='number'
+              min='1'
+              value={servings}
+              onChange={(e) => setServings(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Ingredients */}
+        <div>
+          <div className='mb-2 flex items-center justify-between'>
+            <Label>Ingredients</Label>
+            <Button onClick={handleAddIngredient} variant='outline' size='sm'>
+              <Plus className='h-4 w-4' />
+              Add Ingredient
+            </Button>
+          </div>
+          <div className='space-y-2'>
+            {ingredients.map((ingredient) => (
+              <div key={ingredient.id} className='grid grid-cols-12 gap-2'>
+                <Input
+                  className='col-span-3'
+                  placeholder='Amount'
+                  value={ingredient.amount}
+                  onChange={(e) =>
+                    handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
+                  }
+                />
+                <Input
+                  className='col-span-3'
+                  placeholder='Unit'
+                  value={ingredient.unit}
+                  onChange={(e) =>
+                    handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
+                  }
+                />
+                <Input
+                  className='col-span-5'
+                  placeholder='Ingredient name'
+                  value={ingredient.name}
+                  onChange={(e) =>
+                    handleUpdateIngredient(ingredient.id, 'name', e.target.value)
+                  }
+                />
+                {ingredients.length > 1 && (
+                  <Button
+                    onClick={() => handleRemoveIngredient(ingredient.id)}
+                    variant='outline'
+                    size='sm'
+                    className='col-span-1'
+                  >
+                    <Trash className='h-4 w-4' />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div>
+          <div className='mb-2 flex items-center justify-between'>
+            <Label>Instructions</Label>
+            <Button onClick={handleAddInstruction} variant='outline' size='sm'>
+              <Plus className='h-4 w-4' />
+              Add Step
+            </Button>
+          </div>
+          <div className='space-y-2'>
+            {instructions.map((instruction, index) => (
+              <div key={index} className='flex gap-2'>
+                <div className='bg-primary text-primary-foreground flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold'>
+                  {index + 1}
+                </div>
+                <Textarea
+                  value={instruction}
+                  onChange={(e) => handleUpdateInstruction(index, e.target.value)}
+                  placeholder={`Step ${index + 1}...`}
+                  rows={2}
+                  className='flex-1'
+                />
+                {instructions.length > 1 && (
+                  <Button
+                    onClick={() => handleRemoveInstruction(index)}
+                    variant='outline'
+                    size='sm'
+                  >
+                    <Trash className='h-4 w-4' />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div>
+          <div className='mb-2 flex items-center justify-between'>
+            <Label>Tags</Label>
+            <Button
+              onClick={() => setShowTagDropdown(!showTagDropdown)}
+              variant='outline'
+              size='sm'
+            >
+              <Plus className='h-4 w-4' />
+              {showTagDropdown ? 'Hide' : 'Add Tag'}
+            </Button>
+          </div>
+
+          {showTagDropdown && (
+            <div className='bg-background mb-3 rounded-xl p-4'>
+              <div className='space-y-3'>
+                <Input
+                  placeholder='Enter new tag (e.g., "quick", "healthy")'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      handleAddTag(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+                {availableTags.length > 0 && (
+                  <>
+                    <div className='text-foreground/60 text-sm'>
+                      Or select from existing tags:
+                    </div>
+                    <div className='bg-muted/20 max-h-48 overflow-y-auto rounded-lg p-3'>
+                      <div className='flex flex-wrap gap-2'>
+                        {availableTags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant='secondary'
+                            className='cursor-pointer hover:opacity-80'
+                            onClick={() => handleAddTag(tag)}
+                          >
+                            + {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {selectedTags.length > 0 ? (
+            <div className='flex flex-wrap gap-2'>
+              {selectedTags.map((tag) => (
+                <Badge key={tag} variant='secondary' className='group relative'>
+                  {tag}
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className='hover:bg-destructive/20 ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full'
+                    title='Remove tag'
+                  >
+                    <X className='h-3 w-3' />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          ) : !showTagDropdown ? (
+            <p className='text-foreground/60 py-4 text-center text-sm'>
+              No tags yet. Add tags to categorize your recipe.
+            </p>
+          ) : null}
+        </div>
+
+        {/* Actions */}
+        <div className='flex gap-2 pt-4'>
+          <Button onClick={handleSubmit} disabled={!name.trim()} className='flex-1'>
+            Update Recipe
           </Button>
           <Button onClick={onClose} variant='outline'>
             Cancel
