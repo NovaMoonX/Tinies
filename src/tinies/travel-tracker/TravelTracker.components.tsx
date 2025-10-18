@@ -82,6 +82,8 @@ export function AddDestinationModal({
                 value: state,
               }))}
               placeholder="Select a state..."
+              searchable
+              searchPlaceholder="Search states..."
             />
           </div>
         ) : (
@@ -97,6 +99,8 @@ export function AddDestinationModal({
                   value: country,
                 }))}
                 placeholder="Select a country..."
+                searchable
+                searchPlaceholder="Search countries..."
               />
             </div>
             <div>
@@ -268,6 +272,7 @@ export function DestinationDetails({
   const [showCalendar, setShowCalendar] = useState(false);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [newPhotoCaption, setNewPhotoCaption] = useState('');
+  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
 
   const handleAddPhoto = () => {
@@ -276,6 +281,16 @@ export function DestinationDetails({
       setNewPhotoUrl('');
       setNewPhotoCaption('');
       setShowAddPhotoModal(false);
+      setPhotoInputMethod('url');
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a local URL for the uploaded file
+      const fileUrl = URL.createObjectURL(file);
+      setNewPhotoUrl(fileUrl);
     }
   };
 
@@ -401,19 +416,73 @@ export function DestinationDetails({
       {/* Add photo modal */}
       <Modal
         isOpen={showAddPhotoModal}
-        onClose={() => setShowAddPhotoModal(false)}
+        onClose={() => {
+          setShowAddPhotoModal(false);
+          setNewPhotoUrl('');
+          setNewPhotoCaption('');
+          setPhotoInputMethod('url');
+        }}
         title="Add Photo"
       >
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="photo-url">Photo URL</Label>
-            <Input
-              id="photo-url"
-              value={newPhotoUrl}
-              onChange={(e) => setNewPhotoUrl(e.target.value)}
-              placeholder="https://example.com/photo.jpg"
-            />
+          {/* Toggle between URL and Upload */}
+          <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => setPhotoInputMethod('url')}
+              className={join(
+                'flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                photoInputMethod === 'url'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-foreground/60 hover:text-foreground'
+              )}
+            >
+              URL
+            </button>
+            <button
+              onClick={() => setPhotoInputMethod('upload')}
+              className={join(
+                'flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                photoInputMethod === 'upload'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-foreground/60 hover:text-foreground'
+              )}
+            >
+              Upload
+            </button>
           </div>
+
+          {photoInputMethod === 'url' ? (
+            <div>
+              <Label htmlFor="photo-url">Photo URL</Label>
+              <Input
+                id="photo-url"
+                value={newPhotoUrl}
+                onChange={(e) => setNewPhotoUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+              />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="photo-file">Upload Photo</Label>
+              <input
+                id="photo-file"
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="w-full px-3 py-2 text-sm border border-foreground/20 rounded-md file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+              />
+              {newPhotoUrl && (
+                <div className="mt-2">
+                  <img
+                    src={newPhotoUrl}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          
           <div>
             <Label htmlFor="photo-caption">Caption (optional)</Label>
             <Input
@@ -424,7 +493,12 @@ export function DestinationDetails({
             />
           </div>
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setShowAddPhotoModal(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowAddPhotoModal(false);
+              setNewPhotoUrl('');
+              setNewPhotoCaption('');
+              setPhotoInputMethod('url');
+            }}>
               Cancel
             </Button>
             <Button onClick={handleAddPhoto} disabled={!newPhotoUrl}>
