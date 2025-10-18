@@ -12,8 +12,8 @@
 }
 
 @theme tiny {
-  --color-background: var(--color-gray-200);
-  --color-foreground: var(--color-gray-950);
+  --color-background: var(--color-gray-200); /* #e5e7eb */
+  --color-foreground: var(--color-gray-950); /* #030712 */
 }
 
 /* Override the variables to create a dark theme */
