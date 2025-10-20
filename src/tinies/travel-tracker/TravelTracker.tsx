@@ -46,7 +46,6 @@ export function TravelTracker() {
           selectedDestination={selectedDestination}
           onSelectDestination={setSelectedDestination}
           onAddDestination={() => setShowAddModal(true)}
-          onDeleteDestination={deleteDestination}
         />
 
         {/* Destination Details */}
@@ -67,6 +66,9 @@ export function TravelTracker() {
             }
             onUpdatePhotoCaption={(photoId, caption) =>
               updatePhotoCaption(selectedDestinationData.id, photoId, caption)
+            }
+            onDeleteDestination={() =>
+              deleteDestination(selectedDestinationData.id)
             }
           />
         )}

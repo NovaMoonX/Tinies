@@ -8,7 +8,8 @@ import {
   Select,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
-import { Plus, X } from '@moondreamsdev/dreamer-ui/symbols';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
+import { Plus, X, Trash } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useState, useEffect } from 'react';
 import { US_STATES, COUNTRIES } from './TravelTracker.data';
@@ -140,7 +141,6 @@ interface DestinationSelectorProps {
   selectedDestination: string | null;
   onSelectDestination: (id: string | null) => void;
   onAddDestination: () => void;
-  onDeleteDestination: (id: string) => void;
 }
 
 export function DestinationSelector({
@@ -148,7 +148,6 @@ export function DestinationSelector({
   selectedDestination,
   onSelectDestination,
   onAddDestination,
-  onDeleteDestination,
 }: DestinationSelectorProps) {
   const usStates = destinations.filter((d) => d.type === 'us-state');
   const internationalCities = destinations.filter((d) => d.type === 'international-city');
@@ -186,22 +185,13 @@ export function DestinationSelector({
                     key={dest.id}
                     onClick={() => onSelectDestination(dest.id)}
                     className={join(
-                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all group relative',
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
                       selectedDestination === dest.id
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted hover:bg-muted/80'
                     )}
                   >
                     {dest.name}
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteDestination(dest.id);
-                      }}
-                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      ×
-                    </span>
                   </button>
                 ))}
               </div>
@@ -223,7 +213,7 @@ export function DestinationSelector({
                     key={dest.id}
                     onClick={() => onSelectDestination(dest.id)}
                     className={join(
-                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all group relative',
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
                       selectedDestination === dest.id
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted hover:bg-muted/80'
@@ -231,15 +221,6 @@ export function DestinationSelector({
                   >
                     <span>{dest.name}</span>
                     <span className="text-xs ml-1 opacity-70">{dest.country}</span>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteDestination(dest.id);
-                      }}
-                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      ×
-                    </span>
                   </button>
                 ))}
               </div>
@@ -258,6 +239,7 @@ interface DestinationDetailsProps {
   onAddPhoto: (url: string, caption: string) => void;
   onDeletePhoto: (photoId: string) => void;
   onUpdatePhotoCaption: (photoId: string, caption: string) => void;
+  onDeleteDestination: () => void;
 }
 
 export function DestinationDetails({
@@ -267,6 +249,7 @@ export function DestinationDetails({
   onAddPhoto,
   onDeletePhoto,
   onUpdatePhotoCaption,
+  onDeleteDestination,
 }: DestinationDetailsProps) {
   const [showAddPhotoModal, setShowAddPhotoModal] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -274,6 +257,7 @@ export function DestinationDetails({
   const [newPhotoCaption, setNewPhotoCaption] = useState('');
   const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
+  const { confirm } = useActionModal();
 
   // Reset local state when destination changes to prevent state leakage between destinations
   useEffect(() => {
@@ -304,6 +288,20 @@ export function DestinationDetails({
     }
   };
 
+  const handleDeleteDestination = async () => {
+    const confirmed = await confirm({
+      title: 'Delete Destination',
+      message: `Are you sure you want to delete ${destination.name}? This will also delete all photos and notes associated with this destination.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      onDeleteDestination();
+    }
+  };
+
   const handleDateSelect = (date: Date) => {
     const isoDate = date.toISOString().split('T')[0];
     onUpdateVisitDate(isoDate);
@@ -324,15 +322,25 @@ export function DestinationDetails({
     <div className="space-y-4">
       {/* Simplified destination header */}
       <div className="space-y-2">
-        <div className="flex items-baseline gap-2">
-          <h2 className="text-2xl font-bold">
-            {destination.name}
-          </h2>
-          {destination.country && (
-            <span className="text-foreground/50 text-base">
-              {destination.country}
-            </span>
-          )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-2xl font-bold">
+              {destination.name}
+            </h2>
+            {destination.country && (
+              <span className="text-foreground/50 text-base">
+                {destination.country}
+              </span>
+            )}
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDeleteDestination}
+          >
+            <Trash className="h-4 w-4" />
+            Delete
+          </Button>
         </div>
         
         {/* Visit date with calendar popover */}
