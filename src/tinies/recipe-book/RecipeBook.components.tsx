@@ -517,38 +517,42 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
           </div>
           <div className='space-y-2'>
             {ingredients.map((ingredient) => (
-              <div key={ingredient.id} className='flex gap-2'>
-                <Input
-                  placeholder='Amount'
-                  value={ingredient.amount}
-                  onChange={(e) =>
-                    handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
-                  }
-                  className='w-20'
-                />
-                <Input
-                  placeholder='Unit'
-                  value={ingredient.unit}
-                  onChange={(e) =>
-                    handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
-                  }
-                  className='w-24'
-                />
-                <Input
-                  placeholder='Ingredient name'
-                  value={ingredient.name}
-                  onChange={(e) =>
-                    handleUpdateIngredient(ingredient.id, 'name', e.target.value)
-                  }
-                  className='flex-1'
-                />
+              <div key={ingredient.id} className='flex flex-col gap-2 sm:flex-row'>
+                <div className='flex flex-1 gap-2'>
+                  <Input
+                    placeholder='Amount'
+                    value={ingredient.amount}
+                    onChange={(e) =>
+                      handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
+                    }
+                    className='w-20 sm:w-24'
+                  />
+                  <Input
+                    placeholder='Unit (optional)'
+                    value={ingredient.unit}
+                    onChange={(e) =>
+                      handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
+                    }
+                    className='w-24 sm:w-28'
+                  />
+                  <Input
+                    placeholder='Ingredient name'
+                    value={ingredient.name}
+                    onChange={(e) =>
+                      handleUpdateIngredient(ingredient.id, 'name', e.target.value)
+                    }
+                    className='flex-1'
+                  />
+                </div>
                 {ingredients.length > 1 && (
                   <Button
                     onClick={() => handleRemoveIngredient(ingredient.id)}
                     variant='outline'
                     size='sm'
+                    className='w-full sm:w-auto'
                   >
                     <Trash className='h-4 w-4' />
+                    <span className='ml-2 sm:hidden'>Remove</span>
                   </Button>
                 )}
               </div>
@@ -567,24 +571,38 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
           </div>
           <div className='space-y-2'>
             {instructions.map((instruction, index) => (
-              <div key={index} className='flex gap-2'>
-                <div className='bg-primary text-primary-foreground flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold'>
+              <div key={index} className='relative'>
+                <div className='bg-primary text-primary-foreground absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:relative sm:h-8 sm:w-8 sm:text-sm'>
                   {index + 1}
                 </div>
-                <Textarea
-                  placeholder={`Step ${index + 1}...`}
-                  value={instruction}
-                  onChange={(e) => handleUpdateInstruction(index, e.target.value)}
-                  rows={2}
-                  className='flex-1'
-                />
+                <div className='flex gap-2 pl-8 sm:pl-0'>
+                  <Textarea
+                    placeholder={`Step ${index + 1}...`}
+                    value={instruction}
+                    onChange={(e) => handleUpdateInstruction(index, e.target.value)}
+                    rows={2}
+                    className='flex-1'
+                  />
+                  {instructions.length > 1 && (
+                    <Button
+                      onClick={() => handleRemoveInstruction(index)}
+                      variant='outline'
+                      size='sm'
+                      className='hidden sm:flex'
+                    >
+                      <Trash className='h-4 w-4' />
+                    </Button>
+                  )}
+                </div>
                 {instructions.length > 1 && (
                   <Button
                     onClick={() => handleRemoveInstruction(index)}
                     variant='outline'
                     size='sm'
+                    className='mt-2 w-full sm:hidden'
                   >
                     <Trash className='h-4 w-4' />
+                    <span className='ml-2'>Remove Step</span>
                   </Button>
                 )}
               </div>
@@ -850,39 +868,42 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
           </div>
           <div className='space-y-2'>
             {ingredients.map((ingredient) => (
-              <div key={ingredient.id} className='grid grid-cols-12 gap-2'>
-                <Input
-                  className='col-span-3'
-                  placeholder='Amount'
-                  value={ingredient.amount}
-                  onChange={(e) =>
-                    handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
-                  }
-                />
-                <Input
-                  className='col-span-3'
-                  placeholder='Unit'
-                  value={ingredient.unit}
-                  onChange={(e) =>
-                    handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
-                  }
-                />
-                <Input
-                  className='col-span-5'
-                  placeholder='Ingredient name'
-                  value={ingredient.name}
-                  onChange={(e) =>
-                    handleUpdateIngredient(ingredient.id, 'name', e.target.value)
-                  }
-                />
+              <div key={ingredient.id} className='flex flex-col gap-2 sm:flex-row'>
+                <div className='flex flex-1 gap-2'>
+                  <Input
+                    placeholder='Amount'
+                    value={ingredient.amount}
+                    onChange={(e) =>
+                      handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
+                    }
+                    className='w-20 sm:w-24'
+                  />
+                  <Input
+                    placeholder='Unit (optional)'
+                    value={ingredient.unit}
+                    onChange={(e) =>
+                      handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
+                    }
+                    className='w-24 sm:w-28'
+                  />
+                  <Input
+                    placeholder='Ingredient name'
+                    value={ingredient.name}
+                    onChange={(e) =>
+                      handleUpdateIngredient(ingredient.id, 'name', e.target.value)
+                    }
+                    className='flex-1'
+                  />
+                </div>
                 {ingredients.length > 1 && (
                   <Button
                     onClick={() => handleRemoveIngredient(ingredient.id)}
                     variant='outline'
                     size='sm'
-                    className='col-span-1'
+                    className='w-full sm:w-auto'
                   >
                     <Trash className='h-4 w-4' />
+                    <span className='ml-2 sm:hidden'>Remove</span>
                   </Button>
                 )}
               </div>
@@ -901,24 +922,38 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
           </div>
           <div className='space-y-2'>
             {instructions.map((instruction, index) => (
-              <div key={index} className='flex gap-2'>
-                <div className='bg-primary text-primary-foreground flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold'>
+              <div key={index} className='relative'>
+                <div className='bg-primary text-primary-foreground absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:relative sm:h-8 sm:w-8 sm:text-sm'>
                   {index + 1}
                 </div>
-                <Textarea
-                  value={instruction}
-                  onChange={(e) => handleUpdateInstruction(index, e.target.value)}
-                  placeholder={`Step ${index + 1}...`}
-                  rows={2}
-                  className='flex-1'
-                />
+                <div className='flex gap-2 pl-8 sm:pl-0'>
+                  <Textarea
+                    value={instruction}
+                    onChange={(e) => handleUpdateInstruction(index, e.target.value)}
+                    placeholder={`Step ${index + 1}...`}
+                    rows={2}
+                    className='flex-1'
+                  />
+                  {instructions.length > 1 && (
+                    <Button
+                      onClick={() => handleRemoveInstruction(index)}
+                      variant='outline'
+                      size='sm'
+                      className='hidden sm:flex'
+                    >
+                      <Trash className='h-4 w-4' />
+                    </Button>
+                  )}
+                </div>
                 {instructions.length > 1 && (
                   <Button
                     onClick={() => handleRemoveInstruction(index)}
                     variant='outline'
                     size='sm'
+                    className='mt-2 w-full sm:hidden'
                   >
                     <Trash className='h-4 w-4' />
+                    <span className='ml-2'>Remove Step</span>
                   </Button>
                 )}
               </div>
