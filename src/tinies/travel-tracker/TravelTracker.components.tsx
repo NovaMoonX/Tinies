@@ -10,7 +10,7 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { Plus, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { US_STATES, COUNTRIES } from './TravelTracker.data';
 import { Destination, DestinationType } from './TravelTracker.types';
 
@@ -274,6 +274,16 @@ export function DestinationDetails({
   const [newPhotoCaption, setNewPhotoCaption] = useState('');
   const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
   const [editingCaption, setEditingCaption] = useState<string | null>(null);
+
+  // Reset local state when destination changes to prevent state leakage between destinations
+  useEffect(() => {
+    setShowAddPhotoModal(false);
+    setShowCalendar(false);
+    setNewPhotoUrl('');
+    setNewPhotoCaption('');
+    setPhotoInputMethod('url');
+    setEditingCaption(null);
+  }, [destination.id]);
 
   const handleAddPhoto = () => {
     if (newPhotoUrl) {
