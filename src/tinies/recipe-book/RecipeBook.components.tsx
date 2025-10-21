@@ -13,8 +13,17 @@ import {
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import { RECIPE_TYPES } from './RecipeBook.data';
-import { Recipe, RecipeType, Ingredient, RecipeFilters } from './RecipeBook.types';
-import { formatTime, getTotalTime, generateIngredientId } from './RecipeBook.utils';
+import {
+  Recipe,
+  RecipeType,
+  Ingredient,
+  RecipeFilters,
+} from './RecipeBook.types';
+import {
+  formatTime,
+  getTotalTime,
+  generateIngredientId,
+} from './RecipeBook.utils';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -54,7 +63,7 @@ export function RecipeCard({ recipe, onView, onDelete }: RecipeCardProps) {
           </Button>
         </div>
 
-        <div className='mb-3 flex flex-wrap gap-2 text-sm text-foreground/70'>
+        <div className='text-foreground/70 mb-3 flex flex-wrap gap-2 text-sm'>
           <div className='flex items-center gap-1'>
             <span>⏱️</span>
             <span>Prep: {formatTime(recipe.prepTime)}</span>
@@ -63,12 +72,10 @@ export function RecipeCard({ recipe, onView, onDelete }: RecipeCardProps) {
             <span>👨‍🍳</span>
             <span>Cook: {formatTime(recipe.cookTime)}</span>
           </div>
-          <div className='font-medium'>
-            Total: {formatTime(totalTime)}
-          </div>
+          <div className='font-medium'>Total: {formatTime(totalTime)}</div>
         </div>
 
-        <div className='mb-3 flex items-center gap-2 text-sm text-foreground/70'>
+        <div className='text-foreground/70 mb-3 flex items-center gap-2 text-sm'>
           <span>🍽️ {recipe.servings} servings</span>
           <span>•</span>
           <span>📝 {recipe.ingredients.length} ingredients</span>
@@ -99,16 +106,17 @@ interface RecipeDetailsModalProps {
   onEdit: () => void;
 }
 
-export function RecipeDetailsModal({ recipe, isOpen, onClose, onEdit }: RecipeDetailsModalProps) {
+export function RecipeDetailsModal({
+  recipe,
+  isOpen,
+  onClose,
+  onEdit,
+}: RecipeDetailsModalProps) {
   const recipeTypeConfig = RECIPE_TYPES.find((t) => t.value === recipe.type);
   const totalTime = getTotalTime(recipe);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={recipe.name}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={recipe.name}>
       <div className='space-y-6'>
         {/* Header Info */}
         <div className='space-y-3'>
@@ -124,7 +132,7 @@ export function RecipeDetailsModal({ recipe, isOpen, onClose, onEdit }: RecipeDe
             </Button>
           </div>
           <p className='text-foreground/70'>{recipe.description}</p>
-          
+
           <div className='bg-muted/30 rounded-lg p-4'>
             <div className='grid grid-cols-2 gap-3 text-sm md:grid-cols-4'>
               <div>
@@ -162,7 +170,10 @@ export function RecipeDetailsModal({ recipe, isOpen, onClose, onEdit }: RecipeDe
           <h3 className='mb-3 text-lg font-semibold'>Ingredients</h3>
           <div className='bg-muted/20 space-y-2 rounded-lg p-4'>
             {recipe.ingredients.map((ingredient) => (
-              <div key={ingredient.id} className='flex items-center gap-2 text-sm'>
+              <div
+                key={ingredient.id}
+                className='flex items-center gap-2 text-sm'
+              >
                 <span className='text-primary'>•</span>
                 <span className='font-medium'>
                   {ingredient.amount} {ingredient.unit}
@@ -182,7 +193,9 @@ export function RecipeDetailsModal({ recipe, isOpen, onClose, onEdit }: RecipeDe
                 <div className='bg-primary text-primary-foreground flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold'>
                   {index + 1}
                 </div>
-                <p className='text-foreground/80 flex-1 pt-1 text-sm'>{instruction}</p>
+                <p className='text-foreground/80 flex-1 pt-1 text-sm'>
+                  {instruction}
+                </p>
               </div>
             ))}
           </div>
@@ -209,7 +222,7 @@ export function FilterSection({
     const newTypes = filters.selectedTypes.includes(type)
       ? filters.selectedTypes.filter((t) => t !== type)
       : [...filters.selectedTypes, type];
-    
+
     onFiltersChange({ ...filters, selectedTypes: newTypes });
   };
 
@@ -260,7 +273,7 @@ export function FilterSection({
 
       {/* Advanced Filters with Disclosure */}
       <Disclosure label='Advanced Filters' className='rounded-xl'>
-        <div className='space-y-4 pt-2'>
+        <div className='space-y-4 p-2 pt-2'>
           {/* Recipe Types */}
           <div>
             <Label className='mb-2'>Recipe Types</Label>
@@ -294,7 +307,9 @@ export function FilterSection({
               placeholder='e.g., 30'
               value={filters.maxCookTime?.toString() || ''}
               onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value, 10) : null;
+                const value = e.target.value
+                  ? parseInt(e.target.value, 10)
+                  : null;
                 onFiltersChange({ ...filters, maxCookTime: value });
               }}
             />
@@ -310,7 +325,9 @@ export function FilterSection({
               placeholder='e.g., 15'
               value={filters.maxPrepTime?.toString() || ''}
               onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value, 10) : null;
+                const value = e.target.value
+                  ? parseInt(e.target.value, 10)
+                  : null;
                 onFiltersChange({ ...filters, maxPrepTime: value });
               }}
             />
@@ -340,7 +357,12 @@ interface AddRecipeModalProps {
   allTags: string[];
 }
 
-export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeModalProps) {
+export function AddRecipeModal({
+  isOpen,
+  onClose,
+  onAdd,
+  allTags,
+}: AddRecipeModalProps) {
   const [name, setName] = useState('');
   const [type, setType] = useState<RecipeType>('dinner');
   const [description, setDescription] = useState('');
@@ -368,10 +390,12 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
   const handleUpdateIngredient = (
     id: string,
     field: keyof Ingredient,
-    value: string
+    value: string,
   ) => {
     setIngredients(
-      ingredients.map((ing) => (ing.id === id ? { ...ing, [field]: value } : ing))
+      ingredients.map((ing) =>
+        ing.id === id ? { ...ing, [field]: value } : ing,
+      ),
     );
   };
 
@@ -405,7 +429,7 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
     if (!name.trim()) return;
 
     const filteredIngredients = ingredients.filter(
-      (ing) => ing.name.trim() && ing.amount.trim()
+      (ing) => ing.name.trim() && ing.amount.trim(),
     );
 
     const filteredInstructions = instructions.filter((inst) => inst.trim());
@@ -430,7 +454,9 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
     setPrepTime('0');
     setCookTime('0');
     setServings('4');
-    setIngredients([{ id: generateIngredientId(), name: '', amount: '', unit: '' }]);
+    setIngredients([
+      { id: generateIngredientId(), name: '', amount: '', unit: '' },
+    ]);
     setInstructions(['']);
     setSelectedTags([]);
     setShowTagDropdown(false);
@@ -517,29 +543,44 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
           </div>
           <div className='space-y-2'>
             {ingredients.map((ingredient) => (
-              <div key={ingredient.id} className='flex flex-col gap-2 sm:flex-row'>
+              <div
+                key={ingredient.id}
+                className='flex flex-col gap-2 sm:flex-row'
+              >
                 <div className='flex flex-1 gap-2'>
                   <Input
                     placeholder='Amount'
                     value={ingredient.amount}
                     onChange={(e) =>
-                      handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
+                      handleUpdateIngredient(
+                        ingredient.id,
+                        'amount',
+                        e.target.value,
+                      )
                     }
-                    className='w-20 sm:w-24'
+                    className='!w-16 sm:w-24'
                   />
                   <Input
                     placeholder='Unit (optional)'
                     value={ingredient.unit}
                     onChange={(e) =>
-                      handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
+                      handleUpdateIngredient(
+                        ingredient.id,
+                        'unit',
+                        e.target.value,
+                      )
                     }
-                    className='w-24 sm:w-28'
+                    className='!w-20 sm:w-28'
                   />
                   <Input
                     placeholder='Ingredient name'
                     value={ingredient.name}
                     onChange={(e) =>
-                      handleUpdateIngredient(ingredient.id, 'name', e.target.value)
+                      handleUpdateIngredient(
+                        ingredient.id,
+                        'name',
+                        e.target.value,
+                      )
                     }
                     className='flex-1'
                   />
@@ -571,17 +612,18 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
           </div>
           <div className='space-y-2'>
             {instructions.map((instruction, index) => (
-              <div key={index} className='relative'>
-                <div className='bg-primary text-primary-foreground absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:relative sm:h-8 sm:w-8 sm:text-sm'>
-                  {index + 1}
-                </div>
-                <div className='flex gap-2 pl-8 sm:pl-0'>
+              <div key={index}>
+                <div className='flex gap-2'>
+                  <div className='bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:relative sm:h-8 sm:w-8 sm:text-sm'>
+                    {index + 1}
+                  </div>
                   <Textarea
                     placeholder={`Step ${index + 1}...`}
                     value={instruction}
-                    onChange={(e) => handleUpdateInstruction(index, e.target.value)}
+                    onChange={(e) =>
+                      handleUpdateInstruction(index, e.target.value)
+                    }
                     rows={2}
-                    className='flex-1'
                   />
                   {instructions.length > 1 && (
                     <Button
@@ -685,7 +727,11 @@ export function AddRecipeModal({ isOpen, onClose, onAdd, allTags }: AddRecipeMod
 
         {/* Actions */}
         <div className='flex gap-2 pt-4'>
-          <Button onClick={handleSubmit} disabled={!name.trim()} className='flex-1'>
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim()}
+            className='flex-1'
+          >
             Add Recipe
           </Button>
           <Button onClick={onClose} variant='outline'>
@@ -705,15 +751,25 @@ interface EditRecipeModalProps {
   allTags: string[];
 }
 
-export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: EditRecipeModalProps) {
+export function EditRecipeModal({
+  isOpen,
+  onClose,
+  onUpdate,
+  recipe,
+  allTags,
+}: EditRecipeModalProps) {
   const [name, setName] = useState(recipe.name);
   const [type, setType] = useState<RecipeType>(recipe.type);
   const [description, setDescription] = useState(recipe.description);
   const [prepTime, setPrepTime] = useState(recipe.prepTime.toString());
   const [cookTime, setCookTime] = useState(recipe.cookTime.toString());
   const [servings, setServings] = useState(recipe.servings.toString());
-  const [ingredients, setIngredients] = useState<Ingredient[]>(recipe.ingredients);
-  const [instructions, setInstructions] = useState<string[]>(recipe.instructions);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    recipe.ingredients,
+  );
+  const [instructions, setInstructions] = useState<string[]>(
+    recipe.instructions,
+  );
   const [selectedTags, setSelectedTags] = useState<string[]>(recipe.tags);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
 
@@ -731,10 +787,12 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
   const handleUpdateIngredient = (
     id: string,
     field: keyof Ingredient,
-    value: string
+    value: string,
   ) => {
     setIngredients(
-      ingredients.map((ing) => (ing.id === id ? { ...ing, [field]: value } : ing))
+      ingredients.map((ing) =>
+        ing.id === id ? { ...ing, [field]: value } : ing,
+      ),
     );
   };
 
@@ -768,7 +826,7 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
     if (!name.trim()) return;
 
     const filteredIngredients = ingredients.filter(
-      (ing) => ing.name.trim() && ing.amount.trim()
+      (ing) => ing.name.trim() && ing.amount.trim(),
     );
 
     const filteredInstructions = instructions.filter((inst) => inst.trim());
@@ -808,7 +866,11 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
           <Select
             value={type}
             onChange={(value) => setType(value as RecipeType)}
-            options={RECIPE_TYPES.map((t) => ({ value: t.value, text: t.label, icon: t.emoji }))}
+            options={RECIPE_TYPES.map((t) => ({
+              value: t.value,
+              text: t.label,
+              icon: t.emoji,
+            }))}
           />
         </div>
 
@@ -868,29 +930,44 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
           </div>
           <div className='space-y-2'>
             {ingredients.map((ingredient) => (
-              <div key={ingredient.id} className='flex flex-col gap-2 sm:flex-row'>
+              <div
+                key={ingredient.id}
+                className='flex flex-col gap-2 sm:flex-row'
+              >
                 <div className='flex flex-1 gap-2'>
                   <Input
                     placeholder='Amount'
                     value={ingredient.amount}
                     onChange={(e) =>
-                      handleUpdateIngredient(ingredient.id, 'amount', e.target.value)
+                      handleUpdateIngredient(
+                        ingredient.id,
+                        'amount',
+                        e.target.value,
+                      )
                     }
-                    className='w-20 sm:w-24'
+                    className='!w-16 sm:w-24'
                   />
                   <Input
                     placeholder='Unit (optional)'
                     value={ingredient.unit}
                     onChange={(e) =>
-                      handleUpdateIngredient(ingredient.id, 'unit', e.target.value)
+                      handleUpdateIngredient(
+                        ingredient.id,
+                        'unit',
+                        e.target.value,
+                      )
                     }
-                    className='w-24 sm:w-28'
+                    className='!w-20 sm:w-28'
                   />
                   <Input
                     placeholder='Ingredient name'
                     value={ingredient.name}
                     onChange={(e) =>
-                      handleUpdateIngredient(ingredient.id, 'name', e.target.value)
+                      handleUpdateIngredient(
+                        ingredient.id,
+                        'name',
+                        e.target.value,
+                      )
                     }
                     className='flex-1'
                   />
@@ -922,24 +999,25 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
           </div>
           <div className='space-y-2'>
             {instructions.map((instruction, index) => (
-              <div key={index} className='relative'>
-                <div className='bg-primary text-primary-foreground absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:relative sm:h-8 sm:w-8 sm:text-sm'>
-                  {index + 1}
-                </div>
-                <div className='flex gap-2 pl-8 sm:pl-0'>
+              <div key={index}>
+                <div className='flex gap-2'>
+                  <div className='bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold sm:relative sm:h-8 sm:w-8 sm:text-sm'>
+                    {index + 1}
+                  </div>
                   <Textarea
                     value={instruction}
-                    onChange={(e) => handleUpdateInstruction(index, e.target.value)}
+                    onChange={(e) =>
+                      handleUpdateInstruction(index, e.target.value)
+                    }
                     placeholder={`Step ${index + 1}...`}
                     rows={2}
-                    className='flex-1'
                   />
                   {instructions.length > 1 && (
                     <Button
                       onClick={() => handleRemoveInstruction(index)}
                       variant='outline'
                       size='sm'
-                      className='hidden sm:flex'
+                      className='!hidden sm:flex'
                     >
                       <Trash className='h-4 w-4' />
                     </Button>
@@ -1036,7 +1114,11 @@ export function EditRecipeModal({ isOpen, onClose, onUpdate, recipe, allTags }: 
 
         {/* Actions */}
         <div className='flex gap-2 pt-4'>
-          <Button onClick={handleSubmit} disabled={!name.trim()} className='flex-1'>
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim()}
+            className='flex-1'
+          >
             Update Recipe
           </Button>
           <Button onClick={onClose} variant='outline'>

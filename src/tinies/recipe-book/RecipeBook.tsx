@@ -83,7 +83,7 @@ export function RecipeBook() {
               <div className='mb-1 text-3xl font-bold'>{recipes.length}</div>
               <div className='text-foreground/60 text-sm'>Total Recipes</div>
             </div>
-            <Button onClick={() => setIsAddModalOpen(true)} size='lg'>
+            <Button onClick={() => setIsAddModalOpen(true)}>
               <Plus className='h-5 w-5' />
               Add Recipe
             </Button>

@@ -77,7 +77,32 @@ className={join('base-class', isActive ? 'active' : 'inactive')}
 - Import from \`@moondreamsdev/dreamer-ui/components\`, \`/hooks\`, \`/symbols\`, \`/utils\`
 - Always check existing props of Dream UI components before setting custom styles
 
-### 5. File Structure
+### 5. Input & Textarea Layout Constraints
+- Input and Textarea components use full available width with optimized DOM structure
+- **ONLY** wrap these components when you need validation messages, password input features, or error counting
+- For basic layout changes, you can apply styles directly to the component if the type isn't `password` and there's no error validation message or character count
+- These components automatically optimize their DOM structure - wrapper divs are only rendered when needed, resulting in cleaner markup for basic usage
+
+\`\`\`tsx
+// ✅ Good - apply layout classes directly when no wrapper features needed
+<Input className='flex-1' placeholder='Ingredient name' />
+<Textarea className='flex-1' rows={2} />
+
+// ✅ Also Good - wrap in container for layout constraints (alternative approach)
+<div className='flex-1'>
+  <Input placeholder='Ingredient name' />
+</div>
+
+<div className='flex-1'>
+  <Textarea rows={2} />
+</div>
+
+// ❌ Bad - applying layout classes when wrapper features are needed
+<Input type='password' className='flex-1' placeholder='Password' />
+<Input className='flex-1' errorMessage='Required field' />
+\`\`\`
+
+### 6. File Structure
 Follow the existing structure:
 \`\`\`
 src/
@@ -94,7 +119,7 @@ src/
 ├── utils/      # Utility functions
 \`\`\`
 
-### 6. Import Patterns
+### 7. Import Patterns
 \`\`\`tsx
 // Dreamer UI imports
 import { Button } from '@moondreamsdev/dreamer-ui/components';
@@ -113,7 +138,7 @@ import { store } from '@store';
 import { helper } from '@utils/helper';
 \`\`\`
 
-### 7. Available Import Aliases
+### 8. Available Import Aliases
 - \`@/\` → \`src/\`
 - \`@components/\` → \`src/components/\`
 - \`@contexts/\` → \`src/contexts/\`
