@@ -31,6 +31,15 @@ export const router = createBrowserRouter([
           return { Component: ApartmentTourQuestions };
         },
       },
+      // Travel Tracker (lazy loaded)
+      {
+        path: 'travel-tracker',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: TravelTracker } = await import('@tinies/travel-tracker/TravelTracker');
+          return { Component: TravelTracker };
+        },
+      },
     ],
   },
 ]);
