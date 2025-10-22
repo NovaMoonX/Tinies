@@ -127,7 +127,6 @@ export function AddDestinationModal({
               (type === 'international-city' && (!cityName || !selectedCountry))
             }
           >
-            <Plus className="h-4 w-4" />
             Add Destination
           </Button>
         </div>
@@ -520,7 +519,6 @@ export function DestinationDetails({
               Cancel
             </Button>
             <Button onClick={handleAddPhoto} disabled={!newPhotoUrl}>
-              <Plus className="h-4 w-4" />
               Add Photo
             </Button>
           </div>
