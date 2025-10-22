@@ -2,16 +2,6 @@ import { Tiny } from './tinies.types';
 
 export const ALL_TINIES: Tiny[] = [
 	{
-		id: 'about',
-		title: 'About',
-		description: 'Learn more about Tinies and the philosophy behind this collection of mini tinies.',
-		startDate: '2025-01-15',
-		tags: ['informational', 'documentation'],
-		categories: [],
-		status: 'active',
-		route: '/about',
-	},
-	{
 		id: 'apartment-tour-questions',
 		title: 'Apartment Tour Questions',
 		description: 'A handy checklist of important questions to ask during apartment tours to help you make informed rental decisions.',
