@@ -1,5 +1,5 @@
-import { Button, Badge, Card, Modal, Input, Textarea, Select } from '@moondreamsdev/dreamer-ui/components';
-import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
+import { Button, Badge, Card, Modal, Input, Textarea, Select, Label } from '@moondreamsdev/dreamer-ui/components';
+import { Trash, Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState } from 'react';
 import {
   Contact,
@@ -623,6 +623,16 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
     contactIds: [] as string[],
     tags: '',
   });
+  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a local URL for the uploaded file
+      const fileUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, content: fileUrl });
+    }
+  };
 
   const handleSubmit = () => {
     if (!formData.title.trim() || !formData.content.trim()) return;
@@ -651,6 +661,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
       contactIds: [],
       tags: '',
     });
+    setPhotoInputMethod('url');
     
     onClose();
   };

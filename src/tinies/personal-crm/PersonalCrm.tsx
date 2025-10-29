@@ -1,5 +1,4 @@
-import { Button } from '@moondreamsdev/dreamer-ui/components';
-import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
+import { Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
 import { useState, useMemo } from 'react';
 import TinyPage from '@ui/layout/TinyPage';
 import { Contact, Artifact, PersonalCrmFilters, ArtifactNote } from './PersonalCrm.types';
@@ -16,7 +15,8 @@ import {
   ArtifactCard,
   ArtifactDetailsModal,
   AddArtifactModal,
-  FilterSection,
+  ContactsTabContent,
+  ArtifactsTabContent,
 } from './PersonalCrm.components';
 
 export function PersonalCrm() {
@@ -28,22 +28,31 @@ export function PersonalCrm() {
   const [isArtifactDetailsOpen, setIsArtifactDetailsOpen] = useState(false);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isAddArtifactModalOpen, setIsAddArtifactModalOpen] = useState(false);
-  const [filters, setFilters] = useState<PersonalCrmFilters>({
-    searchQuery: '',
-    selectedRelationshipTypes: [],
-    view: 'contacts',
-    selectedArtifactTypes: [],
-  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
+  const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<string[]>([]);
 
   const filteredContacts = useMemo(() => {
+    const filters: PersonalCrmFilters = {
+      searchQuery,
+      selectedRelationshipTypes: selectedRelationshipTypes as any[],
+      view: 'contacts',
+      selectedArtifactTypes: [],
+    };
     const result = filterContacts(contacts, filters);
     return result;
-  }, [contacts, filters]);
+  }, [contacts, searchQuery, selectedRelationshipTypes]);
 
   const filteredArtifacts = useMemo(() => {
+    const filters: PersonalCrmFilters = {
+      searchQuery,
+      selectedRelationshipTypes: [],
+      view: 'artifacts',
+      selectedArtifactTypes: selectedArtifactTypes as any[],
+    };
     const result = filterArtifacts(artifacts, filters);
     return result;
-  }, [artifacts, filters]);
+  }, [artifacts, searchQuery, selectedArtifactTypes]);
 
   const handleAddContact = (contactData: Omit<Contact, 'id' | 'dateAdded'>) => {
     const newContact: Contact = {
@@ -134,88 +143,47 @@ export function PersonalCrm() {
               <div className='text-foreground/60 text-sm'>Artifacts</div>
             </div>
           </div>
-          <div className='flex gap-2'>
-            <Button onClick={() => setIsAddContactModalOpen(true)}>
-              <Plus className='h-5 w-5' />
-              Add Contact
-            </Button>
-            <Button onClick={() => setIsAddArtifactModalOpen(true)} variant='secondary'>
-              <Plus className='h-5 w-5' />
-              Add Artifact
-            </Button>
-          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <FilterSection
-        filters={filters}
-        onFiltersChange={setFilters}
-        totalContacts={contacts.length}
-        totalArtifacts={artifacts.length}
-        filteredCount={
-          filters.view === 'contacts' ? filteredContacts.length : filteredArtifacts.length
-        }
-      />
+      {/* Tabs */}
+      <Tabs
+        defaultValue='contacts'
+        variant='underline'
+        tabsList={[
+          { value: 'contacts', label: '👤 Contacts' },
+          { value: 'artifacts', label: '📦 Artifacts' },
+        ]}
+      >
+        <TabsContent value='contacts'>
+          <ContactsTabContent
+            contacts={filteredContacts}
+            allContacts={contacts}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedRelationshipTypes={selectedRelationshipTypes}
+            onRelationshipTypesChange={setSelectedRelationshipTypes}
+            onAddContact={() => setIsAddContactModalOpen(true)}
+            onContactClick={handleContactClick}
+            onDeleteContact={handleDeleteContact}
+          />
+        </TabsContent>
 
-      {/* Content Grid */}
-      {filters.view === 'contacts' ? (
-        <>
-          {filteredContacts.length > 0 ? (
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-              {filteredContacts.map((contact) => (
-                <ContactCard
-                  key={contact.id}
-                  contact={contact}
-                  onClick={() => handleContactClick(contact)}
-                  onDelete={handleDeleteContact}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className='bg-muted/30 rounded-2xl p-12 text-center'>
-              <p className='text-foreground/60 mb-4'>
-                {filters.searchQuery ||
-                filters.selectedRelationshipTypes.length > 0
-                  ? 'No contacts match your filters.'
-                  : 'No contacts yet. Add your first contact to get started!'}
-              </p>
-              <Button onClick={() => setIsAddContactModalOpen(true)}>
-                <Plus className='h-5 w-5' />
-                Add Your First Contact
-              </Button>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {filteredArtifacts.length > 0 ? (
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-              {filteredArtifacts.map((artifact) => (
-                <ArtifactCard
-                  key={artifact.id}
-                  artifact={artifact}
-                  contacts={contacts}
-                  onClick={() => handleArtifactClick(artifact)}
-                  onDelete={handleDeleteArtifact}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className='bg-muted/30 rounded-2xl p-12 text-center'>
-              <p className='text-foreground/60 mb-4'>
-                {filters.searchQuery || filters.selectedArtifactTypes.length > 0
-                  ? 'No artifacts match your filters.'
-                  : 'No artifacts yet. Add your first artifact to get started!'}
-              </p>
-              <Button onClick={() => setIsAddArtifactModalOpen(true)}>
-                <Plus className='h-5 w-5' />
-                Add Your First Artifact
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+        <TabsContent value='artifacts'>
+          <ArtifactsTabContent
+            artifacts={filteredArtifacts}
+            allArtifacts={artifacts}
+            contacts={contacts}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedArtifactTypes={selectedArtifactTypes}
+            onArtifactTypesChange={setSelectedArtifactTypes}
+            onAddArtifact={() => setIsAddArtifactModalOpen(true)}
+            onArtifactClick={handleArtifactClick}
+            onDeleteArtifact={handleDeleteArtifact}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Modals */}
       <ContactDetailsModal
