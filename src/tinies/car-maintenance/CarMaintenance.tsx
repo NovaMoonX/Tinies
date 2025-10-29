@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
+import { Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
 import {
   CarSelector,
   CarDetailsSection,
@@ -10,6 +10,7 @@ import {
 import { useCarMaintenance } from './CarMaintenance.hooks';
 import { getServiceSummary } from './CarMaintenance.utils';
 import { ServiceEntry } from './CarMaintenance.types';
+import TinyPage from '@ui/layout/TinyPage';
 
 export function CarMaintenance() {
   const {
@@ -72,21 +73,13 @@ export function CarMaintenance() {
   };
 
   return (
-    <div className='tiny-page'>
-      <div className='mx-auto max-w-6xl space-y-6'>
-        {/* Header */}
-        <div className='space-y-2 text-center'>
-          <h1 className='text-3xl font-bold md:text-4xl'>
-            Car Maintenance Tracker
-          </h1>
-          <p className='mx-auto max-w-2xl text-sm text-foreground/70 md:text-base'>
-            Keep track of maintenance and service records for all your vehicles.
-            Auto-detect affected parts and manage service locations.
-          </p>
-        </div>
-
-        {/* Car Selector */}
-        <CarSelector
+    <TinyPage
+      title='Car Maintenance Tracker'
+      description='Keep track of maintenance and service records for all your vehicles. Auto-detect affected parts and manage service locations.'
+      maxWidth='max-w-6xl'
+    >
+      {/* Car Selector */}
+      <CarSelector
           cars={cars}
           selectedCar={selectedCar}
           onSelectCar={setSelectedCar}
@@ -210,15 +203,7 @@ export function CarMaintenance() {
             </div>
           </div>
         )}
-
-        {/* Footer */}
-        <div className='pb-8 pt-4 text-center'>
-          <Button href='/' variant='outline'>
-            ← Back to Gallery
-          </Button>
-        </div>
-      </div>
-    </div>
+    </TinyPage>
   );
 }
 

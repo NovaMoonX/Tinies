@@ -11,6 +11,7 @@ import {
   EditRecipeModal,
 } from './RecipeBook.components';
 import { filterRecipes, generateRecipeId } from './RecipeBook.utils';
+import TinyPage from '@ui/layout/TinyPage';
 
 export function RecipeBook() {
   const [recipes, setRecipes] = useState<Recipe[]>(SAMPLE_RECIPES);
@@ -64,19 +65,11 @@ export function RecipeBook() {
   };
 
   return (
-    <div className='tiny-page'>
-      <div className='mx-auto max-w-7xl space-y-6'>
-        {/* Header */}
-        <div className='space-y-3 text-center'>
-          <h1 className='text-3xl font-bold md:text-4xl'>📖 Recipe Book</h1>
-          <p className='text-foreground/70 mx-auto max-w-2xl text-sm md:text-base'>
-            Your personal collection of favorite recipes. Search by name, filter by
-            cook time, prep time, and recipe type. Add your own recipes with custom
-            ingredients.
-          </p>
-        </div>
-
-        {/* Stats */}
+    <TinyPage
+      title='📖 Recipe Book'
+      description='Your personal collection of favorite recipes. Search by name, filter by cook time, prep time, and recipe type. Add your own recipes with custom ingredients.'
+    >
+      {/* Stats */}
         <div className='bg-muted/30 rounded-2xl p-6'>
           <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
             <div className='text-center sm:text-left'>
@@ -158,15 +151,7 @@ export function RecipeBook() {
           onAdd={handleAddRecipe}
           allTags={allTags}
         />
-
-        {/* Footer */}
-        <div className='pt-4 pb-8 text-center'>
-          <Button href='/' variant='outline'>
-            ← Back to Gallery
-          </Button>
-        </div>
-      </div>
-    </div>
+    </TinyPage>
   );
 }
 

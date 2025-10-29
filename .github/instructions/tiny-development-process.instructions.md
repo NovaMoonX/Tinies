@@ -68,16 +68,16 @@ Inside that folder, create a main component using the **title-cased version** of
 **File:** `src/tinies/calculator/Calculator.tsx`
 
 ```typescript
-import { Button } from '@moondreamsdev/dreamer-ui/components';
+import { TinyPage } from '@ui/layout/TinyPage';
 
 export function Calculator() {
   return (
-    <div className='tiny-page'> // use the tiny-page utility class
-      <div className='mx-auto max-w-4xl space-y-6'>
-        <h1 className='text-3xl font-bold text-center'>Calculator</h1>
-        {/* Your calculator UI here */}
-      </div>
-    </div>
+    <TinyPage
+      title='Calculator'
+      description='A clean and minimal calculator for basic math operations.'
+    >
+      {/* Your calculator UI here */}
+    </TinyPage>
   );
 }
 
