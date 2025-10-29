@@ -20,6 +20,7 @@ import {
   QuestionAssociationButton,
 } from './ApartmentTourQuestions.components';
 import { useApartmentTourData } from './ApartmentTourQuestions.hooks';
+import TinyPage from '@ui/layout/TinyPage';
 
 export function ApartmentTourQuestions() {
   const {
@@ -129,20 +130,12 @@ export function ApartmentTourQuestions() {
   }, [allQuestions, selectedApartment]);
 
   return (
-    <div className='tiny-page'>
-      <div className='mx-auto max-w-4xl space-y-6'>
-        {/* Header */}
-        <div className='space-y-2 text-center'>
-          <h1 className='text-3xl font-bold md:text-4xl'>
-            Apartment Tour Questions
-          </h1>
-          <p className='text-foreground/70 mx-auto max-w-2xl text-sm md:text-base'>
-            Track questions and answers for different apartments. Add your own
-            custom questions and compare answers across multiple properties.
-          </p>
-        </div>
-
-        <ApartmentSelector
+    <TinyPage
+      title='Apartment Tour Questions'
+      description='Track questions and answers for different apartments. Add your own custom questions and compare answers across multiple properties.'
+      maxWidth='max-w-4xl'
+    >
+      <ApartmentSelector
           apartments={apartments}
           selectedApartment={selectedApartment}
           onSelectApartment={setSelectedApartment}
@@ -454,15 +447,7 @@ export function ApartmentTourQuestions() {
             </div>
           </div>
         )}
-
-        {/* Footer */}
-        <div className='pt-4 pb-8 text-center'>
-          <Button href='/' variant='outline'>
-            ← Back to Gallery
-          </Button>
-        </div>
-      </div>
-    </div>
+    </TinyPage>
   );
 }
 

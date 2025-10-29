@@ -1,4 +1,3 @@
-import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { useState } from 'react';
 import {
   AddDestinationModal,
@@ -6,6 +5,7 @@ import {
   DestinationSelector,
 } from './TravelTracker.components';
 import { useTravelTracker } from './TravelTracker.hooks';
+import TinyPage from '@ui/layout/TinyPage';
 
 export function TravelTracker() {
   const {
@@ -29,19 +29,13 @@ export function TravelTracker() {
     : null;
 
   return (
-    <div className="tiny-page">
-      <div className="mx-auto max-w-6xl space-y-6">
-        {/* Header */}
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold md:text-4xl">Travel Tracker</h1>
-          <p className="text-foreground/70 mx-auto max-w-2xl text-sm md:text-base">
-            Keep track of all the places you've visited across the US and around
-            the world. Add descriptions and photos to remember your adventures.
-          </p>
-        </div>
-
-        {/* Destination Selector */}
-        <DestinationSelector
+    <TinyPage
+      title='Travel Tracker'
+      description="Keep track of all the places you've visited across the US and around the world. Add descriptions and photos to remember your adventures."
+      maxWidth='max-w-6xl'
+    >
+      {/* Destination Selector */}
+      <DestinationSelector
           destinations={destinations}
           selectedDestination={selectedDestination}
           onSelectDestination={setSelectedDestination}
@@ -80,15 +74,7 @@ export function TravelTracker() {
           onAdd={addDestination}
           existingDestinations={destinations}
         />
-
-        {/* Footer */}
-        <div className="pt-4 pb-8 text-center">
-          <Button href="/" variant="outline">
-            ← Back to Gallery
-          </Button>
-        </div>
-      </div>
-    </div>
+    </TinyPage>
   );
 }
 
