@@ -1,0 +1,879 @@
+import { Button, Badge, Card, Modal, Input, Textarea, Select } from '@moondreamsdev/dreamer-ui/components';
+import { Trash } from '@moondreamsdev/dreamer-ui/symbols';
+import { useState } from 'react';
+import {
+  Contact,
+  Artifact,
+  ArtifactNote,
+  RelationshipType,
+  ArtifactType,
+  PersonalCrmFilters,
+} from './PersonalCrm.types';
+import {
+  formatDate,
+  formatBirthday,
+  getRelationshipTypeLabel,
+  getArtifactTypeIcon,
+  getContactsByIds,
+  generateId,
+} from './PersonalCrm.utils';
+import { RELATIONSHIP_TYPES, ARTIFACT_TYPES } from './PersonalCrm.data';
+
+/* ============================================================================
+ * Contact Card Component
+ * ========================================================================= */
+interface ContactCardProps {
+  contact: Contact;
+  onClick: () => void;
+  onDelete: (id: string) => void;
+}
+
+export function ContactCard({ contact, onClick, onDelete }: ContactCardProps) {
+  const primaryEmail = contact.emails[0]?.address || 'No email';
+  const primaryPhone = contact.phones[0]?.number || 'No phone';
+
+  return (
+    <div onClick={onClick} className='cursor-pointer'>
+      <Card className='hover:border-primary/50 transition-colors'>
+        <div className='space-y-4'>
+          <div className='flex items-start justify-between'>
+            <div className='flex-1'>
+              <h3 className='mb-1 text-lg font-semibold'>{contact.name}</h3>
+              <Badge variant='secondary' className='text-xs'>
+                {getRelationshipTypeLabel(contact.relationshipType)}
+              </Badge>
+            </div>
+            <Button
+              variant='tertiary'
+              size='sm'
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(contact.id);
+              }}
+            >
+              <Trash className='h-4 w-4' />
+            </Button>
+          </div>
+
+          <div className='space-y-2 text-sm'>
+            {contact.emails.length > 0 && (
+              <div className='text-foreground/70 flex items-center gap-2'>
+                <span className='text-lg'>📧</span>
+                <span className='truncate'>{primaryEmail}</span>
+              </div>
+            )}
+            {contact.phones.length > 0 && (
+              <div className='text-foreground/70 flex items-center gap-2'>
+                <span className='text-lg'>📞</span>
+                <span>{primaryPhone}</span>
+              </div>
+            )}
+            {contact.birthday && (
+              <div className='text-foreground/70 flex items-center gap-2'>
+                <span className='text-lg'>🎂</span>
+                <span>{formatBirthday(contact.birthday)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================================
+ * Contact Details Modal Component
+ * ========================================================================= */
+interface ContactDetailsModalProps {
+  contact: Contact | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: (id: string) => void;
+  artifacts: Artifact[];
+}
+
+export function ContactDetailsModal({
+  contact,
+  isOpen,
+  onClose,
+  onEdit,
+  onDelete,
+  artifacts,
+}: ContactDetailsModalProps) {
+  if (!contact) return null;
+
+  const relatedArtifacts = artifacts.filter((a) => a.contactIds.includes(contact.id));
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={contact.name}>
+      <div className='space-y-6'>
+        {/* Relationship Type */}
+        <div>
+          <Badge variant='secondary'>{getRelationshipTypeLabel(contact.relationshipType)}</Badge>
+        </div>
+
+        {/* Contact Information */}
+        <div className='space-y-4'>
+          <h3 className='font-semibold'>Contact Information</h3>
+          
+          {contact.phones.length > 0 && (
+            <div className='space-y-2'>
+              <p className='text-foreground/70 text-sm'>Phone Numbers</p>
+              {contact.phones.map((phone) => (
+                <div key={phone.id} className='flex items-center gap-2 text-sm'>
+                  <span className='text-lg'>📞</span>
+                  <span className='text-foreground/60 capitalize'>{phone.label}:</span>
+                  <span>{phone.number}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {contact.emails.length > 0 && (
+            <div className='space-y-2'>
+              <p className='text-foreground/70 text-sm'>Email Addresses</p>
+              {contact.emails.map((email) => (
+                <div key={email.id} className='flex items-center gap-2 text-sm'>
+                  <span className='text-lg'>📧</span>
+                  <span className='text-foreground/60 capitalize'>{email.label}:</span>
+                  <span>{email.address}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {contact.birthday && (
+            <div className='flex items-center gap-2 text-sm'>
+              <span className='text-lg'>🎂</span>
+              <span className='text-foreground/60'>Birthday:</span>
+              <span>{formatBirthday(contact.birthday)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Interesting Facts */}
+        {contact.interestingFacts.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Interesting Facts</h3>
+            <ul className='list-inside list-disc space-y-1 text-sm'>
+              {contact.interestingFacts.map((fact, index) => (
+                <li key={index}>{fact}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Likes */}
+        {contact.likes.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Likes</h3>
+            <div className='flex flex-wrap gap-2'>
+              {contact.likes.map((like, index) => (
+                <Badge key={index} variant='secondary'>
+                  {like}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Dislikes */}
+        {contact.dislikes.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Dislikes</h3>
+            <div className='flex flex-wrap gap-2'>
+              {contact.dislikes.map((dislike, index) => (
+                <Badge key={index} variant='secondary'>
+                  {dislike}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notes */}
+        {contact.notes.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Notes</h3>
+            <div className='space-y-3'>
+              {contact.notes.map((note) => (
+                <div key={note.id} className='bg-muted/30 rounded-lg p-3'>
+                  <p className='mb-1 text-sm'>{note.text}</p>
+                  <p className='text-foreground/50 text-xs'>{formatDate(note.dateAdded)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Related Artifacts */}
+        {relatedArtifacts.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Related Artifacts ({relatedArtifacts.length})</h3>
+            <div className='space-y-2'>
+              {relatedArtifacts.map((artifact) => (
+                <div key={artifact.id} className='bg-muted/30 flex items-center gap-3 rounded-lg p-3'>
+                  <span className='text-2xl'>{getArtifactTypeIcon(artifact.type)}</span>
+                  <div className='flex-1'>
+                    <p className='text-sm font-medium'>{artifact.title}</p>
+                    <p className='text-foreground/60 text-xs'>{artifact.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className='flex gap-2'>
+          <Button onClick={onEdit} className='flex-1'>
+            <span className='text-lg'>✏️</span>
+            Edit
+          </Button>
+          <Button
+            variant='destructive'
+            onClick={() => {
+              onDelete(contact.id);
+              onClose();
+            }}
+            className='flex-1'
+          >
+            <Trash className='h-4 w-4' />
+            Delete
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ============================================================================
+ * Add Contact Modal Component
+ * ========================================================================= */
+interface AddContactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (contact: Omit<Contact, 'id' | 'dateAdded'>) => void;
+}
+
+export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    relationshipType: 'friend' as RelationshipType,
+    phone: '',
+    phoneLabel: 'mobile',
+    email: '',
+    emailLabel: 'personal',
+    birthday: '',
+  });
+
+  const handleSubmit = () => {
+    if (!formData.name.trim()) return;
+
+    const newContact: Omit<Contact, 'id' | 'dateAdded'> = {
+      name: formData.name,
+      relationshipType: formData.relationshipType,
+      phones: formData.phone
+        ? [{ id: generateId('phone'), label: formData.phoneLabel, number: formData.phone }]
+        : [],
+      emails: formData.email
+        ? [{ id: generateId('email'), label: formData.emailLabel, address: formData.email }]
+        : [],
+      birthday: formData.birthday || null,
+      notes: [],
+      interestingFacts: [],
+      likes: [],
+      dislikes: [],
+      avatarUrl: null,
+    };
+
+    onAdd(newContact);
+    
+    // Reset form
+    setFormData({
+      name: '',
+      relationshipType: 'friend',
+      phone: '',
+      phoneLabel: 'mobile',
+      email: '',
+      emailLabel: 'personal',
+      birthday: '',
+    });
+    
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title='Add New Contact'>
+      <div className='space-y-4'>
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Name *</label>
+          <Input
+            name='name'
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder='Enter name'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Relationship Type</label>
+          <Select
+            value={formData.relationshipType}
+            onChange={(value) => setFormData({ ...formData, relationshipType: value as RelationshipType })}
+            options={RELATIONSHIP_TYPES.map((type) => ({
+              value: type,
+              text: getRelationshipTypeLabel(type),
+            }))}
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Email</label>
+          <Input
+            name='email'
+            type='email'
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder='email@example.com'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Phone</label>
+          <Input
+            name='phone'
+            type='tel'
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            placeholder='(555) 123-4567'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Birthday</label>
+          <Input
+            name='birthday'
+            type='date'
+            value={formData.birthday}
+            onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+          />
+        </div>
+
+        <div className='flex gap-2'>
+          <Button onClick={handleSubmit} className='flex-1' disabled={!formData.name.trim()}>
+            Add Contact
+          </Button>
+          <Button variant='outline' onClick={onClose} className='flex-1'>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ============================================================================
+ * Artifact Card Component
+ * ========================================================================= */
+interface ArtifactCardProps {
+  artifact: Artifact;
+  contacts: Contact[];
+  onClick: () => void;
+  onDelete: (id: string) => void;
+}
+
+export function ArtifactCard({ artifact, contacts, onClick, onDelete }: ArtifactCardProps) {
+  const associatedContacts = getContactsByIds(contacts, artifact.contactIds);
+
+  return (
+    <div onClick={onClick} className='cursor-pointer'>
+      <Card className='hover:border-primary/50 transition-colors'>
+        <div className='space-y-4'>
+          <div className='flex items-start justify-between'>
+            <div className='flex items-start gap-3'>
+              <span className='text-3xl'>{getArtifactTypeIcon(artifact.type)}</span>
+              <div className='flex-1'>
+                <h3 className='mb-1 text-lg font-semibold'>{artifact.title}</h3>
+                <p className='text-foreground/70 mb-2 text-sm'>{artifact.description}</p>
+              </div>
+            </div>
+            <Button
+              variant='tertiary'
+              size='sm'
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(artifact.id);
+              }}
+            >
+              <Trash className='h-4 w-4' />
+            </Button>
+          </div>
+
+          {associatedContacts.length > 0 && (
+            <div className='flex flex-wrap gap-2'>
+              {associatedContacts.map((contact) => (
+                <Badge key={contact.id} variant='secondary' className='text-xs'>
+                  {contact.name}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {artifact.tags.length > 0 && (
+            <div className='flex flex-wrap gap-2'>
+              {artifact.tags.map((tag, index) => (
+                <Badge key={index} variant='muted' className='text-xs'>
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================================
+ * Artifact Details Modal Component
+ * ========================================================================= */
+interface ArtifactDetailsModalProps {
+  artifact: Artifact | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onDelete: (id: string) => void;
+  contacts: Contact[];
+  onAddNote: (artifactId: string, note: Omit<ArtifactNote, 'id' | 'dateAdded'>) => void;
+}
+
+export function ArtifactDetailsModal({
+  artifact,
+  isOpen,
+  onClose,
+  onDelete,
+  contacts,
+  onAddNote,
+}: ArtifactDetailsModalProps) {
+  const [newNote, setNewNote] = useState({ text: '', contactName: '' });
+
+  if (!artifact) return null;
+
+  const associatedContacts = getContactsByIds(contacts, artifact.contactIds);
+
+  const handleAddNote = () => {
+    if (!newNote.text.trim() || !newNote.contactName.trim()) return;
+
+    onAddNote(artifact.id, {
+      text: newNote.text,
+      contactName: newNote.contactName,
+    });
+
+    setNewNote({ text: '', contactName: '' });
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={artifact.title}>
+      <div className='space-y-6'>
+        {/* Type Badge */}
+        <div className='flex items-center gap-2'>
+          <span className='text-2xl'>{getArtifactTypeIcon(artifact.type)}</span>
+          <Badge variant='secondary' className='capitalize'>
+            {artifact.type}
+          </Badge>
+        </div>
+
+        {/* Description */}
+        <div>
+          <p className='text-foreground/70'>{artifact.description}</p>
+        </div>
+
+        {/* Content */}
+        <div className='space-y-2'>
+          <h3 className='font-semibold'>Content</h3>
+          {artifact.type === 'link' ? (
+            <a
+              href={artifact.content}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-primary hover:underline flex items-center gap-2'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className='text-lg'>🔗</span>
+              {artifact.content}
+              <span className='text-lg'>↗️</span>
+            </a>
+          ) : artifact.type === 'photo' ? (
+            <img
+              src={artifact.content}
+              alt={artifact.title}
+              className='max-h-96 w-full rounded-lg object-cover'
+            />
+          ) : (
+            <div className='bg-muted/30 whitespace-pre-wrap rounded-lg p-4 text-sm'>
+              {artifact.content}
+            </div>
+          )}
+        </div>
+
+        {/* Associated Contacts */}
+        {associatedContacts.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Associated Contacts</h3>
+            <div className='flex flex-wrap gap-2'>
+              {associatedContacts.map((contact) => (
+                <Badge key={contact.id} variant='secondary'>
+                  {contact.name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tags */}
+        {artifact.tags.length > 0 && (
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Tags</h3>
+            <div className='flex flex-wrap gap-2'>
+              {artifact.tags.map((tag, index) => (
+                <Badge key={index} variant='muted'>
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Notes (Chat-like) */}
+        <div className='space-y-3'>
+          <h3 className='font-semibold'>Notes</h3>
+          
+          {artifact.notes.length > 0 && (
+            <div className='bg-muted/20 max-h-64 space-y-3 overflow-y-auto rounded-lg p-4'>
+              {artifact.notes.map((note) => (
+                <div key={note.id} className='bg-background rounded-lg p-3 shadow-sm'>
+                  <p className='mb-1 text-sm font-medium'>{note.contactName}</p>
+                  <p className='mb-1 text-sm'>{note.text}</p>
+                  <p className='text-foreground/50 text-xs'>{formatDate(note.dateAdded)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add Note Form */}
+          <div className='bg-muted/30 space-y-3 rounded-lg p-4'>
+            <Input
+              name='contactName'
+              value={newNote.contactName}
+              onChange={(e) => setNewNote({ ...newNote, contactName: e.target.value })}
+              placeholder='Your name or contact name'
+            />
+            <Textarea
+              name='noteText'
+              value={newNote.text}
+              onChange={(e) => setNewNote({ ...newNote, text: e.target.value })}
+              placeholder='Add a note about this artifact...'
+              rows={3}
+            />
+            <Button
+              size='sm'
+              onClick={handleAddNote}
+              disabled={!newNote.text.trim() || !newNote.contactName.trim()}
+            >
+              Add Note
+            </Button>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className='flex gap-2'>
+          <Button
+            variant='destructive'
+            onClick={() => {
+              onDelete(artifact.id);
+              onClose();
+            }}
+            className='flex-1'
+          >
+            <Trash className='h-4 w-4' />
+            Delete
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ============================================================================
+ * Add Artifact Modal Component
+ * ========================================================================= */
+interface AddArtifactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (artifact: Omit<Artifact, 'id' | 'dateAdded'>) => void;
+}
+
+export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalProps) {
+  const [formData, setFormData] = useState({
+    type: 'text' as ArtifactType,
+    title: '',
+    description: '',
+    content: '',
+    contactIds: [] as string[],
+    tags: '',
+  });
+
+  const handleSubmit = () => {
+    if (!formData.title.trim() || !formData.content.trim()) return;
+
+    const newArtifact: Omit<Artifact, 'id' | 'dateAdded'> = {
+      type: formData.type,
+      title: formData.title,
+      description: formData.description,
+      content: formData.content,
+      contactIds: formData.contactIds,
+      notes: [],
+      tags: formData.tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0),
+    };
+
+    onAdd(newArtifact);
+    
+    // Reset form
+    setFormData({
+      type: 'text',
+      title: '',
+      description: '',
+      content: '',
+      contactIds: [],
+      tags: '',
+    });
+    
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title='Add New Artifact'>
+      <div className='space-y-4'>
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Type</label>
+          <Select
+            value={formData.type}
+            onChange={(value) => setFormData({ ...formData, type: value as ArtifactType })}
+            options={ARTIFACT_TYPES.map((type) => ({
+              value: type,
+              text: `${getArtifactTypeIcon(type)} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+            }))}
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Title *</label>
+          <Input
+            name='title'
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder='Enter title'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Description</label>
+          <Input
+            name='description'
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder='Brief description'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>
+            {formData.type === 'link' ? 'URL *' : 'Content *'}
+          </label>
+          {formData.type === 'text' ? (
+            <Textarea
+              name='content'
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder='Enter content...'
+              rows={5}
+            />
+          ) : (
+            <Input
+              name='content'
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder={
+                formData.type === 'link'
+                  ? 'https://example.com'
+                  : formData.type === 'photo'
+                    ? 'https://example.com/image.jpg'
+                    : 'file-path-or-url'
+              }
+            />
+          )}
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Tags (comma-separated)</label>
+          <Input
+            name='tags'
+            value={formData.tags}
+            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+            placeholder='tag1, tag2, tag3'
+          />
+        </div>
+
+        <div className='flex gap-2'>
+          <Button
+            onClick={handleSubmit}
+            className='flex-1'
+            disabled={!formData.title.trim() || !formData.content.trim()}
+          >
+            Add Artifact
+          </Button>
+          <Button variant='outline' onClick={onClose} className='flex-1'>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ============================================================================
+ * Filter Section Component
+ * ========================================================================= */
+interface FilterSectionProps {
+  filters: PersonalCrmFilters;
+  onFiltersChange: (filters: PersonalCrmFilters) => void;
+  totalContacts: number;
+  totalArtifacts: number;
+  filteredCount: number;
+}
+
+export function FilterSection({
+  filters,
+  onFiltersChange,
+  totalContacts,
+  totalArtifacts,
+  filteredCount,
+}: FilterSectionProps) {
+  const isFiltering =
+    filters.searchQuery ||
+    filters.selectedRelationshipTypes.length > 0 ||
+    filters.selectedArtifactTypes.length > 0;
+
+  const handleClearFilters = () => {
+    onFiltersChange({
+      searchQuery: '',
+      selectedRelationshipTypes: [],
+      view: filters.view,
+      selectedArtifactTypes: [],
+    });
+  };
+
+  return (
+    <div className='bg-muted/30 space-y-4 rounded-2xl p-6'>
+      {/* View Toggle */}
+      <div className='flex gap-2'>
+        <Button
+          variant={filters.view === 'contacts' ? 'primary' : 'outline'}
+          onClick={() => onFiltersChange({ ...filters, view: 'contacts' })}
+          className='flex-1'
+        >
+          👤 Contacts ({totalContacts})
+        </Button>
+        <Button
+          variant={filters.view === 'artifacts' ? 'primary' : 'outline'}
+          onClick={() => onFiltersChange({ ...filters, view: 'artifacts' })}
+          className='flex-1'
+        >
+          📦 Artifacts ({totalArtifacts})
+        </Button>
+      </div>
+
+      {/* Search */}
+      <div>
+        <Input
+          name='search'
+          value={filters.searchQuery}
+          onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
+          placeholder={`Search ${filters.view}...`}
+        />
+      </div>
+
+      {/* Filters by view */}
+      {filters.view === 'contacts' && (
+        <div>
+          <label className='mb-2 block text-sm font-medium'>Relationship Type</label>
+          <div className='flex flex-wrap gap-2'>
+            {RELATIONSHIP_TYPES.map((type) => (
+              <Badge
+                key={type}
+                variant={filters.selectedRelationshipTypes.includes(type) ? 'secondary' : 'muted'}
+                className='cursor-pointer'
+                onClick={() => {
+                  const newTypes = filters.selectedRelationshipTypes.includes(type)
+                    ? filters.selectedRelationshipTypes.filter((t) => t !== type)
+                    : [...filters.selectedRelationshipTypes, type];
+                  onFiltersChange({ ...filters, selectedRelationshipTypes: newTypes });
+                }}
+              >
+                {getRelationshipTypeLabel(type)}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {filters.view === 'artifacts' && (
+        <div>
+          <label className='mb-2 block text-sm font-medium'>Artifact Type</label>
+          <div className='flex flex-wrap gap-2'>
+            {ARTIFACT_TYPES.map((type) => (
+              <Badge
+                key={type}
+                variant={filters.selectedArtifactTypes.includes(type) ? 'secondary' : 'muted'}
+                className='cursor-pointer'
+                onClick={() => {
+                  const newTypes = filters.selectedArtifactTypes.includes(type)
+                    ? filters.selectedArtifactTypes.filter((t) => t !== type)
+                    : [...filters.selectedArtifactTypes, type];
+                  onFiltersChange({ ...filters, selectedArtifactTypes: newTypes });
+                }}
+              >
+                {getArtifactTypeIcon(type)} {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Results and Clear */}
+      <div className='flex items-center justify-between pt-2'>
+        <p className='text-foreground/70 text-sm'>
+          {isFiltering ? (
+            <>
+              Showing {filteredCount} of {filters.view === 'contacts' ? totalContacts : totalArtifacts}{' '}
+              {filters.view}
+            </>
+          ) : (
+            <>
+              {filters.view === 'contacts' ? totalContacts : totalArtifacts} total {filters.view}
+            </>
+          )}
+        </p>
+        {isFiltering && (
+          <Button variant='tertiary' size='sm' onClick={handleClearFilters}>
+            Clear Filters
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
