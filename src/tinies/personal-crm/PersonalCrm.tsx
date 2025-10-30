@@ -1,4 +1,5 @@
 import { Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
+import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useState, useMemo } from 'react';
 import TinyPage from '@ui/layout/TinyPage';
 import { Contact, Artifact, PersonalCrmFilters, ArtifactNote, RelationshipType, ArtifactType } from './PersonalCrm.types';
@@ -11,13 +12,16 @@ import {
 import {
   ContactDetailsModal,
   AddContactModal,
+  EditContactModal,
   ArtifactDetailsModal,
   AddArtifactModal,
+  EditArtifactModal,
   ContactsTabContent,
   ArtifactsTabContent,
 } from './PersonalCrm.components';
 
 export function PersonalCrm() {
+  const { confirm } = useActionModal();
   const [contacts, setContacts] = useState<Contact[]>(SAMPLE_CONTACTS);
   const [artifacts, setArtifacts] = useState<Artifact[]>(SAMPLE_ARTIFACTS);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -26,6 +30,8 @@ export function PersonalCrm() {
   const [isArtifactDetailsOpen, setIsArtifactDetailsOpen] = useState(false);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isAddArtifactModalOpen, setIsAddArtifactModalOpen] = useState(false);
+  const [isEditContactModalOpen, setIsEditContactModalOpen] = useState(false);
+  const [isEditArtifactModalOpen, setIsEditArtifactModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipType[]>([]);
   const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<ArtifactType[]>([]);
@@ -62,11 +68,31 @@ export function PersonalCrm() {
     setContacts([newContact, ...contacts]);
   };
 
-  const handleDeleteContact = (id: string) => {
-    setContacts(contacts.filter((c) => c.id !== id));
+  const handleDeleteContact = async (id: string) => {
+    const contact = contacts.find((c) => c.id === id);
+    if (!contact) return;
+
+    const confirmed = await confirm({
+      title: 'Delete Contact',
+      message: `Are you sure you want to delete ${contact.name}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      setContacts(contacts.filter((c) => c.id !== id));
+      if (selectedContact?.id === id) {
+        setSelectedContact(null);
+        setIsContactDetailsOpen(false);
+      }
+    }
+  };
+
+  const handleEditContact = (id: string, updates: Partial<Contact>) => {
+    setContacts(contacts.map((c) => (c.id === id ? { ...c, ...updates } : c)));
     if (selectedContact?.id === id) {
-      setSelectedContact(null);
-      setIsContactDetailsOpen(false);
+      setSelectedContact({ ...selectedContact, ...updates });
     }
   };
 
@@ -85,11 +111,31 @@ export function PersonalCrm() {
     setArtifacts([newArtifact, ...artifacts]);
   };
 
-  const handleDeleteArtifact = (id: string) => {
-    setArtifacts(artifacts.filter((a) => a.id !== id));
+  const handleDeleteArtifact = async (id: string) => {
+    const artifact = artifacts.find((a) => a.id === id);
+    if (!artifact) return;
+
+    const confirmed = await confirm({
+      title: 'Delete Artifact',
+      message: `Are you sure you want to delete "${artifact.title}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      setArtifacts(artifacts.filter((a) => a.id !== id));
+      if (selectedArtifact?.id === id) {
+        setSelectedArtifact(null);
+        setIsArtifactDetailsOpen(false);
+      }
+    }
+  };
+
+  const handleEditArtifact = (id: string, updates: Partial<Artifact>) => {
+    setArtifacts(artifacts.map((a) => (a.id === id ? { ...a, ...updates } : a)));
     if (selectedArtifact?.id === id) {
-      setSelectedArtifact(null);
-      setIsArtifactDetailsOpen(false);
+      setSelectedArtifact({ ...selectedArtifact, ...updates });
     }
   };
 
@@ -190,8 +236,8 @@ export function PersonalCrm() {
         isOpen={isContactDetailsOpen}
         onClose={() => setIsContactDetailsOpen(false)}
         onEdit={() => {
-          // TODO: Implement edit functionality
           setIsContactDetailsOpen(false);
+          setIsEditContactModalOpen(true);
         }}
         onDelete={handleDeleteContact}
         artifacts={artifacts}
@@ -201,6 +247,10 @@ export function PersonalCrm() {
         artifact={selectedArtifact}
         isOpen={isArtifactDetailsOpen}
         onClose={() => setIsArtifactDetailsOpen(false)}
+        onEdit={() => {
+          setIsArtifactDetailsOpen(false);
+          setIsEditArtifactModalOpen(true);
+        }}
         onDelete={handleDeleteArtifact}
         contacts={contacts}
         onAddNote={handleAddArtifactNote}
@@ -212,10 +262,34 @@ export function PersonalCrm() {
         onAdd={handleAddContact}
       />
 
+      <EditContactModal
+        isOpen={isEditContactModalOpen}
+        onClose={() => setIsEditContactModalOpen(false)}
+        contact={selectedContact}
+        onSave={(updates) => {
+          if (selectedContact) {
+            handleEditContact(selectedContact.id, updates);
+            setIsEditContactModalOpen(false);
+          }
+        }}
+      />
+
       <AddArtifactModal
         isOpen={isAddArtifactModalOpen}
         onClose={() => setIsAddArtifactModalOpen(false)}
         onAdd={handleAddArtifact}
+      />
+
+      <EditArtifactModal
+        isOpen={isEditArtifactModalOpen}
+        onClose={() => setIsEditArtifactModalOpen(false)}
+        artifact={selectedArtifact}
+        onSave={(updates) => {
+          if (selectedArtifact) {
+            handleEditArtifact(selectedArtifact.id, updates);
+            setIsEditArtifactModalOpen(false);
+          }
+        }}
       />
     </TinyPage>
   );

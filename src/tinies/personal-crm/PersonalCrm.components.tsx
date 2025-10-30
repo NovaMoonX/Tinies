@@ -1,6 +1,6 @@
 import { Button, Badge, Card, Modal, Input, Textarea, Select, Label } from '@moondreamsdev/dreamer-ui/components';
 import { Trash, Plus } from '@moondreamsdev/dreamer-ui/symbols';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Contact,
   Artifact,
@@ -443,6 +443,7 @@ interface ArtifactDetailsModalProps {
   artifact: Artifact | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit: () => void;
   onDelete: (id: string) => void;
   contacts: Contact[];
   onAddNote: (artifactId: string, note: Omit<ArtifactNote, 'id' | 'dateAdded'>) => void;
@@ -452,6 +453,7 @@ export function ArtifactDetailsModal({
   artifact,
   isOpen,
   onClose,
+  onEdit,
   onDelete,
   contacts,
   onAddNote,
@@ -588,6 +590,10 @@ export function ArtifactDetailsModal({
 
         {/* Actions */}
         <div className='flex gap-2'>
+          <Button onClick={onEdit} className='flex-1'>
+            <span className='text-lg'>✏️</span>
+            Edit
+          </Button>
           <Button
             variant='destructive'
             onClick={() => {
@@ -1182,5 +1188,356 @@ export function ArtifactsTabContent({
         </div>
       )}
     </div>
+  );
+}
+
+/* ============================================================================
+ * Edit Contact Modal Component
+ * ========================================================================= */
+interface EditContactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  contact: Contact | null;
+  onSave: (updates: Partial<Contact>) => void;
+}
+
+export function EditContactModal({ isOpen, onClose, contact, onSave }: EditContactModalProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    relationshipType: 'friend' as RelationshipType,
+    phone: '',
+    phoneLabel: 'mobile',
+    email: '',
+    emailLabel: 'personal',
+    birthday: '',
+  });
+
+  // Update form when contact changes
+  useEffect(() => {
+    if (contact) {
+      setFormData({
+        name: contact.name,
+        relationshipType: contact.relationshipType,
+        phone: contact.phones[0]?.number || '',
+        phoneLabel: contact.phones[0]?.label || 'mobile',
+        email: contact.emails[0]?.address || '',
+        emailLabel: contact.emails[0]?.label || 'personal',
+        birthday: contact.birthday || '',
+      });
+    }
+  }, [contact]);
+
+  const handleSubmit = () => {
+    if (!formData.name.trim()) return;
+
+    const updates: Partial<Contact> = {
+      name: formData.name,
+      relationshipType: formData.relationshipType,
+      phones: formData.phone
+        ? [{ id: contact?.phones[0]?.id || generateId('phone'), label: formData.phoneLabel, number: formData.phone }]
+        : [],
+      emails: formData.email
+        ? [{ id: contact?.emails[0]?.id || generateId('email'), label: formData.emailLabel, address: formData.email }]
+        : [],
+      birthday: formData.birthday || null,
+    };
+
+    onSave(updates);
+    onClose();
+  };
+
+  if (!contact) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title='Edit Contact'>
+      <div className='space-y-4'>
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Name *</label>
+          <Input
+            name='name'
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder='Enter name'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Relationship Type</label>
+          <Select
+            value={formData.relationshipType}
+            onChange={(value) => setFormData({ ...formData, relationshipType: value as RelationshipType })}
+            options={RELATIONSHIP_TYPES.map((type) => ({
+              value: type,
+              text: getRelationshipTypeLabel(type),
+            }))}
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Phone</label>
+          <div className='flex gap-2'>
+            <Select
+              value={formData.phoneLabel}
+              onChange={(value) => setFormData({ ...formData, phoneLabel: value })}
+              options={[
+                { value: 'mobile', text: 'Mobile' },
+                { value: 'work', text: 'Work' },
+                { value: 'home', text: 'Home' },
+              ]}
+              className='w-32'
+            />
+            <Input
+              name='phone'
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder='(555) 123-4567'
+              className='flex-1'
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Email</label>
+          <div className='flex gap-2'>
+            <Select
+              value={formData.emailLabel}
+              onChange={(value) => setFormData({ ...formData, emailLabel: value })}
+              options={[
+                { value: 'personal', text: 'Personal' },
+                { value: 'work', text: 'Work' },
+              ]}
+              className='w-32'
+            />
+            <Input
+              name='email'
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder='email@example.com'
+              type='email'
+              className='flex-1'
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Birthday</label>
+          <Input
+            name='birthday'
+            value={formData.birthday}
+            onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+            type='date'
+          />
+        </div>
+
+        <div className='flex gap-2'>
+          <Button onClick={handleSubmit} className='flex-1' disabled={!formData.name.trim()}>
+            Save Changes
+          </Button>
+          <Button variant='outline' onClick={onClose} className='flex-1'>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ============================================================================
+ * Edit Artifact Modal Component
+ * ========================================================================= */
+interface EditArtifactModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  artifact: Artifact | null;
+  onSave: (updates: Partial<Artifact>) => void;
+}
+
+export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArtifactModalProps) {
+  const [formData, setFormData] = useState({
+    type: 'text' as ArtifactType,
+    title: '',
+    description: '',
+    content: '',
+    tags: '',
+  });
+  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
+
+  // Update form when artifact changes
+  useEffect(() => {
+    if (artifact) {
+      setFormData({
+        type: artifact.type,
+        title: artifact.title,
+        description: artifact.description,
+        content: artifact.content,
+        tags: artifact.tags.join(', '),
+      });
+    }
+  }, [artifact]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const fileUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, content: fileUrl });
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!formData.title.trim() || !formData.content.trim()) return;
+
+    const updates: Partial<Artifact> = {
+      type: formData.type,
+      title: formData.title,
+      description: formData.description,
+      content: formData.content,
+      tags: formData.tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0),
+    };
+
+    onSave(updates);
+    onClose();
+  };
+
+  if (!artifact) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title='Edit Artifact'>
+      <div className='space-y-4'>
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Type</label>
+          <Select
+            value={formData.type}
+            onChange={(value) => setFormData({ ...formData, type: value as ArtifactType })}
+            options={ARTIFACT_TYPES.map((type) => ({
+              value: type,
+              text: `${getArtifactTypeIcon(type)} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+            }))}
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Title *</label>
+          <Input
+            name='title'
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder='Enter title'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Description</label>
+          <Input
+            name='description'
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder='Brief description'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>
+            {formData.type === 'link' ? 'URL *' : formData.type === 'photo' ? 'Photo *' : 'Content *'}
+          </label>
+          {formData.type === 'text' ? (
+            <Textarea
+              name='content'
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder='Enter content...'
+              rows={5}
+            />
+          ) : formData.type === 'photo' ? (
+            <>
+              <div className='mb-3 flex gap-2'>
+                <Button
+                  type='button'
+                  variant={photoInputMethod === 'url' ? 'primary' : 'outline'}
+                  size='sm'
+                  onClick={() => setPhotoInputMethod('url')}
+                  className='flex-1'
+                >
+                  URL
+                </Button>
+                <Button
+                  type='button'
+                  variant={photoInputMethod === 'upload' ? 'primary' : 'outline'}
+                  size='sm'
+                  onClick={() => setPhotoInputMethod('upload')}
+                  className='flex-1'
+                >
+                  Upload
+                </Button>
+              </div>
+              {photoInputMethod === 'url' ? (
+                <Input
+                  name='content'
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder='https://example.com/image.jpg'
+                />
+              ) : (
+                <div>
+                  <Label htmlFor='photo-file-edit'>Upload Photo</Label>
+                  <input
+                    id='photo-file-edit'
+                    type='file'
+                    accept='image/*'
+                    onChange={handleFileUpload}
+                    className='w-full rounded-md border border-foreground/20 px-3 py-2 text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
+                  />
+                  {formData.content && (
+                    <div className='mt-2'>
+                      <img
+                        src={formData.content}
+                        alt='Preview'
+                        className='h-48 w-full rounded-lg object-cover'
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <Input
+              name='content'
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder={
+                formData.type === 'link'
+                  ? 'https://example.com'
+                  : 'file-path-or-url'
+              }
+            />
+          )}
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Tags (comma-separated)</label>
+          <Input
+            name='tags'
+            value={formData.tags}
+            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+            placeholder='tag1, tag2, tag3'
+          />
+        </div>
+
+        <div className='flex gap-2'>
+          <Button
+            onClick={handleSubmit}
+            className='flex-1'
+            disabled={!formData.title.trim() || !formData.content.trim()}
+          >
+            Save Changes
+          </Button>
+          <Button variant='outline' onClick={onClose} className='flex-1'>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
