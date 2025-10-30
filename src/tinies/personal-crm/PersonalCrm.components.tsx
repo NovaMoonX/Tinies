@@ -974,7 +974,7 @@ export function ContactsTabContent({
   return (
     <div className='space-y-6 pt-6'>
       {/* Add Contact Button */}
-      <div className='flex justify-end'>
+      <div className='flex justify-center'>
         <Button onClick={onAddContact}>
           <Plus className='h-5 w-5' />
           Add Contact
@@ -1098,7 +1098,7 @@ export function ArtifactsTabContent({
   return (
     <div className='space-y-6 pt-6'>
       {/* Add Artifact Button */}
-      <div className='flex justify-end'>
+      <div className='flex justify-center'>
         <Button onClick={onAddArtifact}>
           <Plus className='h-5 w-5' />
           Add Artifact

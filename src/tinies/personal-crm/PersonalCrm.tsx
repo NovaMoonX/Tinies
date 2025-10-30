@@ -130,15 +130,15 @@ export function PersonalCrm() {
     >
       {/* Stats */}
       <div className='bg-muted/30 rounded-2xl p-6'>
-        <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
+        <div className='flex flex-col items-center justify-between'>
           <div className='flex gap-8'>
-            <div className='text-center sm:text-left'>
-              <div className='mb-1 text-3xl font-bold'>{contacts.length}</div>
-              <div className='text-foreground/60 text-sm'>Contacts</div>
+            <div className='text-center'>
+              <div className='mb-1 text-3xl sm:text-4xl font-bold'>{contacts.length}</div>
+              <div className='text-foreground/60 text-sm sm:text-base'>Contacts</div>
             </div>
-            <div className='text-center sm:text-left'>
-              <div className='mb-1 text-3xl font-bold'>{artifacts.length}</div>
-              <div className='text-foreground/60 text-sm'>Artifacts</div>
+            <div className='text-center'>
+              <div className='mb-1 text-3xl sm:text-4xl font-bold'>{artifacts.length}</div>
+              <div className='text-foreground/60 text-sm sm:text-base'>Artifacts</div>
             </div>
           </div>
         </div>
@@ -152,6 +152,7 @@ export function PersonalCrm() {
           { value: 'contacts', label: '👤 Contacts' },
           { value: 'artifacts', label: '📦 Artifacts' },
         ]}
+        tabsWidth='full'
       >
         <TabsContent value='contacts'>
           <ContactsTabContent
