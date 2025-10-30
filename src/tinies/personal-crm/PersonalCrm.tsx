@@ -1,7 +1,7 @@
 import { Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
 import { useState, useMemo } from 'react';
 import TinyPage from '@ui/layout/TinyPage';
-import { Contact, Artifact, PersonalCrmFilters, ArtifactNote } from './PersonalCrm.types';
+import { Contact, Artifact, PersonalCrmFilters, ArtifactNote, RelationshipType, ArtifactType } from './PersonalCrm.types';
 import { SAMPLE_CONTACTS, SAMPLE_ARTIFACTS } from './PersonalCrm.data';
 import {
   filterContacts,
@@ -9,10 +9,8 @@ import {
   generateId,
 } from './PersonalCrm.utils';
 import {
-  ContactCard,
   ContactDetailsModal,
   AddContactModal,
-  ArtifactCard,
   ArtifactDetailsModal,
   AddArtifactModal,
   ContactsTabContent,
@@ -29,13 +27,13 @@ export function PersonalCrm() {
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isAddArtifactModalOpen, setIsAddArtifactModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<string[]>([]);
-  const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<string[]>([]);
+  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipType[]>([]);
+  const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<ArtifactType[]>([]);
 
   const filteredContacts = useMemo(() => {
     const filters: PersonalCrmFilters = {
       searchQuery,
-      selectedRelationshipTypes: selectedRelationshipTypes as any[],
+      selectedRelationshipTypes,
       view: 'contacts',
       selectedArtifactTypes: [],
     };
@@ -48,7 +46,7 @@ export function PersonalCrm() {
       searchQuery,
       selectedRelationshipTypes: [],
       view: 'artifacts',
-      selectedArtifactTypes: selectedArtifactTypes as any[],
+      selectedArtifactTypes,
     };
     const result = filterArtifacts(artifacts, filters);
     return result;

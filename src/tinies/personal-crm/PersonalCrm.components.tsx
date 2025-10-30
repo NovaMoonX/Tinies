@@ -703,7 +703,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
 
         <div>
           <label className='mb-1 block text-sm font-medium'>
-            {formData.type === 'link' ? 'URL *' : 'Content *'}
+            {formData.type === 'link' ? 'URL *' : formData.type === 'photo' ? 'Photo *' : 'Content *'}
           </label>
           {formData.type === 'text' ? (
             <Textarea
@@ -713,6 +713,57 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
               placeholder='Enter content...'
               rows={5}
             />
+          ) : formData.type === 'photo' ? (
+            <>
+              <div className='mb-3 flex gap-2'>
+                <Button
+                  type='button'
+                  variant={photoInputMethod === 'url' ? 'primary' : 'outline'}
+                  size='sm'
+                  onClick={() => setPhotoInputMethod('url')}
+                  className='flex-1'
+                >
+                  URL
+                </Button>
+                <Button
+                  type='button'
+                  variant={photoInputMethod === 'upload' ? 'primary' : 'outline'}
+                  size='sm'
+                  onClick={() => setPhotoInputMethod('upload')}
+                  className='flex-1'
+                >
+                  Upload
+                </Button>
+              </div>
+              {photoInputMethod === 'url' ? (
+                <Input
+                  name='content'
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder='https://example.com/image.jpg'
+                />
+              ) : (
+                <div>
+                  <Label htmlFor='photo-file'>Upload Photo</Label>
+                  <input
+                    id='photo-file'
+                    type='file'
+                    accept='image/*'
+                    onChange={handleFileUpload}
+                    className='w-full rounded-md border border-foreground/20 px-3 py-2 text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
+                  />
+                  {formData.content && (
+                    <div className='mt-2'>
+                      <img
+                        src={formData.content}
+                        alt='Preview'
+                        className='h-48 w-full rounded-lg object-cover'
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             <Input
               name='content'
@@ -721,9 +772,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
               placeholder={
                 formData.type === 'link'
                   ? 'https://example.com'
-                  : formData.type === 'photo'
-                    ? 'https://example.com/image.jpg'
-                    : 'file-path-or-url'
+                  : 'file-path-or-url'
               }
             />
           )}
@@ -885,6 +934,253 @@ export function FilterSection({
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ============================================================================
+ * Contacts Tab Content Component
+ * ========================================================================= */
+interface ContactsTabContentProps {
+  contacts: Contact[];
+  allContacts: Contact[];
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  selectedRelationshipTypes: RelationshipType[];
+  onRelationshipTypesChange: (types: RelationshipType[]) => void;
+  onAddContact: () => void;
+  onContactClick: (contact: Contact) => void;
+  onDeleteContact: (id: string) => void;
+}
+
+export function ContactsTabContent({
+  contacts,
+  allContacts,
+  searchQuery,
+  onSearchChange,
+  selectedRelationshipTypes,
+  onRelationshipTypesChange,
+  onAddContact,
+  onContactClick,
+  onDeleteContact,
+}: ContactsTabContentProps) {
+  const isFiltering = searchQuery || selectedRelationshipTypes.length > 0;
+
+  const handleClearFilters = () => {
+    onSearchChange('');
+    onRelationshipTypesChange([]);
+  };
+
+  return (
+    <div className='space-y-6 pt-6'>
+      {/* Add Contact Button */}
+      <div className='flex justify-end'>
+        <Button onClick={onAddContact}>
+          <Plus className='h-5 w-5' />
+          Add Contact
+        </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className='bg-muted/30 space-y-4 rounded-2xl p-6'>
+        <div>
+          <Input
+            name='search'
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder='Search contacts...'
+          />
+        </div>
+
+        <div>
+          <label className='mb-2 block text-sm font-medium'>Relationship Type</label>
+          <div className='flex flex-wrap gap-2'>
+            {RELATIONSHIP_TYPES.map((type) => (
+              <Badge
+                key={type}
+                variant={selectedRelationshipTypes.includes(type) ? 'secondary' : 'muted'}
+                className='cursor-pointer'
+                onClick={() => {
+                  const newTypes = selectedRelationshipTypes.includes(type)
+                    ? selectedRelationshipTypes.filter((t) => t !== type)
+                    : [...selectedRelationshipTypes, type];
+                  onRelationshipTypesChange(newTypes);
+                }}
+              >
+                {getRelationshipTypeLabel(type)}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className='flex items-center justify-between pt-2'>
+          <p className='text-foreground/70 text-sm'>
+            {isFiltering ? (
+              <>
+                Showing {contacts.length} of {allContacts.length} contacts
+              </>
+            ) : (
+              <>{allContacts.length} total contacts</>
+            )}
+          </p>
+          {isFiltering && (
+            <Button variant='tertiary' size='sm' onClick={handleClearFilters}>
+              Clear Filters
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Contact Grid */}
+      {contacts.length > 0 ? (
+        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {contacts.map((contact) => (
+            <ContactCard
+              key={contact.id}
+              contact={contact}
+              onClick={() => onContactClick(contact)}
+              onDelete={onDeleteContact}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className='bg-muted/30 rounded-2xl p-12 text-center'>
+          <p className='text-foreground/60 mb-4'>
+            {isFiltering
+              ? 'No contacts match your filters.'
+              : 'No contacts yet. Add your first contact to get started!'}
+          </p>
+          <Button onClick={onAddContact}>
+            <Plus className='h-5 w-5' />
+            Add Your First Contact
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================================
+ * Artifacts Tab Content Component
+ * ========================================================================= */
+interface ArtifactsTabContentProps {
+  artifacts: Artifact[];
+  allArtifacts: Artifact[];
+  contacts: Contact[];
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  selectedArtifactTypes: ArtifactType[];
+  onArtifactTypesChange: (types: ArtifactType[]) => void;
+  onAddArtifact: () => void;
+  onArtifactClick: (artifact: Artifact) => void;
+  onDeleteArtifact: (id: string) => void;
+}
+
+export function ArtifactsTabContent({
+  artifacts,
+  allArtifacts,
+  contacts,
+  searchQuery,
+  onSearchChange,
+  selectedArtifactTypes,
+  onArtifactTypesChange,
+  onAddArtifact,
+  onArtifactClick,
+  onDeleteArtifact,
+}: ArtifactsTabContentProps) {
+  const isFiltering = searchQuery || selectedArtifactTypes.length > 0;
+
+  const handleClearFilters = () => {
+    onSearchChange('');
+    onArtifactTypesChange([]);
+  };
+
+  return (
+    <div className='space-y-6 pt-6'>
+      {/* Add Artifact Button */}
+      <div className='flex justify-end'>
+        <Button onClick={onAddArtifact}>
+          <Plus className='h-5 w-5' />
+          Add Artifact
+        </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className='bg-muted/30 space-y-4 rounded-2xl p-6'>
+        <div>
+          <Input
+            name='search'
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder='Search artifacts...'
+          />
+        </div>
+
+        <div>
+          <label className='mb-2 block text-sm font-medium'>Artifact Type</label>
+          <div className='flex flex-wrap gap-2'>
+            {ARTIFACT_TYPES.map((type) => (
+              <Badge
+                key={type}
+                variant={selectedArtifactTypes.includes(type) ? 'secondary' : 'muted'}
+                className='cursor-pointer'
+                onClick={() => {
+                  const newTypes = selectedArtifactTypes.includes(type)
+                    ? selectedArtifactTypes.filter((t) => t !== type)
+                    : [...selectedArtifactTypes, type];
+                  onArtifactTypesChange(newTypes);
+                }}
+              >
+                {getArtifactTypeIcon(type)} {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className='flex items-center justify-between pt-2'>
+          <p className='text-foreground/70 text-sm'>
+            {isFiltering ? (
+              <>
+                Showing {artifacts.length} of {allArtifacts.length} artifacts
+              </>
+            ) : (
+              <>{allArtifacts.length} total artifacts</>
+            )}
+          </p>
+          {isFiltering && (
+            <Button variant='tertiary' size='sm' onClick={handleClearFilters}>
+              Clear Filters
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Artifact Grid */}
+      {artifacts.length > 0 ? (
+        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {artifacts.map((artifact) => (
+            <ArtifactCard
+              key={artifact.id}
+              artifact={artifact}
+              contacts={contacts}
+              onClick={() => onArtifactClick(artifact)}
+              onDelete={onDeleteArtifact}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className='bg-muted/30 rounded-2xl p-12 text-center'>
+          <p className='text-foreground/60 mb-4'>
+            {isFiltering
+              ? 'No artifacts match your filters.'
+              : 'No artifacts yet. Add your first artifact to get started!'}
+          </p>
+          <Button onClick={onAddArtifact}>
+            <Plus className='h-5 w-5' />
+            Add Your First Artifact
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
