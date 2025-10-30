@@ -89,7 +89,11 @@ export function formatDate(isoDate: string): string {
 }
 
 export function formatBirthday(isoDate: string): string {
-  const date = new Date(isoDate);
+  // Parse date string directly to avoid timezone issues
+  // Birthday is stored as 'YYYY-MM-DD' without time component
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day); // month is 0-indexed
+  
   return date.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -103,11 +107,12 @@ export function getUpcomingBirthdays(contacts: Contact[], daysAhead = 30): Conta
   for (const contact of contacts) {
     if (!contact.birthday) continue;
 
-    const birthday = new Date(contact.birthday);
+    // Parse birthday without timezone conversion
+    const [, month, day] = contact.birthday.split('-').map(Number);
     const thisYear = today.getFullYear();
     
     // Create birthday date for this year
-    const birthdayThisYear = new Date(thisYear, birthday.getMonth(), birthday.getDate());
+    const birthdayThisYear = new Date(thisYear, month - 1, day); // month is 0-indexed
     
     // If birthday already passed this year, check next year
     if (birthdayThisYear < today) {
