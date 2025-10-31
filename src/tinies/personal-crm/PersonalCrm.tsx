@@ -2,7 +2,7 @@ import { Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useState, useMemo } from 'react';
 import TinyPage from '@ui/layout/TinyPage';
-import { Contact, Artifact, PersonalCrmFilters, ArtifactNote, RelationshipType, ArtifactType } from './PersonalCrm.types';
+import { Contact, Artifact, PersonalCrmFilters, ArtifactComment, RelationshipType, ArtifactType } from './PersonalCrm.types';
 import { SAMPLE_CONTACTS, SAMPLE_ARTIFACTS } from './PersonalCrm.data';
 import {
   filterContacts,
@@ -144,27 +144,26 @@ export function PersonalCrm() {
     setIsArtifactDetailsOpen(true);
   };
 
-  const handleAddArtifactNote = (
+  const handleAddArtifactComment = (
     artifactId: string,
-    noteData: Omit<ArtifactNote, 'id' | 'dateAdded'>
+    commentData: Omit<ArtifactComment, 'id' | 'dateAdded'>
   ) => {
-    const newNote: ArtifactNote = {
-      ...noteData,
-      id: generateId('note'),
+    const newComment: ArtifactComment = {
+      ...commentData,
+      id: `comment-${Date.now()}`,
       dateAdded: new Date().toISOString(),
     };
 
-    setArtifacts(
-      artifacts.map((a) =>
-        a.id === artifactId ? { ...a, notes: [...a.notes, newNote] } : a
-      )
+    const updatedArtifacts = artifacts.map((a) =>
+        a.id === artifactId ? { ...a, comments: [...a.comments, newComment] } : a
     );
+    setArtifacts(updatedArtifacts);
 
-    // Update selected artifact if it's the same one
-    if (selectedArtifact?.id === artifactId) {
+    // Update selected artifact if it's currently open
+    if (selectedArtifact && selectedArtifact.id === artifactId) {
       setSelectedArtifact({
         ...selectedArtifact,
-        notes: [...selectedArtifact.notes, newNote],
+        comments: [...selectedArtifact.comments, newComment],
       });
     }
   };
@@ -253,7 +252,7 @@ export function PersonalCrm() {
         }}
         onDelete={handleDeleteArtifact}
         contacts={contacts}
-        onAddNote={handleAddArtifactNote}
+        onAddComment={handleAddArtifactComment}
       />
 
       <AddContactModal

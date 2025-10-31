@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   Contact,
   Artifact,
-  ArtifactNote,
+  ArtifactComment,
   RelationshipType,
   ArtifactType,
   PersonalCrmFilters,
@@ -446,7 +446,7 @@ interface ArtifactDetailsModalProps {
   onEdit: () => void;
   onDelete: (id: string) => void;
   contacts: Contact[];
-  onAddNote: (artifactId: string, note: Omit<ArtifactNote, 'id' | 'dateAdded'>) => void;
+  onAddComment: (artifactId: string, comment: Omit<ArtifactComment, 'id' | 'dateAdded'>) => void;
 }
 
 export function ArtifactDetailsModal({
@@ -456,23 +456,29 @@ export function ArtifactDetailsModal({
   onEdit,
   onDelete,
   contacts,
-  onAddNote,
+  onAddComment,
 }: ArtifactDetailsModalProps) {
-  const [newNote, setNewNote] = useState({ text: '', contactName: '' });
+  const [newComment, setNewComment] = useState({ text: '', contactId: '' });
 
   if (!artifact) return null;
 
   const associatedContacts = getContactsByIds(contacts, artifact.contactIds);
 
-  const handleAddNote = () => {
-    if (!newNote.text.trim() || !newNote.contactName.trim()) return;
+  const handleAddComment = () => {
+    if (!newComment.text.trim() || !newComment.contactId) return;
 
-    onAddNote(artifact.id, {
-      text: newNote.text,
-      contactName: newNote.contactName,
+    onAddComment(artifact.id, {
+      text: newComment.text,
+      contactId: newComment.contactId,
     });
 
-    setNewNote({ text: '', contactName: '' });
+    setNewComment({ text: '', contactId: '' });
+  };
+
+  const getContactName = (contactId: string) => {
+    const contact = contacts.find((c) => c.id === contactId);
+    
+    return contact ? contact.name : 'Unknown Contact';
   };
 
   return (
@@ -547,43 +553,53 @@ export function ArtifactDetailsModal({
           </div>
         )}
 
-        {/* Notes (Chat-like) */}
+        {/* Comments (Chat-like) */}
         <div className='space-y-3'>
-          <h3 className='font-semibold'>Notes</h3>
+          <h3 className='font-semibold'>Comments</h3>
           
-          {artifact.notes.length > 0 && (
+          {artifact.comments.length > 0 && (
             <div className='bg-muted/20 max-h-64 space-y-3 overflow-y-auto rounded-lg p-4'>
-              {artifact.notes.map((note) => (
-                <div key={note.id} className='bg-background rounded-lg p-3 shadow-sm'>
-                  <p className='mb-1 text-sm font-medium'>{note.contactName}</p>
-                  <p className='mb-1 text-sm'>{note.text}</p>
-                  <p className='text-foreground/50 text-xs'>{formatDate(note.dateAdded)}</p>
+              {artifact.comments.map((comment) => (
+                <div key={comment.id} className='bg-background rounded-lg p-3 shadow-sm'>
+                  <p className='mb-1 text-sm font-medium'>{getContactName(comment.contactId)}</p>
+                  <p className='mb-1 text-sm'>{comment.text}</p>
+                  <p className='text-foreground/50 text-xs'>{formatDate(comment.dateAdded)}</p>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Add Note Form */}
+          {/* Add Comment Form */}
           <div className='bg-muted/30 space-y-3 rounded-lg p-4'>
-            <Input
-              name='contactName'
-              value={newNote.contactName}
-              onChange={(e) => setNewNote({ ...newNote, contactName: e.target.value })}
-              placeholder='Your name or contact name'
-            />
+            <div>
+              <Label htmlFor='contact-select'>Select Contact</Label>
+              <select
+                id='contact-select'
+                className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+                value={newComment.contactId}
+                onChange={(e) => setNewComment({ ...newComment, contactId: e.target.value })}
+              >
+                <option value=''>Select a contact...</option>
+                {contacts.map((contact) => (
+                  <option key={contact.id} value={contact.id}>
+                    {contact.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <Textarea
-              name='noteText'
-              value={newNote.text}
-              onChange={(e) => setNewNote({ ...newNote, text: e.target.value })}
-              placeholder='Add a note about this artifact...'
+              name='commentText'
+              value={newComment.text}
+              onChange={(e) => setNewComment({ ...newComment, text: e.target.value })}
+              placeholder='Add a comment about this artifact...'
               rows={3}
             />
             <Button
               size='sm'
-              onClick={handleAddNote}
-              disabled={!newNote.text.trim() || !newNote.contactName.trim()}
+              onClick={handleAddComment}
+              disabled={!newComment.text.trim() || !newComment.contactId}
             >
-              Add Note
+              Add Comment
             </Button>
           </div>
         </div>
@@ -649,7 +665,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
       description: formData.description,
       content: formData.content,
       contactIds: formData.contactIds,
-      notes: [],
+      comments: [],
       tags: formData.tags
         .split(',')
         .map((tag) => tag.trim())

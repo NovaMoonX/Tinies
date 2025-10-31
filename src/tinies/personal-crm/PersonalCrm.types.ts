@@ -41,10 +41,10 @@ export interface Contact {
   dateAdded: string; // ISO date string
 }
 
-export interface ArtifactNote {
+export interface ArtifactComment {
   id: string;
   text: string;
-  contactName: string; // Who said this
+  contactId: string; // Which contact made this comment
   dateAdded: string; // ISO date string
 }
 
@@ -55,7 +55,7 @@ export interface Artifact {
   content: string; // URL for links, text content, file path/URL for photos/files
   description: string;
   contactIds: string[]; // Associated contacts
-  notes: ArtifactNote[]; // Chat-like notes about this artifact
+  comments: ArtifactComment[]; // Comments from contacts about this artifact
   dateAdded: string; // ISO date string
   tags: string[];
 }

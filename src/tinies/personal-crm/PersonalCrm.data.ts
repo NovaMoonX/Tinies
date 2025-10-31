@@ -88,17 +88,17 @@ export const SAMPLE_ARTIFACTS: Artifact[] = [
     content: 'https://aiconference2023.example.com',
     description: 'Conference where I met Sarah',
     contactIds: ['contact-1'],
-    notes: [
+    comments: [
       {
-        id: 'art-note-1',
+        id: 'art-comment-1',
         text: 'This was such an inspiring event! The keynote on ethics in AI really made me think.',
-        contactName: 'Sarah Johnson',
+        contactId: 'contact-1',
         dateAdded: '2024-01-20T11:00:00Z',
       },
       {
-        id: 'art-note-2',
+        id: 'art-comment-2',
         text: 'We should definitely go again next year!',
-        contactName: 'Sarah Johnson',
+        contactId: 'contact-1',
         dateAdded: '2024-01-20T11:05:00Z',
       },
     ],
@@ -112,11 +112,11 @@ export const SAMPLE_ARTIFACTS: Artifact[] = [
     content: 'Michael\'s famous pasta carbonara recipe:\n\n- 400g spaghetti\n- 200g guanciale\n- 4 egg yolks\n- 100g Pecorino Romano\n- Black pepper\n\nCook pasta, crisp guanciale, mix eggs and cheese, combine with hot pasta.',
     description: 'Recipe Michael shared during team lunch',
     contactIds: ['contact-2'],
-    notes: [
+    comments: [
       {
-        id: 'art-note-3',
+        id: 'art-comment-3',
         text: 'The secret is to use really good quality guanciale and don\'t overcook the eggs!',
-        contactName: 'Michael Chen',
+        contactId: 'contact-2',
         dateAdded: '2024-05-15T12:30:00Z',
       },
     ],
@@ -130,11 +130,11 @@ export const SAMPLE_ARTIFACTS: Artifact[] = [
     content: 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=800',
     description: 'Birthday dinner at The Garden Restaurant',
     contactIds: ['contact-3'],
-    notes: [
+    comments: [
       {
-        id: 'art-note-4',
+        id: 'art-comment-4',
         text: 'Thank you so much for organizing this! Best birthday ever!',
-        contactName: 'Emily Rodriguez',
+        contactId: 'contact-3',
         dateAdded: '2024-08-30T20:00:00Z',
       },
     ],
@@ -148,11 +148,11 @@ export const SAMPLE_ARTIFACTS: Artifact[] = [
     content: 'List of books Sarah recommended:\n1. "The Design of Everyday Things" by Don Norman\n2. "Atomic Habits" by James Clear\n3. "Project Hail Mary" by Andy Weir',
     description: 'Book recommendations from Sarah',
     contactIds: ['contact-1'],
-    notes: [
+    comments: [
       {
-        id: 'art-note-5',
+        id: 'art-comment-5',
         text: 'I think you\'ll especially love Project Hail Mary - it\'s a fun sci-fi adventure!',
-        contactName: 'Sarah Johnson',
+        contactId: 'contact-1',
         dateAdded: '2024-06-20T15:00:00Z',
       },
     ],
