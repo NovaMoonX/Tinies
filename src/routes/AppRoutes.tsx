@@ -55,6 +55,17 @@ export const router = createBrowserRouter([
           return { Component: TravelTracker };
         },
       },
+      // Personal CRM (lazy loaded)
+      {
+        path: 'personal-crm',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: PersonalCrm } = await import(
+            '@tinies/personal-crm/PersonalCrm'
+          );
+          return { Component: PersonalCrm };
+        },
+      },
     ],
   },
 ]);

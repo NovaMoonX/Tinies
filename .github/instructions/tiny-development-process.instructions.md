@@ -9,7 +9,30 @@ Instructions for adding and updating a new mini app (aka "tiny") to the repo.
 ## Important Development Guidelines
 
 ### 🚫 No Persistent Storage by Default
-**Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state. This ensures:
+**Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state.
+
+### 🗑️ Always Confirm Deletions
+**Always use `useActionModal` to confirm any destructive actions (such as deleting vehicles, service entries, or locations).**
+
+- This ensures users never accidentally delete important data
+- The modal should clearly state what is being deleted and require explicit confirmation
+- Never perform a deletion directly from a button click—always show a confirmation modal first
+
+Example usage:
+```tsx
+const { showActionModal } = useActionModal();
+
+function handleDelete(id: string) {
+  showActionModal({
+    title: 'Delete Vehicle',
+    description: 'Are you sure you want to delete this vehicle? This action cannot be undone.',
+    confirmLabel: 'Delete',
+    onConfirm: () => onDeleteCar(id),
+  });
+}
+```
+
+This applies to all destructive actions in tinies.
 - Clean demos that reset on each visit
 - No data persistence complications
 - Simpler, more maintainable code

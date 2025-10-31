@@ -41,6 +41,16 @@ export const ALL_TINIES: Tiny[] = [
 		status: 'in-progress',
 		route: '/travel-tracker',
 	},
+	{
+		id: 'personal-crm',
+		title: 'Personal CRM',
+		description: 'Manage your personal and professional contacts with artifacts (links, notes, photos, files). Track relationships, important dates, and memories.',
+		startDate: '2025-10-29',
+		tags: ['productivity', 'contacts', 'relationships', 'organization'],
+		categories: ['productivity', 'lifestyle'],
+		status: 'in-progress',
+		route: '/personal-crm',
+	},
 ];
 
 export const ALL_TAGS = Array.from(
