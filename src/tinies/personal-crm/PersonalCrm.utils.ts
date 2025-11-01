@@ -47,7 +47,7 @@ export function filterArtifacts(
         artifact.description.toLowerCase().includes(query) ||
         artifact.content.toLowerCase().includes(query) ||
         artifact.tags.some((tag) => tag.toLowerCase().includes(query)) ||
-        artifact.notes.some((note) => note.text.toLowerCase().includes(query))
+        artifact.comments.some((comment) => comment.text.toLowerCase().includes(query))
     );
   }
 
