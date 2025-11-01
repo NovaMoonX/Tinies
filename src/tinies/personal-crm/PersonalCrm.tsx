@@ -35,6 +35,7 @@ export function PersonalCrm() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipType[]>([]);
   const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<ArtifactType[]>([]);
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
 
   const filteredContacts = useMemo(() => {
     const filters: PersonalCrmFilters = {
@@ -42,6 +43,7 @@ export function PersonalCrm() {
       selectedRelationshipTypes,
       view: 'contacts',
       selectedArtifactTypes: [],
+      selectedContactIds: [],
     };
     const result = filterContacts(contacts, filters);
     return result;
@@ -53,10 +55,11 @@ export function PersonalCrm() {
       selectedRelationshipTypes: [],
       view: 'artifacts',
       selectedArtifactTypes,
+      selectedContactIds,
     };
     const result = filterArtifacts(artifacts, filters);
     return result;
-  }, [artifacts, searchQuery, selectedArtifactTypes]);
+  }, [artifacts, searchQuery, selectedArtifactTypes, selectedContactIds]);
 
   const handleAddContact = (contactData: Omit<Contact, 'id' | 'dateAdded'>) => {
     const newContact: Contact = {
@@ -93,6 +96,27 @@ export function PersonalCrm() {
     setContacts(contacts.map((c) => (c.id === id ? { ...c, ...updates } : c)));
     if (selectedContact?.id === id) {
       setSelectedContact({ ...selectedContact, ...updates });
+    }
+  };
+
+  const handleAddNote = (contactId: string, noteText: string) => {
+    const newNote = {
+      id: generateId('note'),
+      text: noteText,
+      dateAdded: new Date().toISOString(),
+    };
+
+    setContacts(
+      contacts.map((c) =>
+        c.id === contactId ? { ...c, notes: [...c.notes, newNote] } : c
+      )
+    );
+
+    if (selectedContact?.id === contactId) {
+      setSelectedContact({
+        ...selectedContact,
+        notes: [...selectedContact.notes, newNote],
+      });
     }
   };
 
@@ -222,6 +246,8 @@ export function PersonalCrm() {
             onSearchChange={setSearchQuery}
             selectedArtifactTypes={selectedArtifactTypes}
             onArtifactTypesChange={setSelectedArtifactTypes}
+            selectedContactIds={selectedContactIds}
+            onContactIdsChange={setSelectedContactIds}
             onAddArtifact={() => setIsAddArtifactModalOpen(true)}
             onArtifactClick={handleArtifactClick}
             onDeleteArtifact={handleDeleteArtifact}
@@ -239,7 +265,7 @@ export function PersonalCrm() {
           setIsEditContactModalOpen(true);
         }}
         onDelete={handleDeleteContact}
-        artifacts={artifacts}
+        onAddNote={handleAddNote}
       />
 
       <ArtifactDetailsModal

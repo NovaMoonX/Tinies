@@ -90,7 +90,7 @@ interface ContactDetailsModalProps {
   onClose: () => void;
   onEdit: () => void;
   onDelete: (id: string) => void;
-  artifacts: Artifact[];
+  onAddNote: (contactId: string, noteText: string) => void;
 }
 
 export function ContactDetailsModal({
@@ -99,11 +99,18 @@ export function ContactDetailsModal({
   onClose,
   onEdit,
   onDelete,
-  artifacts,
+  onAddNote,
 }: ContactDetailsModalProps) {
+  const [newNoteText, setNewNoteText] = useState('');
+
   if (!contact) return null;
 
-  const relatedArtifacts = artifacts.filter((a) => a.contactIds.includes(contact.id));
+  const handleAddNote = () => {
+    if (newNoteText.trim()) {
+      onAddNote(contact.id, newNoteText.trim());
+      setNewNoteText('');
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={contact.name}>
@@ -207,23 +214,29 @@ export function ContactDetailsModal({
           </div>
         )}
 
-        {/* Related Artifacts */}
-        {relatedArtifacts.length > 0 && (
-          <div className='space-y-2'>
-            <h3 className='font-semibold'>Related Artifacts ({relatedArtifacts.length})</h3>
-            <div className='space-y-2'>
-              {relatedArtifacts.map((artifact) => (
-                <div key={artifact.id} className='bg-muted/30 flex items-center gap-3 rounded-lg p-3'>
-                  <span className='text-2xl'>{getArtifactTypeIcon(artifact.type)}</span>
-                  <div className='flex-1'>
-                    <p className='text-sm font-medium'>{artifact.title}</p>
-                    <p className='text-foreground/60 text-xs'>{artifact.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Add Note */}
+        <div className='space-y-2'>
+          <h3 className='font-semibold'>Add Note</h3>
+          <div className='flex gap-2'>
+            <Textarea
+              name='newNote'
+              value={newNoteText}
+              onChange={(e) => setNewNoteText(e.target.value)}
+              placeholder='Enter a note about this contact...'
+              rows={2}
+              className='flex-1'
+            />
           </div>
-        )}
+          <Button
+            onClick={handleAddNote}
+            disabled={!newNoteText.trim()}
+            size='sm'
+            className='w-full'
+          >
+            <Plus className='h-4 w-4' />
+            Add Note
+          </Button>
+        </div>
 
         {/* Actions */}
         <div className='flex gap-2'>
@@ -1093,6 +1106,8 @@ interface ArtifactsTabContentProps {
   onSearchChange: (query: string) => void;
   selectedArtifactTypes: ArtifactType[];
   onArtifactTypesChange: (types: ArtifactType[]) => void;
+  selectedContactIds: string[];
+  onContactIdsChange: (ids: string[]) => void;
   onAddArtifact: () => void;
   onArtifactClick: (artifact: Artifact) => void;
   onDeleteArtifact: (id: string) => void;
@@ -1106,15 +1121,18 @@ export function ArtifactsTabContent({
   onSearchChange,
   selectedArtifactTypes,
   onArtifactTypesChange,
+  selectedContactIds,
+  onContactIdsChange,
   onAddArtifact,
   onArtifactClick,
   onDeleteArtifact,
 }: ArtifactsTabContentProps) {
-  const isFiltering = searchQuery || selectedArtifactTypes.length > 0;
+  const isFiltering = searchQuery || selectedArtifactTypes.length > 0 || selectedContactIds.length > 0;
 
   const handleClearFilters = () => {
     onSearchChange('');
     onArtifactTypesChange([]);
+    onContactIdsChange([]);
   };
 
   return (
@@ -1154,6 +1172,27 @@ export function ArtifactsTabContent({
                 }}
               >
                 {getArtifactTypeIcon(type)} {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className='mb-2 block text-sm font-medium'>Filter by Contact</label>
+          <div className='flex flex-wrap gap-2'>
+            {contacts.map((contact) => (
+              <Badge
+                key={contact.id}
+                variant={selectedContactIds.includes(contact.id) ? 'secondary' : 'muted'}
+                className='cursor-pointer'
+                onClick={() => {
+                  const newContactIds = selectedContactIds.includes(contact.id)
+                    ? selectedContactIds.filter((id) => id !== contact.id)
+                    : [...selectedContactIds, contact.id];
+                  onContactIdsChange(newContactIds);
+                }}
+              >
+                {contact.name}
               </Badge>
             ))}
           </div>

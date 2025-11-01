@@ -58,6 +58,13 @@ export function filterArtifacts(
     );
   }
 
+  // Filter by associated contacts
+  if (filters.selectedContactIds.length > 0) {
+    result = result.filter((artifact) =>
+      artifact.contactIds.some((id) => filters.selectedContactIds.includes(id))
+    );
+  }
+
   return result;
 }
 

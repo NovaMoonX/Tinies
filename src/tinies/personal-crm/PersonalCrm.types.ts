@@ -65,4 +65,5 @@ export interface PersonalCrmFilters {
   selectedRelationshipTypes: RelationshipType[];
   view: 'contacts' | 'artifacts';
   selectedArtifactTypes: ArtifactType[];
+  selectedContactIds: string[]; // Filter artifacts by associated contacts
 }
