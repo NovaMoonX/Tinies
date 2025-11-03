@@ -149,9 +149,9 @@ export function PersonalCrm() {
 
     const confirmed = await confirm({
       title: 'Delete Note',
-      description: 'Are you sure you want to delete this note? This action cannot be undone.',
-      confirmLabel: 'Delete',
-      variant: 'destructive',
+      message: 'Are you sure you want to delete this note? This action cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
     });
 
     if (!confirmed) return;

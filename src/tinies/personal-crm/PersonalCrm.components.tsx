@@ -241,7 +241,7 @@ export function ContactDetailsModal({
                         value={editNoteText}
                         onChange={(e) => setEditNoteText(e.target.value)}
                         rows={2}
-                        className='w-full'
+                        className='text-sm'
                       />
                       <div className='flex gap-2'>
                         <Button
@@ -270,7 +270,7 @@ export function ContactDetailsModal({
                         <div className='flex gap-1'>
                           <Button
                             onClick={() => handleStartEditNote(note.id, note.text)}
-                            variant='ghost'
+                            variant='base'
                             size='sm'
                             className='h-6 px-2 text-xs'
                           >
@@ -278,7 +278,7 @@ export function ContactDetailsModal({
                           </Button>
                           <Button
                             onClick={() => handleDeleteNote(note.id)}
-                            variant='ghost'
+                            variant='base'
                             size='sm'
                             className='h-6 px-2 text-xs text-destructive hover:text-destructive'
                           >
