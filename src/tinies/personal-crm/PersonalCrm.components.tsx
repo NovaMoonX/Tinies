@@ -91,6 +91,8 @@ interface ContactDetailsModalProps {
   onEdit: () => void;
   onDelete: (id: string) => void;
   onAddNote: (contactId: string, noteText: string) => void;
+  onEditNote: (contactId: string, noteId: string, newText: string) => void;
+  onDeleteNote: (contactId: string, noteId: string) => void;
 }
 
 export function ContactDetailsModal({
@@ -100,8 +102,12 @@ export function ContactDetailsModal({
   onEdit,
   onDelete,
   onAddNote,
+  onEditNote,
+  onDeleteNote,
 }: ContactDetailsModalProps) {
   const [newNoteText, setNewNoteText] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editNoteText, setEditNoteText] = useState('');
 
   if (!contact) return null;
 
@@ -110,6 +116,28 @@ export function ContactDetailsModal({
       onAddNote(contact.id, newNoteText.trim());
       setNewNoteText('');
     }
+  };
+
+  const handleStartEditNote = (noteId: string, currentText: string) => {
+    setEditingNoteId(noteId);
+    setEditNoteText(currentText);
+  };
+
+  const handleSaveEditNote = (noteId: string) => {
+    if (editNoteText.trim()) {
+      onEditNote(contact.id, noteId, editNoteText.trim());
+      setEditingNoteId(null);
+      setEditNoteText('');
+    }
+  };
+
+  const handleCancelEditNote = () => {
+    setEditingNoteId(null);
+    setEditNoteText('');
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    onDeleteNote(contact.id, noteId);
   };
 
   return (
@@ -206,8 +234,60 @@ export function ContactDetailsModal({
             <div className='space-y-3'>
               {contact.notes.map((note) => (
                 <div key={note.id} className='bg-muted/30 rounded-lg p-3'>
-                  <p className='mb-1 text-sm'>{note.text}</p>
-                  <p className='text-foreground/50 text-xs'>{formatDate(note.dateAdded)}</p>
+                  {editingNoteId === note.id ? (
+                    <div className='space-y-2'>
+                      <Textarea
+                        name='editNote'
+                        value={editNoteText}
+                        onChange={(e) => setEditNoteText(e.target.value)}
+                        rows={2}
+                        className='w-full'
+                      />
+                      <div className='flex gap-2'>
+                        <Button
+                          onClick={() => handleSaveEditNote(note.id)}
+                          disabled={!editNoteText.trim()}
+                          size='sm'
+                          className='flex-1'
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          onClick={handleCancelEditNote}
+                          variant='outline'
+                          size='sm'
+                          className='flex-1'
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className='mb-1 text-sm'>{note.text}</p>
+                      <div className='flex items-center justify-between'>
+                        <p className='text-foreground/50 text-xs'>{formatDate(note.dateAdded)}</p>
+                        <div className='flex gap-1'>
+                          <Button
+                            onClick={() => handleStartEditNote(note.id, note.text)}
+                            variant='ghost'
+                            size='sm'
+                            className='h-6 px-2 text-xs'
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteNote(note.id)}
+                            variant='ghost'
+                            size='sm'
+                            className='h-6 px-2 text-xs text-destructive hover:text-destructive'
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

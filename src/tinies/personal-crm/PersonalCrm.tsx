@@ -120,6 +120,58 @@ export function PersonalCrm() {
     }
   };
 
+  const handleEditNote = (contactId: string, noteId: string, newText: string) => {
+    const updatedContacts = contacts.map((c) => {
+      if (c.id === contactId) {
+        const updatedNotes = c.notes.map((note) =>
+          note.id === noteId ? { ...note, text: newText } : note
+        );
+        return { ...c, notes: updatedNotes };
+      }
+      return c;
+    });
+
+    setContacts(updatedContacts);
+
+    if (selectedContact?.id === contactId) {
+      const updatedNotes = selectedContact.notes.map((note) =>
+        note.id === noteId ? { ...note, text: newText } : note
+      );
+      setSelectedContact({ ...selectedContact, notes: updatedNotes });
+    }
+  };
+
+  const handleDeleteNote = async (contactId: string, noteId: string) => {
+    const contact = contacts.find((c) => c.id === contactId);
+    const note = contact?.notes.find((n) => n.id === noteId);
+    
+    if (!note) return;
+
+    const confirmed = await confirm({
+      title: 'Delete Note',
+      description: 'Are you sure you want to delete this note? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      variant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
+    const updatedContacts = contacts.map((c) => {
+      if (c.id === contactId) {
+        const filteredNotes = c.notes.filter((note) => note.id !== noteId);
+        return { ...c, notes: filteredNotes };
+      }
+      return c;
+    });
+
+    setContacts(updatedContacts);
+
+    if (selectedContact?.id === contactId) {
+      const filteredNotes = selectedContact.notes.filter((note) => note.id !== noteId);
+      setSelectedContact({ ...selectedContact, notes: filteredNotes });
+    }
+  };
+
   const handleContactClick = (contact: Contact) => {
     setSelectedContact(contact);
     setIsContactDetailsOpen(true);
@@ -266,6 +318,8 @@ export function PersonalCrm() {
         }}
         onDelete={handleDeleteContact}
         onAddNote={handleAddNote}
+        onEditNote={handleEditNote}
+        onDeleteNote={handleDeleteNote}
       />
 
       <ArtifactDetailsModal
