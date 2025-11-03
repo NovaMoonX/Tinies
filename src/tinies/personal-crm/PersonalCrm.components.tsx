@@ -869,6 +869,7 @@ export function FilterSection({
       selectedRelationshipTypes: [],
       view: filters.view,
       selectedArtifactTypes: [],
+      selectedContactIds: [],
     });
   };
 
