@@ -1,16 +1,16 @@
 import { Note, NoteColor } from './Notes.types';
 
-export const NOTE_COLORS: { value: NoteColor; label: string; class: string }[] = [
-  { value: 'default', label: 'Default', class: 'bg-card' },
-  { value: 'red', label: 'Red', class: 'bg-red-100 dark:bg-red-950' },
-  { value: 'orange', label: 'Orange', class: 'bg-orange-100 dark:bg-orange-950' },
-  { value: 'yellow', label: 'Yellow', class: 'bg-yellow-100 dark:bg-yellow-950' },
-  { value: 'green', label: 'Green', class: 'bg-green-100 dark:bg-green-950' },
-  { value: 'teal', label: 'Teal', class: 'bg-teal-100 dark:bg-teal-950' },
-  { value: 'blue', label: 'Blue', class: 'bg-blue-100 dark:bg-blue-950' },
-  { value: 'purple', label: 'Purple', class: 'bg-purple-100 dark:bg-purple-950' },
-  { value: 'pink', label: 'Pink', class: 'bg-pink-100 dark:bg-pink-950' },
-  { value: 'gray', label: 'Gray', class: 'bg-gray-100 dark:bg-gray-950' },
+export const NOTE_COLORS: { value: NoteColor; label: string; class: string; borderClass: string }[] = [
+  { value: 'default', label: 'Default', class: 'bg-card', borderClass: 'border-border' },
+  { value: 'red', label: 'Red', class: 'bg-red-100 dark:bg-red-950', borderClass: 'border-red-300 dark:border-red-800' },
+  { value: 'orange', label: 'Orange', class: 'bg-orange-100 dark:bg-orange-950', borderClass: 'border-orange-300 dark:border-orange-800' },
+  { value: 'yellow', label: 'Yellow', class: 'bg-yellow-100 dark:bg-yellow-950', borderClass: 'border-yellow-300 dark:border-yellow-800' },
+  { value: 'green', label: 'Green', class: 'bg-green-100 dark:bg-green-950', borderClass: 'border-green-300 dark:border-green-800' },
+  { value: 'teal', label: 'Teal', class: 'bg-teal-100 dark:bg-teal-950', borderClass: 'border-teal-300 dark:border-teal-800' },
+  { value: 'blue', label: 'Blue', class: 'bg-blue-100 dark:bg-blue-950', borderClass: 'border-blue-300 dark:border-blue-800' },
+  { value: 'purple', label: 'Purple', class: 'bg-purple-100 dark:bg-purple-950', borderClass: 'border-purple-300 dark:border-purple-800' },
+  { value: 'pink', label: 'Pink', class: 'bg-pink-100 dark:bg-pink-950', borderClass: 'border-pink-300 dark:border-pink-800' },
+  { value: 'gray', label: 'Gray', class: 'bg-gray-100 dark:bg-gray-950', borderClass: 'border-gray-300 dark:border-gray-800' },
 ];
 
 export const SAMPLE_NOTES: Note[] = [

@@ -42,8 +42,9 @@ export function NoteCard({
   return (
     <Card
       className={join(
-        'group relative h-full transition-all hover:shadow-lg',
-        colorConfig?.class
+        'group relative h-full transition-all hover:shadow-lg border',
+        colorConfig?.class,
+        colorConfig?.borderClass
       )}
     >
       <div className='flex h-full flex-col p-4'>
@@ -51,9 +52,6 @@ export function NoteCard({
         <div className='mb-2 flex items-start justify-between gap-2'>
           <div className='flex items-center gap-2'>
             {note.emoji && <span className='text-2xl'>{note.emoji}</span>}
-            {note.isPinned && (
-              <span className='text-foreground/60 text-lg'>📌</span>
-            )}
           </div>
           <div className='flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
             {note.status === 'active' && (
@@ -376,6 +374,7 @@ interface NoteModalProps {
   onSave: (note: Omit<Note, 'id' | 'createdAt' | 'lastEditedAt'>) => void;
   initialNote?: Note;
   mode: 'add' | 'edit';
+  allTags: string[];
 }
 
 export function NoteModal({
@@ -384,6 +383,7 @@ export function NoteModal({
   onSave,
   initialNote,
   mode,
+  allTags,
 }: NoteModalProps) {
   const [title, setTitle] = useState(initialNote?.title || '');
   const [content, setContent] = useState(initialNote?.content || '');
@@ -443,6 +443,7 @@ export function NoteModal({
               setEmoji(chars[0] || '');
             }}
             maxLength={10}
+            className='max-w-20'
           />
         </div>
 
@@ -512,6 +513,33 @@ export function NoteModal({
               <Plus className='h-4 w-4' />
             </Button>
           </div>
+
+          {/* Existing tags that can be added */}
+          {allTags.length > 0 && (
+            <div className='mt-2'>
+              <p className='text-foreground/60 mb-1 text-xs'>Existing tags:</p>
+              <div className='flex flex-wrap gap-1'>
+                {allTags
+                  .filter((tag) => !tags.includes(tag))
+                  .map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant='muted'
+                      className='cursor-pointer hover:bg-secondary'
+                      onClick={() => {
+                        if (!tags.includes(tag)) {
+                          setTags([...tags, tag]);
+                        }
+                      }}
+                    >
+                      + {tag}
+                    </Badge>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Selected tags */}
           {tags.length > 0 && (
             <div className='mt-2 flex flex-wrap gap-2'>
               {tags.map((tag) => (

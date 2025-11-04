@@ -48,6 +48,15 @@ export function Notes() {
     return result;
   }, [notes, filters]);
 
+  // Separate pinned and unpinned notes
+  const pinnedNotes = useMemo(() => {
+    return filteredNotes.filter((note) => note.isPinned);
+  }, [filteredNotes]);
+
+  const unpinnedNotes = useMemo(() => {
+    return filteredNotes.filter((note) => !note.isPinned);
+  }, [filteredNotes]);
+
   const activeCount = notes.filter((n) => n.status === 'active').length;
   const archivedCount = notes.filter((n) => n.status === 'archived').length;
   const trashedCount = notes.filter((n) => n.status === 'trashed').length;
@@ -185,20 +194,56 @@ export function Notes() {
 
       {/* Notes Grid */}
       {filteredNotes.length > 0 ? (
-        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-          {filteredNotes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onClick={() => handleNoteClick(note)}
-              onTogglePin={() => handleTogglePin(note.id)}
-              onArchive={() => handleArchive(note.id)}
-              onUnarchive={() => handleUnarchive(note.id)}
-              onTrash={() => handleTrash(note.id)}
-              onRestore={() => handleRestore(note.id)}
-              onDelete={() => handleDeletePermanently(note.id)}
-            />
-          ))}
+        <div className='space-y-6'>
+          {/* Pinned Notes Section */}
+          {pinnedNotes.length > 0 && (
+            <div>
+              <h2 className='text-foreground/70 mb-3 text-sm font-semibold uppercase tracking-wide'>
+                Pinned
+              </h2>
+              <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+                {pinnedNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onClick={() => handleNoteClick(note)}
+                    onTogglePin={() => handleTogglePin(note.id)}
+                    onArchive={() => handleArchive(note.id)}
+                    onUnarchive={() => handleUnarchive(note.id)}
+                    onTrash={() => handleTrash(note.id)}
+                    onRestore={() => handleRestore(note.id)}
+                    onDelete={() => handleDeletePermanently(note.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unpinned Notes Section */}
+          {unpinnedNotes.length > 0 && (
+            <div>
+              {pinnedNotes.length > 0 && (
+                <h2 className='text-foreground/70 mb-3 text-sm font-semibold uppercase tracking-wide'>
+                  Others
+                </h2>
+              )}
+              <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+                {unpinnedNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onClick={() => handleNoteClick(note)}
+                    onTogglePin={() => handleTogglePin(note.id)}
+                    onArchive={() => handleArchive(note.id)}
+                    onUnarchive={() => handleUnarchive(note.id)}
+                    onTrash={() => handleTrash(note.id)}
+                    onRestore={() => handleRestore(note.id)}
+                    onDelete={() => handleDeletePermanently(note.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className='bg-muted/30 rounded-2xl p-12 text-center'>
@@ -220,6 +265,7 @@ export function Notes() {
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddNote}
         mode='add'
+        allTags={allTags}
       />
 
       {/* Edit Note Modal */}
@@ -233,6 +279,7 @@ export function Notes() {
           onSave={handleUpdateNote}
           initialNote={selectedNote}
           mode='edit'
+          allTags={allTags}
         />
       )}
     </TinyPage>
