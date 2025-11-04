@@ -7,9 +7,102 @@ applyTo: 'src/**/*'
 Instructions for adding and updating a new mini app (aka "tiny") to the repo.
 
 ## Important Development Guidelines
+### 📝 Always Use Form Components
+**Always use the `Form` component for forms. For individual fields, always use the corresponding form component (e.g., use `Select` instead of the native `select` element, `Input` instead of `input`, etc).**
+
+
+Example usage:
+```tsx
+import { Form } from '@moondreamsdev/dreamer-ui/components';
+import { FormFactories } from '@moondreamsdev/dreamer-ui/components';
+
+const { select, textarea, checkboxGroup } = FormFactories;
+
+export function MyForm({ categories, apartments, onAdd }) {
+  const initialData = { category: '', question: '', associatedApartments: [] };
+  const [formData, setFormData] = useState(initialData);
+
+  return (
+    <Form
+      initialData={initialData}
+      form={[
+        select({
+          name: 'category',
+          label: 'Category',
+          options: categories.map((cat) => ({ value: cat, label: cat })),
+          required: true,
+        }),
+        textarea({
+          name: 'question',
+          label: 'Question',
+          required: true,
+        }),
+        ...(apartments.length > 0
+          ? [
+              checkboxGroup({
+                name: 'associatedApartments',
+                label: 'Associate with apartments',
+                options: apartments.map((apt) => ({ value: apt.id, label: apt.name })),
+                required: true,
+              }),
+            ]
+          : []),
+      ]}
+      onDataChange={setFormData}
+    />
+  );
+}
+```
+
+See `src/tinies/apartment-tour-questions/ApartmentTourQuestions.components.tsx` for a real-world example of the Form component in use.
+
+### 📝 Use Individual Form Components for Single Fields
+If you do not need a full form, always use the corresponding Dreamer UI form component for individual fields. For example, use the `Select` component instead of the native `select` element, and `Input` instead of `input`.
+
+- This ensures consistent styling, validation, and accessibility
+- Do not use native HTML form elements unless there is no Dreamer UI or project form component available
+
+Example:
+```tsx
+import { Select, Input } from '@moondreamsdev/dreamer-ui/components';
+
+export function MySingleFieldComponent({ options, value, onChange }) {
+  return (
+    <Select
+      name="type"
+      options={options}
+      value={value}
+      onChange={onChange}
+    />
+  );
+}
+```
 
 ### 🚫 No Persistent Storage by Default
-**Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state. This ensures:
+**Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state.
+
+### 🗑️ Always Confirm Deletions
+**Always use `useActionModal` to confirm any destructive actions (such as deleting vehicles, service entries, or locations).**
+
+- This ensures users never accidentally delete important data
+- The modal should clearly state what is being deleted and require explicit confirmation
+- Never perform a deletion directly from a button click—always show a confirmation modal first
+
+Example usage:
+```tsx
+const { showActionModal } = useActionModal();
+
+function handleDelete(id: string) {
+  showActionModal({
+    title: 'Delete Vehicle',
+    description: 'Are you sure you want to delete this vehicle? This action cannot be undone.',
+    confirmLabel: 'Delete',
+    onConfirm: () => onDeleteCar(id),
+  });
+}
+```
+
+This applies to all destructive actions in tinies.
 - Clean demos that reset on each visit
 - No data persistence complications
 - Simpler, more maintainable code
