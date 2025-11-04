@@ -42,9 +42,9 @@ export function NoteCard({
   return (
     <Card
       className={join(
-        'group relative h-full transition-all hover:shadow-lg border',
+        'group relative h-full border transition-all hover:shadow-lg',
         colorConfig?.class,
-        colorConfig?.borderClass
+        colorConfig?.borderClass,
       )}
     >
       <div className='flex h-full flex-col p-4'>
@@ -156,7 +156,7 @@ export function NoteCard({
 
         {/* Content preview */}
         <p
-          className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer whitespace-pre-wrap text-sm'
+          className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer text-sm whitespace-pre-wrap'
           onClick={onClick}
         >
           {note.content}
@@ -241,13 +241,16 @@ export function FilterSection({
               { value: 'archived', text: 'Archived Notes' },
               { value: 'trashed', text: 'Trash' },
             ]}
+            className='min-w-36'
           />
         </div>
       </div>
 
       {/* Search */}
       <div className='relative'>
-        <span className='text-foreground/40 absolute left-3 top-1/2 -translate-y-1/2 text-lg'>🔍</span>
+        <span className='text-foreground/40 absolute top-1/2 left-3 -translate-y-1/2 text-lg'>
+          🔍
+        </span>
         <Input
           type='text'
           placeholder='Search notes...'
@@ -283,9 +286,7 @@ export function FilterSection({
                   <Badge
                     key={tag}
                     variant={
-                      filters.selectedTags.includes(tag)
-                        ? 'secondary'
-                        : 'muted'
+                      filters.selectedTags.includes(tag) ? 'secondary' : 'muted'
                     }
                     className='cursor-pointer'
                     onClick={() => {
@@ -316,11 +317,11 @@ export function FilterSection({
                     color.class,
                     filters.selectedColors.includes(color.value)
                       ? 'border-foreground scale-110'
-                      : 'border-border hover:scale-105'
+                      : 'border-border hover:scale-105',
                   )}
                   onClick={() => {
                     const newColors = filters.selectedColors.includes(
-                      color.value
+                      color.value,
                     )
                       ? filters.selectedColors.filter((c) => c !== color.value)
                       : [...filters.selectedColors, color.value];
@@ -388,7 +389,9 @@ export function NoteModal({
   const [title, setTitle] = useState(initialNote?.title || '');
   const [content, setContent] = useState(initialNote?.content || '');
   const [emoji, setEmoji] = useState(initialNote?.emoji || '');
-  const [color, setColor] = useState<NoteColor>(initialNote?.color || 'default');
+  const [color, setColor] = useState<NoteColor>(
+    initialNote?.color || 'default',
+  );
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(initialNote?.tags || []);
 
@@ -427,36 +430,42 @@ export function NoteModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={mode === 'add' ? 'Add Note' : 'Edit Note'}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={mode === 'add' ? 'Add Note' : 'Edit Note'}
+    >
       <div className='space-y-4'>
-        {/* Emoji */}
-        <div>
-          <Label htmlFor='emoji'>Emoji (optional)</Label>
-          <Input
-            id='emoji'
-            type='text'
-            placeholder='🎉'
-            value={emoji}
-            onChange={(e) => {
-              // Get the first emoji/character using spread operator to handle multi-byte Unicode
-              const chars = [...e.target.value];
-              setEmoji(chars[0] || '');
-            }}
-            maxLength={10}
-            className='max-w-20'
-          />
-        </div>
+        <div className='flex gap-2 sm:gap-4'>
+          {/* Emoji */}
+          <div className='inline-block'>
+            <Label htmlFor='emoji'>Emoji</Label>
+            <Input
+              id='emoji'
+              type='text'
+              placeholder='🎉'
+              value={emoji}
+              onChange={(e) => {
+                // Get the first emoji/character using spread operator to handle multi-byte Unicode
+                const chars = [...e.target.value];
+                setEmoji(chars[0] || '');
+              }}
+              maxLength={10}
+              className='block max-w-10'
+            />
+          </div>
 
-        {/* Title */}
-        <div>
-          <Label htmlFor='title'>Title</Label>
-          <Input
-            id='title'
-            type='text'
-            placeholder='Note title...'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          {/* Title */}
+          <div className='flex-1 inline-block'>
+            <Label htmlFor='title'>Title</Label>
+            <Input
+              id='title'
+              type='text'
+              placeholder='Note title...'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Content */}
@@ -483,7 +492,7 @@ export function NoteModal({
                   colorOption.class,
                   color === colorOption.value
                     ? 'border-foreground scale-110'
-                    : 'border-border hover:scale-105'
+                    : 'border-border hover:scale-105',
                 )}
                 onClick={() => setColor(colorOption.value)}
                 title={colorOption.label}
@@ -525,7 +534,7 @@ export function NoteModal({
                     <Badge
                       key={tag}
                       variant='muted'
-                      className='cursor-pointer hover:bg-secondary'
+                      className='hover:bg-secondary cursor-pointer'
                       onClick={() => {
                         if (!tags.includes(tag)) {
                           setTags([...tags, tag]);
@@ -547,7 +556,7 @@ export function NoteModal({
                   {tag}
                   <button
                     onClick={() => handleRemoveTag(tag)}
-                    className='ml-1 hover:text-destructive'
+                    className='hover:text-destructive ml-1'
                   >
                     <X className='h-3 w-3' />
                   </button>
