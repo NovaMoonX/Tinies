@@ -103,6 +103,26 @@ function handleDelete(id: string) {
 ```
 
 This applies to all destructive actions in tinies.
+
+### 📂 Use Disclosure for Expand/Collapse
+**Always use the `Disclosure` component for collapsible sections with expand/collapse functionality.**
+
+- Use `Disclosure` instead of manual button toggles for showing/hiding advanced options, filters, or additional content
+- The component handles its own state and provides a consistent UI pattern
+- Pass a `label` prop for the disclosure button text
+
+Example usage:
+```tsx
+import { Disclosure } from '@moondreamsdev/dreamer-ui/components';
+
+<Disclosure label='Advanced Filters' className='rounded-xl'>
+  <div className='space-y-4 p-2 pt-2'>
+    {/* Your collapsible content here */}
+  </div>
+</Disclosure>
+```
+
+See `src/tinies/recipe-book/RecipeBook.components.tsx` for a real-world example of Disclosure in use.
 - Clean demos that reset on each visit
 - No data persistence complications
 - Simpler, more maintainable code

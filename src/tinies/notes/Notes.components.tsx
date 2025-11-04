@@ -2,6 +2,8 @@ import {
   Badge,
   Button,
   Card,
+  Disclosure,
+  DynamicList,
   Input,
   Label,
   Modal,
@@ -154,13 +156,29 @@ export function NoteCard({
           {note.title || 'Untitled'}
         </h3>
 
-        {/* Content preview */}
-        <p
-          className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer text-sm whitespace-pre-wrap'
-          onClick={onClick}
-        >
-          {note.content}
-        </p>
+        {/* List or Content preview */}
+        {note.list && note.list.length > 0 ? (
+          <ul className='text-foreground/70 mb-3 cursor-pointer space-y-1 text-sm' onClick={onClick}>
+            {note.list.slice(0, 5).map((item, index) => (
+              <li key={index} className='flex items-start gap-2'>
+                <span className='text-foreground/50'>•</span>
+                <span className='line-clamp-1'>{item}</span>
+              </li>
+            ))}
+            {note.list.length > 5 && (
+              <li className='text-foreground/50 text-xs'>
+                +{note.list.length - 5} more items
+              </li>
+            )}
+          </ul>
+        ) : (
+          <p
+            className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer text-sm whitespace-pre-wrap'
+            onClick={onClick}
+          >
+            {note.content}
+          </p>
+        )}
 
         {/* Tags */}
         {note.tags.length > 0 && (
@@ -206,8 +224,6 @@ export function FilterSection({
   archivedCount,
   trashedCount,
 }: FilterSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   return (
     <div className='bg-muted/30 space-y-4 rounded-2xl p-6'>
       {/* Stats and Status Selector */}
@@ -248,7 +264,7 @@ export function FilterSection({
 
       {/* Search */}
       <div className='relative'>
-        <span className='text-foreground/40 absolute top-1/2 left-3 -translate-y-1/2 text-lg'>
+        <span className='text-foreground/40 absolute left-3 top-1/2 -translate-y-1/2 text-lg'>
           🔍
         </span>
         <Input
@@ -262,19 +278,9 @@ export function FilterSection({
         />
       </div>
 
-      {/* Advanced Filters Toggle */}
-      <Button
-        onClick={() => setIsExpanded(!isExpanded)}
-        variant='outline'
-        size='sm'
-        className='w-full'
-      >
-        {isExpanded ? 'Hide' : 'Show'} Advanced Filters
-      </Button>
-
-      {/* Advanced Filters */}
-      {isExpanded && (
-        <div className='space-y-4 pt-2'>
+      {/* Advanced Filters with Disclosure */}
+      <Disclosure label='Advanced Filters' className='rounded-xl'>
+        <div className='space-y-4 p-2 pt-2'>
           {/* Tag Filter */}
           {allTags.length > 0 && (
             <div>
@@ -333,7 +339,7 @@ export function FilterSection({
             </div>
           </div>
         </div>
-      )}
+      </Disclosure>
 
       {/* Active Filters Count */}
       {(filters.selectedTags.length > 0 ||
@@ -388,6 +394,8 @@ export function NoteModal({
 }: NoteModalProps) {
   const [title, setTitle] = useState(initialNote?.title || '');
   const [content, setContent] = useState(initialNote?.content || '');
+  const [list, setList] = useState<string[] | null>(initialNote?.list || null);
+  const [isListMode, setIsListMode] = useState(!!initialNote?.list);
   const [emoji, setEmoji] = useState(initialNote?.emoji || '');
   const [color, setColor] = useState<NoteColor>(
     initialNote?.color || 'default',
@@ -399,6 +407,8 @@ export function NoteModal({
   useEffect(() => {
     setTitle(initialNote?.title || '');
     setContent(initialNote?.content || '');
+    setList(initialNote?.list || null);
+    setIsListMode(!!initialNote?.list);
     setEmoji(initialNote?.emoji || '');
     setColor(initialNote?.color || 'default');
     setTags(initialNote?.tags || []);
@@ -407,7 +417,8 @@ export function NoteModal({
   const handleSave = () => {
     onSave({
       title,
-      content,
+      content: isListMode ? '' : content,
+      list: isListMode ? list : null,
       emoji: emoji || null,
       color,
       tags,
@@ -468,17 +479,58 @@ export function NoteModal({
           </div>
         </div>
 
-        {/* Content */}
-        <div>
-          <Label htmlFor='content'>Content</Label>
-          <Textarea
-            id='content'
-            placeholder='Note content...'
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={6}
-          />
+        {/* Content Type Toggle */}
+        <div className='flex items-center gap-2'>
+          <Label>Content Type:</Label>
+          <div className='flex gap-2'>
+            <Button
+              type='button'
+              variant={!isListMode ? 'secondary' : 'outline'}
+              size='sm'
+              onClick={() => setIsListMode(false)}
+            >
+              Text
+            </Button>
+            <Button
+              type='button'
+              variant={isListMode ? 'secondary' : 'outline'}
+              size='sm'
+              onClick={() => setIsListMode(true)}
+            >
+              List
+            </Button>
+          </div>
         </div>
+
+        {/* Content or List */}
+        {isListMode ? (
+          <div>
+            <Label>List Items</Label>
+            <DynamicList
+              items={(list || []).map((item, index) => ({
+                id: `${index}`,
+                content: item,
+              }))}
+              onItemsChange={(items) => {
+                setList(items.map((item) => item.content));
+              }}
+              addPlaceholder='Add list item...'
+              marker='disc'
+              size='sm'
+            />
+          </div>
+        ) : (
+          <div>
+            <Label htmlFor='content'>Content</Label>
+            <Textarea
+              id='content'
+              placeholder='Note content...'
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={6}
+            />
+          </div>
+        )}
 
         {/* Color */}
         <div>
@@ -490,9 +542,10 @@ export function NoteModal({
                 className={join(
                   'h-10 w-10 cursor-pointer rounded-full border-2 transition-all',
                   colorOption.class,
+                  colorOption.borderClass,
                   color === colorOption.value
-                    ? 'border-foreground scale-110'
-                    : 'border-border hover:scale-105',
+                    ? 'scale-110 ring-2 ring-foreground ring-offset-2'
+                    : 'hover:scale-105',
                 )}
                 onClick={() => setColor(colorOption.value)}
                 title={colorOption.label}

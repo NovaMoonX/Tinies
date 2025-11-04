@@ -16,6 +16,7 @@ export interface Note {
   id: string;
   title: string;
   content: string;
+  list: string[] | null; // List items for list-style notes
   emoji: string | null;
   color: NoteColor;
   tags: string[];
