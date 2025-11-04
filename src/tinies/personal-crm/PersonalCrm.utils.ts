@@ -70,7 +70,7 @@ export function filterArtifacts(
 
 export function getContactById(contacts: Contact[], id: string): Contact | null {
   const contact = contacts.find((c) => c.id === id);
-  return contact || null;
+  return contact ?? null;
 }
 
 export function getContactsByIds(contacts: Contact[], ids: string[]): Contact[] {

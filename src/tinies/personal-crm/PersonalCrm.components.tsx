@@ -666,19 +666,19 @@ export function ArtifactDetailsModal({
           <div className='bg-muted/30 space-y-3 rounded-lg p-4'>
             <div>
               <Label htmlFor='contact-select'>Select Contact</Label>
-              <select
+              <Select
                 id='contact-select'
-                className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+                name='contact-select'
                 value={newComment.contactId}
-                onChange={(e) => setNewComment({ ...newComment, contactId: e.target.value })}
-              >
-                <option value=''>Select a contact...</option>
-                {contacts.map((contact) => (
-                  <option key={contact.id} value={contact.id}>
-                    {contact.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setNewComment({ ...newComment, contactId: value })}
+                options={[
+                  { value: '', text: 'Select a contact...' },
+                  ...contacts.map((contact) => ({
+                    value: contact.id,
+                    text: contact.name,
+                  })),
+                ]}
+              />
             </div>
             <Textarea
               name='commentText'
