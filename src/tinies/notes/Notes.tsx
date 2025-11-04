@@ -27,13 +27,14 @@ export function Notes() {
 
   const { confirm } = useActionModal();
 
-  // Auto-delete trashed notes after 30 days
+  // Auto-delete trashed notes after 30 days (run once on mount)
   useEffect(() => {
     const cleanedNotes = removeAutoDeletedNotes(notes);
     if (cleanedNotes.length !== notes.length) {
       setNotes(cleanedNotes);
     }
-  }, [notes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   const allTags = useMemo(() => {
     const tags = notes.flatMap((note) => note.tags);

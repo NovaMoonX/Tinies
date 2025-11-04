@@ -10,7 +10,7 @@ import {
 } from '@moondreamsdev/dreamer-ui/components';
 import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NOTE_COLORS } from './Notes.data';
 import { Note, NoteColor, NoteFilters, NoteStatus } from './Notes.types';
 import { formatDate, getDaysUntilDeletion } from './Notes.utils';
@@ -392,6 +392,15 @@ export function NoteModal({
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(initialNote?.tags || []);
 
+  // Sync state when initialNote changes
+  useEffect(() => {
+    setTitle(initialNote?.title || '');
+    setContent(initialNote?.content || '');
+    setEmoji(initialNote?.emoji || '');
+    setColor(initialNote?.color || 'default');
+    setTags(initialNote?.tags || []);
+  }, [initialNote]);
+
   const handleSave = () => {
     onSave({
       title,
@@ -428,8 +437,12 @@ export function NoteModal({
             type='text'
             placeholder='🎉'
             value={emoji}
-            onChange={(e) => setEmoji(e.target.value.slice(0, 2))}
-            maxLength={2}
+            onChange={(e) => {
+              // Get the first emoji/character using spread operator to handle multi-byte Unicode
+              const chars = [...e.target.value];
+              setEmoji(chars[0] || '');
+            }}
+            maxLength={10}
           />
         </div>
 
