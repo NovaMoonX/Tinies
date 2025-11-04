@@ -51,6 +51,16 @@ export const ALL_TINIES: Tiny[] = [
 		status: 'in-progress',
 		route: '/personal-crm',
 	},
+	{
+		id: 'notes',
+		title: 'Notes',
+		description: 'A simple note-taking app inspired by Google Keep. Create notes with titles, tags, emojis, and custom colors. Pin important notes, archive old ones, and move unwanted notes to trash (auto-deleted after 30 days).',
+		startDate: '2025-11-04',
+		tags: ['productivity', 'notes', 'organization'],
+		categories: ['productivity'],
+		status: 'in-progress',
+		route: '/notes',
+	},
 ];
 
 export const ALL_TAGS = Array.from(

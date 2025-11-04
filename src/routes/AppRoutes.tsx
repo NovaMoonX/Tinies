@@ -66,6 +66,15 @@ export const router = createBrowserRouter([
           return { Component: PersonalCrm };
         },
       },
+      // Notes (lazy loaded)
+      {
+        path: 'notes',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: Notes } = await import('@tinies/notes/Notes');
+          return { Component: Notes };
+        },
+      },
     ],
   },
 ]);
