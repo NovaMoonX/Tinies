@@ -1,23 +1,32 @@
-import { Button, Badge, Card, Modal, Input, Textarea, Select, Label } from '@moondreamsdev/dreamer-ui/components';
-import { Trash, Plus } from '@moondreamsdev/dreamer-ui/symbols';
-import { useState, useEffect } from 'react';
 import {
-  Contact,
+  Badge,
+  Button,
+  Card,
+  Input,
+  Label,
+  Modal,
+  Select,
+  Textarea,
+} from '@moondreamsdev/dreamer-ui/components';
+import { Plus, Trash } from '@moondreamsdev/dreamer-ui/symbols';
+import { useEffect, useState } from 'react';
+import { ARTIFACT_TYPES, RELATIONSHIP_TYPES } from './PersonalCrm.data';
+import {
   Artifact,
   ArtifactComment,
-  RelationshipType,
   ArtifactType,
+  Contact,
   PersonalCrmFilters,
+  RelationshipType,
 } from './PersonalCrm.types';
 import {
-  formatDate,
   formatBirthday,
-  getRelationshipTypeLabel,
+  formatDate,
+  generateId,
   getArtifactTypeIcon,
   getContactsByIds,
-  generateId,
+  getRelationshipTypeLabel,
 } from './PersonalCrm.utils';
-import { RELATIONSHIP_TYPES, ARTIFACT_TYPES } from './PersonalCrm.data';
 
 /* ============================================================================
  * Contact Card Component
@@ -145,20 +154,24 @@ export function ContactDetailsModal({
       <div className='space-y-6'>
         {/* Relationship Type */}
         <div>
-          <Badge variant='secondary'>{getRelationshipTypeLabel(contact.relationshipType)}</Badge>
+          <Badge variant='secondary'>
+            {getRelationshipTypeLabel(contact.relationshipType)}
+          </Badge>
         </div>
 
         {/* Contact Information */}
         <div className='space-y-4'>
           <h3 className='font-semibold'>Contact Information</h3>
-          
+
           {contact.phones.length > 0 && (
             <div className='space-y-2'>
               <p className='text-foreground/70 text-sm'>Phone Numbers</p>
               {contact.phones.map((phone) => (
                 <div key={phone.id} className='flex items-center gap-2 text-sm'>
                   <span className='text-lg'>📞</span>
-                  <span className='text-foreground/60 capitalize'>{phone.label}:</span>
+                  <span className='text-foreground/60 capitalize'>
+                    {phone.label}:
+                  </span>
                   <span>{phone.number}</span>
                 </div>
               ))}
@@ -171,7 +184,9 @@ export function ContactDetailsModal({
               {contact.emails.map((email) => (
                 <div key={email.id} className='flex items-center gap-2 text-sm'>
                   <span className='text-lg'>📧</span>
-                  <span className='text-foreground/60 capitalize'>{email.label}:</span>
+                  <span className='text-foreground/60 capitalize'>
+                    {email.label}:
+                  </span>
                   <span>{email.address}</span>
                 </div>
               ))}
@@ -266,10 +281,14 @@ export function ContactDetailsModal({
                     <>
                       <p className='mb-1 text-sm'>{note.text}</p>
                       <div className='flex items-center justify-between'>
-                        <p className='text-foreground/50 text-xs'>{formatDate(note.dateAdded)}</p>
+                        <p className='text-foreground/50 text-xs'>
+                          {formatDate(note.dateAdded)}
+                        </p>
                         <div className='flex gap-1'>
                           <Button
-                            onClick={() => handleStartEditNote(note.id, note.text)}
+                            onClick={() =>
+                              handleStartEditNote(note.id, note.text)
+                            }
                             variant='base'
                             size='sm'
                             className='h-6 px-2 text-xs'
@@ -280,7 +299,7 @@ export function ContactDetailsModal({
                             onClick={() => handleDeleteNote(note.id)}
                             variant='base'
                             size='sm'
-                            className='h-6 px-2 text-xs text-destructive hover:text-destructive'
+                            className='text-destructive hover:text-destructive h-6 px-2 text-xs'
                           >
                             Delete
                           </Button>
@@ -350,7 +369,11 @@ interface AddContactModalProps {
   onAdd: (contact: Omit<Contact, 'id' | 'dateAdded'>) => void;
 }
 
-export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps) {
+export function AddContactModal({
+  isOpen,
+  onClose,
+  onAdd,
+}: AddContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     relationshipType: 'friend' as RelationshipType,
@@ -368,10 +391,22 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
       name: formData.name,
       relationshipType: formData.relationshipType,
       phones: formData.phone
-        ? [{ id: generateId('phone'), label: formData.phoneLabel, number: formData.phone }]
+        ? [
+            {
+              id: generateId('phone'),
+              label: formData.phoneLabel,
+              number: formData.phone,
+            },
+          ]
         : [],
       emails: formData.email
-        ? [{ id: generateId('email'), label: formData.emailLabel, address: formData.email }]
+        ? [
+            {
+              id: generateId('email'),
+              label: formData.emailLabel,
+              address: formData.email,
+            },
+          ]
         : [],
       birthday: formData.birthday || null,
       notes: [],
@@ -382,7 +417,7 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
     };
 
     onAdd(newContact);
-    
+
     // Reset form
     setFormData({
       name: '',
@@ -393,7 +428,7 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
       emailLabel: 'personal',
       birthday: '',
     });
-    
+
     onClose();
   };
 
@@ -411,10 +446,17 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
         </div>
 
         <div>
-          <label className='mb-1 block text-sm font-medium'>Relationship Type</label>
+          <label className='mb-1 block text-sm font-medium'>
+            Relationship Type
+          </label>
           <Select
             value={formData.relationshipType}
-            onChange={(value) => setFormData({ ...formData, relationshipType: value as RelationshipType })}
+            onChange={(value) =>
+              setFormData({
+                ...formData,
+                relationshipType: value as RelationshipType,
+              })
+            }
             options={RELATIONSHIP_TYPES.map((type) => ({
               value: type,
               text: getRelationshipTypeLabel(type),
@@ -428,7 +470,9 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
             name='email'
             type='email'
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             placeholder='email@example.com'
           />
         </div>
@@ -439,7 +483,9 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
             name='phone'
             type='tel'
             value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, phone: e.target.value })
+            }
             placeholder='(555) 123-4567'
           />
         </div>
@@ -450,12 +496,18 @@ export function AddContactModal({ isOpen, onClose, onAdd }: AddContactModalProps
             name='birthday'
             type='date'
             value={formData.birthday}
-            onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, birthday: e.target.value })
+            }
           />
         </div>
 
         <div className='flex gap-2'>
-          <Button onClick={handleSubmit} className='flex-1' disabled={!formData.name.trim()}>
+          <Button
+            onClick={handleSubmit}
+            className='flex-1'
+            disabled={!formData.name.trim()}
+          >
             Add Contact
           </Button>
           <Button variant='outline' onClick={onClose} className='flex-1'>
@@ -477,7 +529,12 @@ interface ArtifactCardProps {
   onDelete: (id: string) => void;
 }
 
-export function ArtifactCard({ artifact, contacts, onClick, onDelete }: ArtifactCardProps) {
+export function ArtifactCard({
+  artifact,
+  contacts,
+  onClick,
+  onDelete,
+}: ArtifactCardProps) {
   const associatedContacts = getContactsByIds(contacts, artifact.contactIds);
 
   return (
@@ -486,10 +543,14 @@ export function ArtifactCard({ artifact, contacts, onClick, onDelete }: Artifact
         <div className='space-y-4'>
           <div className='flex items-start justify-between'>
             <div className='flex items-start gap-3'>
-              <span className='text-3xl'>{getArtifactTypeIcon(artifact.type)}</span>
+              <span className='text-3xl'>
+                {getArtifactTypeIcon(artifact.type)}
+              </span>
               <div className='flex-1'>
                 <h3 className='mb-1 text-lg font-semibold'>{artifact.title}</h3>
-                <p className='text-foreground/70 mb-2 text-sm'>{artifact.description}</p>
+                <p className='text-foreground/70 mb-2 text-sm'>
+                  {artifact.description}
+                </p>
               </div>
             </div>
             <Button
@@ -539,7 +600,10 @@ interface ArtifactDetailsModalProps {
   onEdit: () => void;
   onDelete: (id: string) => void;
   contacts: Contact[];
-  onAddComment: (artifactId: string, comment: Omit<ArtifactComment, 'id' | 'dateAdded'>) => void;
+  onAddComment: (
+    artifactId: string,
+    comment: Omit<ArtifactComment, 'id' | 'dateAdded'>,
+  ) => void;
 }
 
 export function ArtifactDetailsModal({
@@ -570,7 +634,7 @@ export function ArtifactDetailsModal({
 
   const getContactName = (contactId: string) => {
     const contact = contacts.find((c) => c.id === contactId);
-    
+
     return contact ? contact.name : 'Unknown Contact';
   };
 
@@ -598,7 +662,7 @@ export function ArtifactDetailsModal({
               href={artifact.content}
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline flex items-center gap-2'
+              className='text-primary flex items-center gap-2 hover:underline'
               onClick={(e) => e.stopPropagation()}
             >
               <span className='text-lg'>🔗</span>
@@ -612,7 +676,7 @@ export function ArtifactDetailsModal({
               className='max-h-96 w-full rounded-lg object-cover'
             />
           ) : (
-            <div className='bg-muted/30 whitespace-pre-wrap rounded-lg p-4 text-sm'>
+            <div className='bg-muted/30 rounded-lg p-4 text-sm whitespace-pre-wrap'>
               {artifact.content}
             </div>
           )}
@@ -649,14 +713,21 @@ export function ArtifactDetailsModal({
         {/* Comments (Chat-like) */}
         <div className='space-y-3'>
           <h3 className='font-semibold'>Comments</h3>
-          
+
           {artifact.comments.length > 0 && (
             <div className='bg-muted/20 max-h-64 space-y-3 overflow-y-auto rounded-lg p-4'>
               {artifact.comments.map((comment) => (
-                <div key={comment.id} className='bg-background rounded-lg p-3 shadow-sm'>
-                  <p className='mb-1 text-sm font-medium'>{getContactName(comment.contactId)}</p>
+                <div
+                  key={comment.id}
+                  className='bg-background rounded-lg p-3 shadow-sm'
+                >
+                  <p className='mb-1 text-sm font-medium'>
+                    {getContactName(comment.contactId)}
+                  </p>
                   <p className='mb-1 text-sm'>{comment.text}</p>
-                  <p className='text-foreground/50 text-xs'>{formatDate(comment.dateAdded)}</p>
+                  <p className='text-foreground/50 text-xs'>
+                    {formatDate(comment.dateAdded)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -668,9 +739,10 @@ export function ArtifactDetailsModal({
               <Label htmlFor='contact-select'>Select Contact</Label>
               <Select
                 id='contact-select'
-                name='contact-select'
                 value={newComment.contactId}
-                onChange={(value) => setNewComment({ ...newComment, contactId: value })}
+                onChange={(value) =>
+                  setNewComment({ ...newComment, contactId: value })
+                }
                 options={[
                   { value: '', text: 'Select a contact...' },
                   ...contacts.map((contact) => ({
@@ -683,7 +755,9 @@ export function ArtifactDetailsModal({
             <Textarea
               name='commentText'
               value={newComment.text}
-              onChange={(e) => setNewComment({ ...newComment, text: e.target.value })}
+              onChange={(e) =>
+                setNewComment({ ...newComment, text: e.target.value })
+              }
               placeholder='Add a comment about this artifact...'
               rows={3}
             />
@@ -729,7 +803,11 @@ interface AddArtifactModalProps {
   onAdd: (artifact: Omit<Artifact, 'id' | 'dateAdded'>) => void;
 }
 
-export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalProps) {
+export function AddArtifactModal({
+  isOpen,
+  onClose,
+  onAdd,
+}: AddArtifactModalProps) {
   const [formData, setFormData] = useState({
     type: 'text' as ArtifactType,
     title: '',
@@ -738,7 +816,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
     contactIds: [] as string[],
     tags: '',
   });
-  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
+  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>(
+    'url',
+  );
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -766,7 +846,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
     };
 
     onAdd(newArtifact);
-    
+
     // Reset form
     setFormData({
       type: 'text',
@@ -777,7 +857,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
       tags: '',
     });
     setPhotoInputMethod('url');
-    
+
     onClose();
   };
 
@@ -788,7 +868,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
           <label className='mb-1 block text-sm font-medium'>Type</label>
           <Select
             value={formData.type}
-            onChange={(value) => setFormData({ ...formData, type: value as ArtifactType })}
+            onChange={(value) =>
+              setFormData({ ...formData, type: value as ArtifactType })
+            }
             options={ARTIFACT_TYPES.map((type) => ({
               value: type,
               text: `${getArtifactTypeIcon(type)} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
@@ -801,7 +883,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
           <Input
             name='title'
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
             placeholder='Enter title'
           />
         </div>
@@ -811,20 +895,28 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
           <Input
             name='description'
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
             placeholder='Brief description'
           />
         </div>
 
         <div>
           <label className='mb-1 block text-sm font-medium'>
-            {formData.type === 'link' ? 'URL *' : formData.type === 'photo' ? 'Photo *' : 'Content *'}
+            {formData.type === 'link'
+              ? 'URL *'
+              : formData.type === 'photo'
+                ? 'Photo *'
+                : 'Content *'}
           </label>
           {formData.type === 'text' ? (
             <Textarea
               name='content'
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               placeholder='Enter content...'
               rows={5}
             />
@@ -842,7 +934,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
                 </Button>
                 <Button
                   type='button'
-                  variant={photoInputMethod === 'upload' ? 'primary' : 'outline'}
+                  variant={
+                    photoInputMethod === 'upload' ? 'primary' : 'outline'
+                  }
                   size='sm'
                   onClick={() => setPhotoInputMethod('upload')}
                   className='flex-1'
@@ -854,7 +948,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
                 <Input
                   name='content'
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, content: e.target.value })
+                  }
                   placeholder='https://example.com/image.jpg'
                 />
               ) : (
@@ -865,7 +961,7 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
                     type='file'
                     accept='image/*'
                     onChange={handleFileUpload}
-                    className='w-full rounded-md border border-foreground/20 px-3 py-2 text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
+                    className='border-foreground/20 file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 w-full rounded-md border px-3 py-2 text-sm file:mr-4 file:rounded file:border-0 file:px-3 file:py-1 file:text-sm file:font-medium'
                   />
                   {formData.content && (
                     <div className='mt-2'>
@@ -883,7 +979,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
             <Input
               name='content'
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               placeholder={
                 formData.type === 'link'
                   ? 'https://example.com'
@@ -894,7 +992,9 @@ export function AddArtifactModal({ isOpen, onClose, onAdd }: AddArtifactModalPro
         </div>
 
         <div>
-          <label className='mb-1 block text-sm font-medium'>Tags (comma-separated)</label>
+          <label className='mb-1 block text-sm font-medium'>
+            Tags (comma-separated)
+          </label>
           <Input
             name='tags'
             value={formData.tags}
@@ -978,7 +1078,9 @@ export function FilterSection({
         <Input
           name='search'
           value={filters.searchQuery}
-          onChange={(e) => onFiltersChange({ ...filters, searchQuery: e.target.value })}
+          onChange={(e) =>
+            onFiltersChange({ ...filters, searchQuery: e.target.value })
+          }
           placeholder={`Search ${filters.view}...`}
         />
       </div>
@@ -986,18 +1088,31 @@ export function FilterSection({
       {/* Filters by view */}
       {filters.view === 'contacts' && (
         <div>
-          <label className='mb-2 block text-sm font-medium'>Relationship Type</label>
+          <label className='mb-2 block text-sm font-medium'>
+            Relationship Type
+          </label>
           <div className='flex flex-wrap gap-2'>
             {RELATIONSHIP_TYPES.map((type) => (
               <Badge
                 key={type}
-                variant={filters.selectedRelationshipTypes.includes(type) ? 'secondary' : 'muted'}
+                variant={
+                  filters.selectedRelationshipTypes.includes(type)
+                    ? 'secondary'
+                    : 'muted'
+                }
                 className='cursor-pointer'
                 onClick={() => {
-                  const newTypes = filters.selectedRelationshipTypes.includes(type)
-                    ? filters.selectedRelationshipTypes.filter((t) => t !== type)
+                  const newTypes = filters.selectedRelationshipTypes.includes(
+                    type,
+                  )
+                    ? filters.selectedRelationshipTypes.filter(
+                        (t) => t !== type,
+                      )
                     : [...filters.selectedRelationshipTypes, type];
-                  onFiltersChange({ ...filters, selectedRelationshipTypes: newTypes });
+                  onFiltersChange({
+                    ...filters,
+                    selectedRelationshipTypes: newTypes,
+                  });
                 }}
               >
                 {getRelationshipTypeLabel(type)}
@@ -1009,21 +1124,31 @@ export function FilterSection({
 
       {filters.view === 'artifacts' && (
         <div>
-          <label className='mb-2 block text-sm font-medium'>Artifact Type</label>
+          <label className='mb-2 block text-sm font-medium'>
+            Artifact Type
+          </label>
           <div className='flex flex-wrap gap-2'>
             {ARTIFACT_TYPES.map((type) => (
               <Badge
                 key={type}
-                variant={filters.selectedArtifactTypes.includes(type) ? 'secondary' : 'muted'}
+                variant={
+                  filters.selectedArtifactTypes.includes(type)
+                    ? 'secondary'
+                    : 'muted'
+                }
                 className='cursor-pointer'
                 onClick={() => {
                   const newTypes = filters.selectedArtifactTypes.includes(type)
                     ? filters.selectedArtifactTypes.filter((t) => t !== type)
                     : [...filters.selectedArtifactTypes, type];
-                  onFiltersChange({ ...filters, selectedArtifactTypes: newTypes });
+                  onFiltersChange({
+                    ...filters,
+                    selectedArtifactTypes: newTypes,
+                  });
                 }}
               >
-                {getArtifactTypeIcon(type)} {type.charAt(0).toUpperCase() + type.slice(1)}
+                {getArtifactTypeIcon(type)}{' '}
+                {type.charAt(0).toUpperCase() + type.slice(1)}
               </Badge>
             ))}
           </div>
@@ -1035,12 +1160,14 @@ export function FilterSection({
         <p className='text-foreground/70 text-sm'>
           {isFiltering ? (
             <>
-              Showing {filteredCount} of {filters.view === 'contacts' ? totalContacts : totalArtifacts}{' '}
+              Showing {filteredCount} of{' '}
+              {filters.view === 'contacts' ? totalContacts : totalArtifacts}{' '}
               {filters.view}
             </>
           ) : (
             <>
-              {filters.view === 'contacts' ? totalContacts : totalArtifacts} total {filters.view}
+              {filters.view === 'contacts' ? totalContacts : totalArtifacts}{' '}
+              total {filters.view}
             </>
           )}
         </p>
@@ -1109,12 +1236,18 @@ export function ContactsTabContent({
         </div>
 
         <div>
-          <label className='mb-2 block text-sm font-medium'>Relationship Type</label>
+          <label className='mb-2 block text-sm font-medium'>
+            Relationship Type
+          </label>
           <div className='flex flex-wrap gap-2'>
             {RELATIONSHIP_TYPES.map((type) => (
               <Badge
                 key={type}
-                variant={selectedRelationshipTypes.includes(type) ? 'secondary' : 'muted'}
+                variant={
+                  selectedRelationshipTypes.includes(type)
+                    ? 'secondary'
+                    : 'muted'
+                }
                 className='cursor-pointer'
                 onClick={() => {
                   const newTypes = selectedRelationshipTypes.includes(type)
@@ -1166,7 +1299,7 @@ export function ContactsTabContent({
               ? 'No contacts match your filters.'
               : 'No contacts yet. Add your first contact to get started!'}
           </p>
-          <Button onClick={onAddContact}>
+          <Button onClick={onAddContact} variant='tertiary'>
             <Plus className='h-5 w-5' />
             Add Your First Contact
           </Button>
@@ -1208,7 +1341,10 @@ export function ArtifactsTabContent({
   onArtifactClick,
   onDeleteArtifact,
 }: ArtifactsTabContentProps) {
-  const isFiltering = searchQuery || selectedArtifactTypes.length > 0 || selectedContactIds.length > 0;
+  const isFiltering =
+    searchQuery ||
+    selectedArtifactTypes.length > 0 ||
+    selectedContactIds.length > 0;
 
   const handleClearFilters = () => {
     onSearchChange('');
@@ -1238,12 +1374,16 @@ export function ArtifactsTabContent({
         </div>
 
         <div>
-          <label className='mb-2 block text-sm font-medium'>Artifact Type</label>
+          <label className='mb-2 block text-sm font-medium'>
+            Artifact Type
+          </label>
           <div className='flex flex-wrap gap-2'>
             {ARTIFACT_TYPES.map((type) => (
               <Badge
                 key={type}
-                variant={selectedArtifactTypes.includes(type) ? 'secondary' : 'muted'}
+                variant={
+                  selectedArtifactTypes.includes(type) ? 'secondary' : 'muted'
+                }
                 className='cursor-pointer'
                 onClick={() => {
                   const newTypes = selectedArtifactTypes.includes(type)
@@ -1252,19 +1392,26 @@ export function ArtifactsTabContent({
                   onArtifactTypesChange(newTypes);
                 }}
               >
-                {getArtifactTypeIcon(type)} {type.charAt(0).toUpperCase() + type.slice(1)}
+                {getArtifactTypeIcon(type)}{' '}
+                {type.charAt(0).toUpperCase() + type.slice(1)}
               </Badge>
             ))}
           </div>
         </div>
 
         <div>
-          <label className='mb-2 block text-sm font-medium'>Filter by Contact</label>
+          <label className='mb-2 block text-sm font-medium'>
+            Filter by Contact
+          </label>
           <div className='flex flex-wrap gap-2'>
             {contacts.map((contact) => (
               <Badge
                 key={contact.id}
-                variant={selectedContactIds.includes(contact.id) ? 'secondary' : 'muted'}
+                variant={
+                  selectedContactIds.includes(contact.id)
+                    ? 'secondary'
+                    : 'muted'
+                }
                 className='cursor-pointer'
                 onClick={() => {
                   const newContactIds = selectedContactIds.includes(contact.id)
@@ -1317,7 +1464,7 @@ export function ArtifactsTabContent({
               ? 'No artifacts match your filters.'
               : 'No artifacts yet. Add your first artifact to get started!'}
           </p>
-          <Button onClick={onAddArtifact}>
+          <Button onClick={onAddArtifact} variant='tertiary'>
             <Plus className='h-5 w-5' />
             Add Your First Artifact
           </Button>
@@ -1337,7 +1484,12 @@ interface EditContactModalProps {
   onSave: (updates: Partial<Contact>) => void;
 }
 
-export function EditContactModal({ isOpen, onClose, contact, onSave }: EditContactModalProps) {
+export function EditContactModal({
+  isOpen,
+  onClose,
+  contact,
+  onSave,
+}: EditContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     relationshipType: 'friend' as RelationshipType,
@@ -1370,10 +1522,22 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
       name: formData.name,
       relationshipType: formData.relationshipType,
       phones: formData.phone
-        ? [{ id: contact?.phones[0]?.id || generateId('phone'), label: formData.phoneLabel, number: formData.phone }]
+        ? [
+            {
+              id: contact?.phones[0]?.id || generateId('phone'),
+              label: formData.phoneLabel,
+              number: formData.phone,
+            },
+          ]
         : [],
       emails: formData.email
-        ? [{ id: contact?.emails[0]?.id || generateId('email'), label: formData.emailLabel, address: formData.email }]
+        ? [
+            {
+              id: contact?.emails[0]?.id || generateId('email'),
+              label: formData.emailLabel,
+              address: formData.email,
+            },
+          ]
         : [],
       birthday: formData.birthday || null,
     };
@@ -1398,10 +1562,17 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
         </div>
 
         <div>
-          <label className='mb-1 block text-sm font-medium'>Relationship Type</label>
+          <label className='mb-1 block text-sm font-medium'>
+            Relationship Type
+          </label>
           <Select
             value={formData.relationshipType}
-            onChange={(value) => setFormData({ ...formData, relationshipType: value as RelationshipType })}
+            onChange={(value) =>
+              setFormData({
+                ...formData,
+                relationshipType: value as RelationshipType,
+              })
+            }
             options={RELATIONSHIP_TYPES.map((type) => ({
               value: type,
               text: getRelationshipTypeLabel(type),
@@ -1414,7 +1585,9 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
           <div className='flex gap-2'>
             <Select
               value={formData.phoneLabel}
-              onChange={(value) => setFormData({ ...formData, phoneLabel: value })}
+              onChange={(value) =>
+                setFormData({ ...formData, phoneLabel: value })
+              }
               options={[
                 { value: 'mobile', text: 'Mobile' },
                 { value: 'work', text: 'Work' },
@@ -1425,7 +1598,9 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
             <Input
               name='phone'
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               placeholder='(555) 123-4567'
               className='flex-1'
             />
@@ -1437,7 +1612,9 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
           <div className='flex gap-2'>
             <Select
               value={formData.emailLabel}
-              onChange={(value) => setFormData({ ...formData, emailLabel: value })}
+              onChange={(value) =>
+                setFormData({ ...formData, emailLabel: value })
+              }
               options={[
                 { value: 'personal', text: 'Personal' },
                 { value: 'work', text: 'Work' },
@@ -1447,7 +1624,9 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
             <Input
               name='email'
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               placeholder='email@example.com'
               type='email'
               className='flex-1'
@@ -1460,13 +1639,19 @@ export function EditContactModal({ isOpen, onClose, contact, onSave }: EditConta
           <Input
             name='birthday'
             value={formData.birthday}
-            onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, birthday: e.target.value })
+            }
             type='date'
           />
         </div>
 
         <div className='flex gap-2'>
-          <Button onClick={handleSubmit} className='flex-1' disabled={!formData.name.trim()}>
+          <Button
+            onClick={handleSubmit}
+            className='flex-1'
+            disabled={!formData.name.trim()}
+          >
             Save Changes
           </Button>
           <Button variant='outline' onClick={onClose} className='flex-1'>
@@ -1488,7 +1673,12 @@ interface EditArtifactModalProps {
   onSave: (updates: Partial<Artifact>) => void;
 }
 
-export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArtifactModalProps) {
+export function EditArtifactModal({
+  isOpen,
+  onClose,
+  artifact,
+  onSave,
+}: EditArtifactModalProps) {
   const [formData, setFormData] = useState({
     type: 'text' as ArtifactType,
     title: '',
@@ -1496,7 +1686,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
     content: '',
     tags: '',
   });
-  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>('url');
+  const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>(
+    'url',
+  );
 
   // Update form when artifact changes
   useEffect(() => {
@@ -1546,7 +1738,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
           <label className='mb-1 block text-sm font-medium'>Type</label>
           <Select
             value={formData.type}
-            onChange={(value) => setFormData({ ...formData, type: value as ArtifactType })}
+            onChange={(value) =>
+              setFormData({ ...formData, type: value as ArtifactType })
+            }
             options={ARTIFACT_TYPES.map((type) => ({
               value: type,
               text: `${getArtifactTypeIcon(type)} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
@@ -1559,7 +1753,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
           <Input
             name='title'
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
             placeholder='Enter title'
           />
         </div>
@@ -1569,20 +1765,28 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
           <Input
             name='description'
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
             placeholder='Brief description'
           />
         </div>
 
         <div>
           <label className='mb-1 block text-sm font-medium'>
-            {formData.type === 'link' ? 'URL *' : formData.type === 'photo' ? 'Photo *' : 'Content *'}
+            {formData.type === 'link'
+              ? 'URL *'
+              : formData.type === 'photo'
+                ? 'Photo *'
+                : 'Content *'}
           </label>
           {formData.type === 'text' ? (
             <Textarea
               name='content'
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               placeholder='Enter content...'
               rows={5}
             />
@@ -1600,7 +1804,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
                 </Button>
                 <Button
                   type='button'
-                  variant={photoInputMethod === 'upload' ? 'primary' : 'outline'}
+                  variant={
+                    photoInputMethod === 'upload' ? 'primary' : 'outline'
+                  }
                   size='sm'
                   onClick={() => setPhotoInputMethod('upload')}
                   className='flex-1'
@@ -1612,7 +1818,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
                 <Input
                   name='content'
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, content: e.target.value })
+                  }
                   placeholder='https://example.com/image.jpg'
                 />
               ) : (
@@ -1623,7 +1831,7 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
                     type='file'
                     accept='image/*'
                     onChange={handleFileUpload}
-                    className='w-full rounded-md border border-foreground/20 px-3 py-2 text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
+                    className='border-foreground/20 file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 w-full rounded-md border px-3 py-2 text-sm file:mr-4 file:rounded file:border-0 file:px-3 file:py-1 file:text-sm file:font-medium'
                   />
                   {formData.content && (
                     <div className='mt-2'>
@@ -1641,7 +1849,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
             <Input
               name='content'
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               placeholder={
                 formData.type === 'link'
                   ? 'https://example.com'
@@ -1652,7 +1862,9 @@ export function EditArtifactModal({ isOpen, onClose, artifact, onSave }: EditArt
         </div>
 
         <div>
-          <label className='mb-1 block text-sm font-medium'>Tags (comma-separated)</label>
+          <label className='mb-1 block text-sm font-medium'>
+            Tags (comma-separated)
+          </label>
           <Input
             name='tags'
             value={formData.tags}

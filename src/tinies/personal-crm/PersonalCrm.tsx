@@ -1,31 +1,39 @@
 import { Tabs, TabsContent } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { useState, useMemo } from 'react';
 import TinyPage from '@ui/layout/TinyPage';
-import { Contact, Artifact, PersonalCrmFilters, ArtifactComment, RelationshipType, ArtifactType } from './PersonalCrm.types';
-import { SAMPLE_CONTACTS, SAMPLE_ARTIFACTS } from './PersonalCrm.data';
+import { useMemo, useState } from 'react';
 import {
-  filterContacts,
+  AddArtifactModal,
+  AddContactModal,
+  ArtifactDetailsModal,
+  ArtifactsTabContent,
+  ContactDetailsModal,
+  ContactsTabContent,
+  EditArtifactModal,
+  EditContactModal,
+} from './PersonalCrm.components';
+import {
+  Artifact,
+  ArtifactComment,
+  ArtifactType,
+  Contact,
+  PersonalCrmFilters,
+  RelationshipType,
+} from './PersonalCrm.types';
+import {
   filterArtifacts,
+  filterContacts,
   generateId,
 } from './PersonalCrm.utils';
-import {
-  ContactDetailsModal,
-  AddContactModal,
-  EditContactModal,
-  ArtifactDetailsModal,
-  AddArtifactModal,
-  EditArtifactModal,
-  ContactsTabContent,
-  ArtifactsTabContent,
-} from './PersonalCrm.components';
 
 export function PersonalCrm() {
   const { confirm } = useActionModal();
-  const [contacts, setContacts] = useState<Contact[]>(SAMPLE_CONTACTS);
-  const [artifacts, setArtifacts] = useState<Artifact[]>(SAMPLE_ARTIFACTS);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
+  const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
+    null,
+  );
   const [isContactDetailsOpen, setIsContactDetailsOpen] = useState(false);
   const [isArtifactDetailsOpen, setIsArtifactDetailsOpen] = useState(false);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
@@ -33,8 +41,12 @@ export function PersonalCrm() {
   const [isEditContactModalOpen, setIsEditContactModalOpen] = useState(false);
   const [isEditArtifactModalOpen, setIsEditArtifactModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<RelationshipType[]>([]);
-  const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<ArtifactType[]>([]);
+  const [selectedRelationshipTypes, setSelectedRelationshipTypes] = useState<
+    RelationshipType[]
+  >([]);
+  const [selectedArtifactTypes, setSelectedArtifactTypes] = useState<
+    ArtifactType[]
+  >([]);
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
 
   const filteredContacts = useMemo(() => {
@@ -108,8 +120,8 @@ export function PersonalCrm() {
 
     setContacts(
       contacts.map((c) =>
-        c.id === contactId ? { ...c, notes: [...c.notes, newNote] } : c
-      )
+        c.id === contactId ? { ...c, notes: [...c.notes, newNote] } : c,
+      ),
     );
 
     if (selectedContact?.id === contactId) {
@@ -120,11 +132,15 @@ export function PersonalCrm() {
     }
   };
 
-  const handleEditNote = (contactId: string, noteId: string, newText: string) => {
+  const handleEditNote = (
+    contactId: string,
+    noteId: string,
+    newText: string,
+  ) => {
     const updatedContacts = contacts.map((c) => {
       if (c.id === contactId) {
         const updatedNotes = c.notes.map((note) =>
-          note.id === noteId ? { ...note, text: newText } : note
+          note.id === noteId ? { ...note, text: newText } : note,
         );
         return { ...c, notes: updatedNotes };
       }
@@ -135,7 +151,7 @@ export function PersonalCrm() {
 
     if (selectedContact?.id === contactId) {
       const updatedNotes = selectedContact.notes.map((note) =>
-        note.id === noteId ? { ...note, text: newText } : note
+        note.id === noteId ? { ...note, text: newText } : note,
       );
       setSelectedContact({ ...selectedContact, notes: updatedNotes });
     }
@@ -144,12 +160,13 @@ export function PersonalCrm() {
   const handleDeleteNote = async (contactId: string, noteId: string) => {
     const contact = contacts.find((c) => c.id === contactId);
     const note = contact?.notes.find((n) => n.id === noteId);
-    
+
     if (!note) return;
 
     const confirmed = await confirm({
       title: 'Delete Note',
-      message: 'Are you sure you want to delete this note? This action cannot be undone.',
+      message:
+        'Are you sure you want to delete this note? This action cannot be undone.',
       confirmText: 'Delete',
       destructive: true,
     });
@@ -167,7 +184,9 @@ export function PersonalCrm() {
     setContacts(updatedContacts);
 
     if (selectedContact?.id === contactId) {
-      const filteredNotes = selectedContact.notes.filter((note) => note.id !== noteId);
+      const filteredNotes = selectedContact.notes.filter(
+        (note) => note.id !== noteId,
+      );
       setSelectedContact({ ...selectedContact, notes: filteredNotes });
     }
   };
@@ -177,7 +196,9 @@ export function PersonalCrm() {
     setIsContactDetailsOpen(true);
   };
 
-  const handleAddArtifact = (artifactData: Omit<Artifact, 'id' | 'dateAdded'>) => {
+  const handleAddArtifact = (
+    artifactData: Omit<Artifact, 'id' | 'dateAdded'>,
+  ) => {
     const newArtifact: Artifact = {
       ...artifactData,
       id: generateId('artifact'),
@@ -209,7 +230,9 @@ export function PersonalCrm() {
   };
 
   const handleEditArtifact = (id: string, updates: Partial<Artifact>) => {
-    setArtifacts(artifacts.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+    setArtifacts(
+      artifacts.map((a) => (a.id === id ? { ...a, ...updates } : a)),
+    );
     if (selectedArtifact?.id === id) {
       setSelectedArtifact({ ...selectedArtifact, ...updates });
     }
@@ -222,7 +245,7 @@ export function PersonalCrm() {
 
   const handleAddArtifactComment = (
     artifactId: string,
-    commentData: Omit<ArtifactComment, 'id' | 'dateAdded'>
+    commentData: Omit<ArtifactComment, 'id' | 'dateAdded'>,
   ) => {
     const newComment: ArtifactComment = {
       ...commentData,
@@ -231,7 +254,7 @@ export function PersonalCrm() {
     };
 
     const updatedArtifacts = artifacts.map((a) =>
-        a.id === artifactId ? { ...a, comments: [...a.comments, newComment] } : a
+      a.id === artifactId ? { ...a, comments: [...a.comments, newComment] } : a,
     );
     setArtifacts(updatedArtifacts);
 
@@ -254,12 +277,20 @@ export function PersonalCrm() {
         <div className='flex flex-col items-center justify-between'>
           <div className='flex gap-8'>
             <div className='text-center'>
-              <div className='mb-1 text-3xl sm:text-4xl font-bold'>{contacts.length}</div>
-              <div className='text-foreground/60 text-sm sm:text-base'>Contacts</div>
+              <div className='mb-1 text-3xl font-bold sm:text-4xl'>
+                {contacts.length}
+              </div>
+              <div className='text-foreground/60 text-sm sm:text-base'>
+                Contacts
+              </div>
             </div>
             <div className='text-center'>
-              <div className='mb-1 text-3xl sm:text-4xl font-bold'>{artifacts.length}</div>
-              <div className='text-foreground/60 text-sm sm:text-base'>Artifacts</div>
+              <div className='mb-1 text-3xl font-bold sm:text-4xl'>
+                {artifacts.length}
+              </div>
+              <div className='text-foreground/60 text-sm sm:text-base'>
+                Artifacts
+              </div>
             </div>
           </div>
         </div>
