@@ -6,7 +6,7 @@ export const ALL_TINIES: Tiny[] = [
 		title: 'Apartment Tour Questions',
 		description: 'A handy checklist of important questions to ask during apartment tours to help you make informed rental decisions.',
 		startDate: '2025-02-04',
-		tags: ['tools', 'checklist'],
+		tags: ['checklist'],
 		categories: ['lifestyle', 'utility'],
 		status: 'active',
 		route: '/apartment-tour-questions',
