@@ -231,22 +231,22 @@ export function FilterSection({
     <div className='bg-muted/30 space-y-4 rounded-2xl p-6'>
       {/* Stats and Status Selector */}
       <div className='flex flex-col items-center justify-between gap-4 sm:flex-row'>
-        <div className='grid w-full grid-cols-3 gap-4 text-center sm:w-auto sm:text-left'>
+        <div className='grid w-full grid-cols-3 gap-4 sm:gap-5 text-center sm:w-auto sm:text-left'>
           <div>
-            <div className='mb-1 text-2xl font-bold'>{activeCount}</div>
-            <div className='text-foreground/60 text-xs'>Active</div>
+            <div className='mb-1 text-2xl sm:text-4xl font-bold'>{activeCount}</div>
+            <div className='text-foreground/60 text-xs sm:text-base'>Active</div>
           </div>
           <div>
-            <div className='mb-1 text-2xl font-bold'>{archivedCount}</div>
-            <div className='text-foreground/60 text-xs'>Archived</div>
+            <div className='mb-1 text-2xl sm:text-4xl font-bold'>{archivedCount}</div>
+            <div className='text-foreground/60 text-xs sm:text-base'>Archived</div>
           </div>
           <div>
-            <div className='mb-1 text-2xl font-bold'>{trashedCount}</div>
-            <div className='text-foreground/60 text-xs'>Trash</div>
+            <div className='mb-1 text-2xl sm:text-4xl font-bold'>{trashedCount}</div>
+            <div className='text-foreground/60 text-xs sm:text-base'>Trash</div>
           </div>
         </div>
 
-        <div className='flex w-full items-center gap-2 sm:w-auto'>
+        <div className='flex w-full justify-center gap-2 sm:w-auto'>
           <Select
             value={filters.status}
             onChange={(value) =>
