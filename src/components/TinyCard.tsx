@@ -15,8 +15,6 @@ function TinyCard({ tiny }: TinyCardProps) {
 
   const getBadgeVariant = (status: Tiny['status']): BadgeVariant => {
     switch (status) {
-      case 'active':
-        return 'success';
       case 'in-progress':
         return 'warning';
       case 'archived':
@@ -29,7 +27,11 @@ function TinyCard({ tiny }: TinyCardProps) {
   const header = (
     <div className='flex items-start justify-between gap-2'>
       <h3 className='text-foreground text-xl font-semibold'>{tiny.title}</h3>
-      <Badge variant={getBadgeVariant(tiny.status)} className='text-nowrap'>{tiny.status}</Badge>
+      {tiny.status !== 'active' && (
+        <Badge variant={getBadgeVariant(tiny.status)} className='text-nowrap'>
+          {tiny.status}
+        </Badge>
+      )}
     </div>
   );
 

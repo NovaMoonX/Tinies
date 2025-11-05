@@ -1,7 +1,6 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState, useMemo } from 'react';
-import { SAMPLE_RECIPES } from './RecipeBook.data';
 import { Recipe, RecipeFilters } from './RecipeBook.types';
 import {
   RecipeCard,
@@ -14,7 +13,7 @@ import { filterRecipes, generateRecipeId } from './RecipeBook.utils';
 import TinyPage from '@ui/layout/TinyPage';
 
 export function RecipeBook() {
-  const [recipes, setRecipes] = useState<Recipe[]>(SAMPLE_RECIPES);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

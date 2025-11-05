@@ -2,7 +2,6 @@ import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useState } from 'react';
-import { SAMPLE_NOTES } from './Notes.data';
 import { Note, NoteFilters } from './Notes.types';
 import { FilterSection, NoteCard, NoteModal } from './Notes.components';
 import {
@@ -14,7 +13,7 @@ import {
 import TinyPage from '@ui/layout/TinyPage';
 
 export function Notes() {
-  const [notes, setNotes] = useState<Note[]>(SAMPLE_NOTES);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
