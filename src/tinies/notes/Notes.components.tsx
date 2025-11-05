@@ -10,7 +10,7 @@ import {
   Select,
   Textarea,
 } from '@moondreamsdev/dreamer-ui/components';
-import { Plus, Trash, X } from '@moondreamsdev/dreamer-ui/symbols';
+import { Plus, X } from '@moondreamsdev/dreamer-ui/symbols';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useEffect, useState } from 'react';
 import { NOTE_COLORS } from './Notes.data';
@@ -44,10 +44,11 @@ export function NoteCard({
   return (
     <Card
       className={join(
-        'group relative h-full border transition-all hover:shadow-lg',
+        'group relative h-fit border transition-all hover:shadow-lg',
         colorConfig?.class,
         colorConfig?.borderClass,
       )}
+      padding={8}
     >
       <div className='flex h-full flex-col p-4'>
         {/* Header with emoji and actions */}
@@ -89,7 +90,7 @@ export function NoteCard({
                   size='sm'
                   title='Move to trash'
                 >
-                  <Trash className='h-4 w-4' />
+                  🗑️
                 </Button>
               </>
             )}
@@ -115,7 +116,7 @@ export function NoteCard({
                   size='sm'
                   title='Move to trash'
                 >
-                  <Trash className='h-4 w-4' />
+                  🗑️
                 </Button>
               </>
             )}
@@ -141,7 +142,7 @@ export function NoteCard({
                   size='sm'
                   title='Delete permanently'
                 >
-                  <Trash className='h-4 w-4' />
+                  🗑️
                 </Button>
               </>
             )}
@@ -158,22 +159,21 @@ export function NoteCard({
 
         {/* List or Content preview */}
         {note.list && note.list.length > 0 ? (
-          <ul
-            className='text-foreground/70 mb-3 cursor-pointer space-y-1 text-sm'
-            onClick={onClick}
-          >
-            {note.list.slice(0, 5).map((item, index) => (
-              <li key={index} className='flex items-start gap-2'>
-                <span className='text-foreground/50'>•</span>
-                <span className='line-clamp-1'>{item}</span>
-              </li>
-            ))}
+          <div className='mb-3 cursor-pointer' onClick={onClick}>
+            <ul className='text-foreground/70 space-y-0.5 text-sm'>
+              {note.list.slice(0, 5).map((item, index) => (
+                <li key={index} className='flex items-start gap-1'>
+                  <span className='text-foreground/50 font-extrabold'>•</span>
+                  <span className='line-clamp-1'>{item}</span>
+                </li>
+              ))}
+            </ul>
             {note.list.length > 5 && (
-              <li className='text-foreground/50 text-xs'>
+              <small className='text-foreground/50 -mt-2 inline-block text-xs'>
                 +{note.list.length - 5} more items
-              </li>
+              </small>
             )}
-          </ul>
+          </div>
         ) : (
           <p
             className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer text-sm whitespace-pre-wrap'
@@ -187,7 +187,7 @@ export function NoteCard({
         {note.tags.length > 0 && (
           <div className='mb-3 flex flex-wrap gap-1'>
             {note.tags.map((tag) => (
-              <Badge key={tag} variant='secondary' size='sm'>
+              <Badge key={tag} variant='secondary' size='xs'>
                 {tag}
               </Badge>
             ))}
@@ -540,7 +540,10 @@ export function NoteModal({
           <Label className='mb-2 block'>Color</Label>
           <div className='flex flex-wrap gap-2'>
             {NOTE_COLORS.map((colorOption) => (
-              <div className='flex flex-col items-center gap-1' key={colorOption.value}>
+              <div
+                className='flex flex-col items-center gap-1'
+                key={colorOption.value}
+              >
                 <button
                   className={join(
                     'size-6 cursor-pointer rounded-full border-2 transition-all sm:size-8',
@@ -553,7 +556,12 @@ export function NoteModal({
                   onClick={() => setColor(colorOption.value)}
                   title={colorOption.label}
                 />
-                <div className={join('size-1.5 rounded-full', color === colorOption.value && 'bg-current')} />
+                <div
+                  className={join(
+                    'size-1.5 rounded-full',
+                    color === colorOption.value && 'bg-current',
+                  )}
+                />
               </div>
             ))}
           </div>
