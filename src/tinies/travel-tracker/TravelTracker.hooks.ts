@@ -183,15 +183,15 @@ export function useTravelTracker() {
   }, []);
 
   const deletePhoto = useCallback(async (destinationId: string, photoId: string) => {
-    // Get the photo URL before deleting to remove from storage
+    // Get the photo URL from current state
+    let photoUrl: string | null = null;
+    
     setDestinations((prev) => {
       const destination = prev.find((d) => d.id === destinationId);
       const photo = destination?.photos.find((p) => p.id === photoId);
       
       if (photo?.url) {
-        deletePhotoFile(photo.url).catch((error) => {
-          console.error('Error deleting photo file:', error);
-        });
+        photoUrl = photo.url;
       }
 
       const result = prev.map((d) =>
@@ -201,6 +201,11 @@ export function useTravelTracker() {
       );
       return result;
     });
+    
+    // Delete file from storage after state update
+    if (photoUrl) {
+      await deletePhotoFile(photoUrl);
+    }
   }, [deletePhotoFile]);
 
   const updatePhotoCaption = useCallback((

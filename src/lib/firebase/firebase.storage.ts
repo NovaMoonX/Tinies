@@ -21,11 +21,10 @@ export async function uploadFile(
 ): Promise<string> {
   try {
     const storageRef = ref(storage, path);
-    const customMetadata = metadata || {};
     
     await uploadBytes(storageRef, file, {
       contentType: file.type,
-      customMetadata,
+      customMetadata: metadata || {},
     });
 
     const downloadURL = await getDownloadURL(storageRef);
