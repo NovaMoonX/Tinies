@@ -183,15 +183,17 @@ export function useTravelTracker() {
   }, []);
 
   const deletePhoto = useCallback(async (destinationId: string, photoId: string) => {
-    // Find the photo to get its URL for deletion from storage
-    const destination = destinations.find((d) => d.id === destinationId);
-    const photo = destination?.photos.find((p) => p.id === photoId);
-    
-    if (photo?.url) {
-      await deletePhotoFile(photo.url);
-    }
-
+    // Get the photo URL before deleting to remove from storage
     setDestinations((prev) => {
+      const destination = prev.find((d) => d.id === destinationId);
+      const photo = destination?.photos.find((p) => p.id === photoId);
+      
+      if (photo?.url) {
+        deletePhotoFile(photo.url).catch((error) => {
+          console.error('Error deleting photo file:', error);
+        });
+      }
+
       const result = prev.map((d) =>
         d.id === destinationId
           ? { ...d, photos: d.photos.filter((p) => p.id !== photoId) }
@@ -199,7 +201,7 @@ export function useTravelTracker() {
       );
       return result;
     });
-  }, [destinations, deletePhotoFile]);
+  }, [deletePhotoFile]);
 
   const updatePhotoCaption = useCallback((
     destinationId: string,
