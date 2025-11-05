@@ -1,6 +1,7 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 interface TinyPageProps {
   title: string;
@@ -17,6 +18,14 @@ export function TinyPage({
 }: TinyPageProps) {
   return (
     <div className='tiny-page'>
+      {/* Back button in upper left */}
+      <div className='fixed top-20 left-4 z-40'>
+        <Link to='/' className='text-foreground/70 hover:text-foreground flex items-center gap-1 text-sm transition-colors'>
+          <span>←</span>
+          <span>Back</span>
+        </Link>
+      </div>
+
       <div className={join('mx-auto space-y-6', maxWidth)}>
         {/* Header */}
         <div className='space-y-3 text-center'>

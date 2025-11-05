@@ -14,7 +14,7 @@ import { filterRecipes, generateRecipeId } from './RecipeBook.utils';
 import TinyPage from '@ui/layout/TinyPage';
 
 export function RecipeBook() {
-  const [recipes, setRecipes] = useState<Recipe[]>(SAMPLE_RECIPES);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

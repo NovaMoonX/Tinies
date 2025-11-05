@@ -14,7 +14,7 @@ import {
 import TinyPage from '@ui/layout/TinyPage';
 
 export function Notes() {
-  const [notes, setNotes] = useState<Note[]>(SAMPLE_NOTES);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
