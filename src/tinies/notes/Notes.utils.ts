@@ -56,7 +56,7 @@ export function filterNotes(notes: Note[], filters: NoteFilters): Note[] {
 }
 
 /**
- * Sort notes: pinned first, then by last edited date
+ * Sort notes: pinned first, then by last edited date (or trashedAt for trashed notes)
  */
 export function sortNotes(notes: Note[]): Note[] {
   const result = [...notes].sort((a, b) => {
@@ -64,11 +64,15 @@ export function sortNotes(notes: Note[]): Note[] {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
 
-    // Then by last edited date (newest first)
-    const dateA = new Date(a.lastEditedAt).getTime();
-    const dateB = new Date(b.lastEditedAt).getTime();
-    
-    return dateB - dateA;
+    // For trashed notes, sort by trashedAt (newest first)
+    if (a.status === 'trashed' && b.status === 'trashed') {
+      const dateA = a.trashedAt || 0;
+      const dateB = b.trashedAt || 0;
+      return dateB - dateA;
+    }
+
+    // For other notes, sort by last edited date (newest first)
+    return b.lastEditedAt - a.lastEditedAt;
   });
 
   return result;
@@ -82,9 +86,7 @@ export function shouldAutoDelete(note: Note): boolean {
     return false;
   }
 
-  const trashedDate = new Date(note.trashedAt);
-  const now = new Date();
-  const daysSinceTrashed = (now.getTime() - trashedDate.getTime()) / (1000 * 60 * 60 * 24);
+  const daysSinceTrashed = (Date.now() - note.trashedAt) / (1000 * 60 * 60 * 24);
 
   const result = daysSinceTrashed >= 30;
   return result;
@@ -101,10 +103,10 @@ export function removeAutoDeletedNotes(notes: Note[]): Note[] {
 /**
  * Format a date for display
  */
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+export function formatDate(timestamp: number): string {
+  const date = new Date(timestamp);
   const now = new Date();
-  const diffInMs = now.getTime() - date.getTime();
+  const diffInMs = now.getTime() - timestamp;
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
   if (diffInDays === 0) {
@@ -138,9 +140,7 @@ export function getDaysUntilDeletion(note: Note): number | null {
     return null;
   }
 
-  const trashedDate = new Date(note.trashedAt);
-  const now = new Date();
-  const daysSinceTrashed = (now.getTime() - trashedDate.getTime()) / (1000 * 60 * 60 * 24);
+  const daysSinceTrashed = (Date.now() - note.trashedAt) / (1000 * 60 * 60 * 24);
   const daysRemaining = 30 - Math.floor(daysSinceTrashed);
 
   const result = Math.max(0, daysRemaining);

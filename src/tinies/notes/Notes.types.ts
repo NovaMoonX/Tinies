@@ -22,9 +22,9 @@ export interface Note {
   tags: string[];
   isPinned: boolean;
   status: NoteStatus;
-  createdAt: string; // ISO date string
-  lastEditedAt: string; // ISO date string
-  trashedAt: string | null; // ISO date string when moved to trash
+  createdAt: number; // Timestamp in milliseconds
+  lastEditedAt: number; // Timestamp in milliseconds
+  trashedAt: number | null; // Timestamp in milliseconds when moved to trash
 }
 
 export interface NoteFilters {

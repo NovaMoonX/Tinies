@@ -62,7 +62,7 @@ export function Notes() {
   const trashedCount = notes.filter((n) => n.status === 'trashed').length;
 
   const handleAddNote = (noteData: Omit<Note, 'id' | 'createdAt' | 'lastEditedAt'>) => {
-    const now = new Date().toISOString();
+    const now = Date.now();
     const newNote: Note = {
       ...noteData,
       id: generateNoteId(),
@@ -76,7 +76,7 @@ export function Notes() {
   const handleUpdateNote = (noteData: Omit<Note, 'id' | 'createdAt' | 'lastEditedAt'>) => {
     if (!selectedNote) return;
     
-    const now = new Date().toISOString();
+    const now = Date.now();
     const noteWithUpdatedTime: Note = {
       ...selectedNote,
       ...noteData,
@@ -91,7 +91,7 @@ export function Notes() {
   const handleTogglePin = (id: string) => {
     setNotes(
       notes.map((n) =>
-        n.id === id ? { ...n, isPinned: !n.isPinned, lastEditedAt: new Date().toISOString() } : n
+        n.id === id ? { ...n, isPinned: !n.isPinned, lastEditedAt: Date.now() } : n
       )
     );
   };
@@ -99,7 +99,7 @@ export function Notes() {
   const handleArchive = (id: string) => {
     setNotes(
       notes.map((n) =>
-        n.id === id ? { ...n, status: 'archived', isPinned: false, lastEditedAt: new Date().toISOString() } : n
+        n.id === id ? { ...n, status: 'archived', isPinned: false, lastEditedAt: Date.now() } : n
       )
     );
   };
@@ -107,7 +107,7 @@ export function Notes() {
   const handleUnarchive = (id: string) => {
     setNotes(
       notes.map((n) =>
-        n.id === id ? { ...n, status: 'active', lastEditedAt: new Date().toISOString() } : n
+        n.id === id ? { ...n, status: 'active', lastEditedAt: Date.now() } : n
       )
     );
   };
@@ -120,8 +120,8 @@ export function Notes() {
               ...n,
               status: 'trashed',
               isPinned: false,
-              trashedAt: new Date().toISOString(),
-              lastEditedAt: new Date().toISOString(),
+              trashedAt: Date.now(),
+              lastEditedAt: Date.now(),
             }
           : n
       )
@@ -136,7 +136,7 @@ export function Notes() {
               ...n,
               status: 'active',
               trashedAt: null,
-              lastEditedAt: new Date().toISOString(),
+              lastEditedAt: Date.now(),
             }
           : n
       )
