@@ -20,7 +20,7 @@ function Layout() {
 
   return (
     <div className='page transition-colors duration-200'>
-      <div className='bg-background fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-4 shadow-sm'>
+      <div className='bg-background fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 shadow-sm md:py-4'>
         <ThemeToggle />
         <div className='flex items-center gap-3'>
           {user ? (

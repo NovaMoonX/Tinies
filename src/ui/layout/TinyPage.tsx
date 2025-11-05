@@ -19,10 +19,10 @@ export function TinyPage({
   return (
     <div className='tiny-page'>
       {/* Back button in upper left */}
-      <div className='fixed top-20 left-4 z-40'>
+      <div className='fixed top-14 left-4 z-40 md:top-20 md:left-8'>
         <Link to='/' className='text-foreground/70 hover:text-foreground flex items-center gap-1 text-sm transition-colors'>
           <span>←</span>
-          <span>Back</span>
+          <span>Back to gallery</span>
         </Link>
       </div>
 
