@@ -20,7 +20,7 @@ export function TinyPage({
     <div className='tiny-page'>
       <div className={join('mx-auto space-y-6', maxWidth)}>
         {/* Back button in upper left */}
-        <div className='mb-4 ml-0 md:ml-2'>
+        <div className='mb-8 ml-0 md:ml-2 mt-2'>
           <Link to='/' className='text-foreground/70 hover:text-foreground flex items-center gap-1 text-sm transition-colors'>
             <span>←</span>
             <span>Back to gallery</span>
