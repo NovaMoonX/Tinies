@@ -158,7 +158,10 @@ export function NoteCard({
 
         {/* List or Content preview */}
         {note.list && note.list.length > 0 ? (
-          <ul className='text-foreground/70 mb-3 cursor-pointer space-y-1 text-sm' onClick={onClick}>
+          <ul
+            className='text-foreground/70 mb-3 cursor-pointer space-y-1 text-sm'
+            onClick={onClick}
+          >
             {note.list.slice(0, 5).map((item, index) => (
               <li key={index} className='flex items-start gap-2'>
                 <span className='text-foreground/50'>•</span>
@@ -264,7 +267,7 @@ export function FilterSection({
 
       {/* Search */}
       <div className='relative'>
-        <span className='text-foreground/40 absolute left-3 top-1/2 -translate-y-1/2 text-lg'>
+        <span className='text-foreground/40 absolute top-1/2 left-3 -translate-y-1/2 text-lg'>
           🔍
         </span>
         <Input
@@ -467,7 +470,7 @@ export function NoteModal({
           </div>
 
           {/* Title */}
-          <div className='flex-1 inline-block'>
+          <div className='inline-block flex-1'>
             <Label htmlFor='title'>Title</Label>
             <Input
               id='title'
@@ -537,19 +540,21 @@ export function NoteModal({
           <Label className='mb-2 block'>Color</Label>
           <div className='flex flex-wrap gap-2'>
             {NOTE_COLORS.map((colorOption) => (
-              <div
-                key={colorOption.value}
-                className={join(
-                  'h-10 w-10 cursor-pointer rounded-full border-2 transition-all',
-                  colorOption.class,
-                  colorOption.borderClass,
-                  color === colorOption.value
-                    ? 'scale-110 ring-2 ring-foreground ring-offset-2'
-                    : 'hover:scale-105',
-                )}
-                onClick={() => setColor(colorOption.value)}
-                title={colorOption.label}
-              />
+              <div className='flex flex-col items-center gap-1' key={colorOption.value}>
+                <button
+                  className={join(
+                    'size-6 cursor-pointer rounded-full border-2 transition-all sm:size-8',
+                    colorOption.class,
+                    colorOption.borderClass,
+                    color === colorOption.value
+                      ? 'scale-110'
+                      : 'hover:scale-105',
+                  )}
+                  onClick={() => setColor(colorOption.value)}
+                  title={colorOption.label}
+                />
+                <div className={join('size-1.5 rounded-full', color === colorOption.value && 'bg-current')} />
+              </div>
             ))}
           </div>
         </div>
