@@ -2,7 +2,6 @@ import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useState } from 'react';
-import { SAMPLE_NOTES } from './Notes.data';
 import { Note, NoteFilters } from './Notes.types';
 import { FilterSection, NoteCard, NoteModal } from './Notes.components';
 import {

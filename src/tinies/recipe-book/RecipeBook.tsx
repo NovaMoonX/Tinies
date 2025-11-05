@@ -1,7 +1,6 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState, useMemo } from 'react';
-import { SAMPLE_RECIPES } from './RecipeBook.data';
 import { Recipe, RecipeFilters } from './RecipeBook.types';
 import {
   RecipeCard,
