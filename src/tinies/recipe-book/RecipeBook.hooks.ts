@@ -2,12 +2,11 @@ import { useAuth } from '@hooks/useAuth';
 import {
   DATABASE_PATHS,
   STORAGE_PATHS,
-  getTinyData,
-  saveTinyData,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useCallback, useEffect, useState } from 'react';
 import { Recipe } from './RecipeBook.types';
 
 export interface RecipeBookData extends Record<string, unknown> {
@@ -17,70 +16,29 @@ export interface RecipeBookData extends Record<string, unknown> {
 export function useRecipeBookData() {
   const { user } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetData = useCallback(() => {
     setRecipes([]);
   }, []);
 
   // Load data from Firebase on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<RecipeBookData>(
+    DATABASE_PATHS.RECIPE_BOOK,
+    resetData,
+  );
+
+  // Update local state when data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      if (!user) {
-        setIsLoaded(true);
-        return;
-      }
-
-      try {
-        const data = await getTinyData<RecipeBookData>(
-          DATABASE_PATHS.RECIPE_BOOK,
-          user.uid,
-        );
-
-        if (data) {
-          setRecipes(data.recipes || []);
-        }
-      } catch (error) {
-        console.error('Error loading recipe book data:', error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    if (!user) {
-      resetData();
+    if (loadedData) {
+      setRecipes(loadedData.recipes || []);
     }
-
-    loadData();
-  }, [user, resetData]);
+  }, [loadedData]);
 
   // Save data to Firebase with debouncing
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(() => {
-      const dataToSave: RecipeBookData = {
-        recipes,
-      };
-
-      saveTinyData(DATABASE_PATHS.RECIPE_BOOK, user.uid, dataToSave).catch(
-        (error) => {
-          console.error('Error saving recipe book data:', error);
-        },
-      );
-    }, 2000);
-
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [recipes, isLoaded, user]);
+  const dataToSave: RecipeBookData = {
+    recipes,
+  };
+  useTinyDataSaver(DATABASE_PATHS.RECIPE_BOOK, dataToSave, isLoaded);
 
   // Upload recipe image
   const uploadRecipeImage = useCallback(

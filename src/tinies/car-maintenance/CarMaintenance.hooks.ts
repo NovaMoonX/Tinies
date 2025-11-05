@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Car,
   ServiceEntry,
@@ -16,11 +16,10 @@ import { useAuth } from '@hooks/useAuth';
 import {
   DATABASE_PATHS,
   STORAGE_PATHS,
-  getTinyData,
-  saveTinyData,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
+import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
 
 export function useCarMaintenance() {
   const { user } = useAuth();
@@ -32,8 +31,6 @@ export function useCarMaintenance() {
     [],
   );
   const [customCarParts, setCustomCarParts] = useState<CarPart[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetData = useCallback(() => {
     setCars([]);
@@ -44,70 +41,31 @@ export function useCarMaintenance() {
   }, []);
 
   // Load data from Firebase on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<CarMaintenanceData>(
+    DATABASE_PATHS.CAR_MAINTENANCE,
+    resetData,
+  );
+
+  // Update local state when data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      if (!user) {
-        setIsLoaded(true);
-        return;
-      }
-
-      try {
-        const data = await getTinyData<CarMaintenanceData>(
-          DATABASE_PATHS.CAR_MAINTENANCE,
-          user.uid,
-        );
-
-        if (data) {
-          setCars(data.cars || []);
-          setSelectedCar(data.selectedCar || null);
-          setServiceEntries(data.serviceEntries || []);
-          setServiceLocations(data.serviceLocations || []);
-          setCustomCarParts(data.customCarParts || []);
-        }
-      } catch (error) {
-        console.error('Error loading car maintenance data:', error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    if (!user) {
-      resetData();
+    if (loadedData) {
+      setCars(loadedData.cars || []);
+      setSelectedCar(loadedData.selectedCar || null);
+      setServiceEntries(loadedData.serviceEntries || []);
+      setServiceLocations(loadedData.serviceLocations || []);
+      setCustomCarParts(loadedData.customCarParts || []);
     }
-
-    loadData();
-  }, [user, resetData]);
+  }, [loadedData]);
 
   // Save data to Firebase with debouncing
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(() => {
-      const dataToSave: CarMaintenanceData = {
-        cars,
-        selectedCar,
-        serviceEntries,
-        serviceLocations,
-        customCarParts,
-      };
-
-      saveTinyData(DATABASE_PATHS.CAR_MAINTENANCE, user.uid, dataToSave).catch(
-        (error) => {
-          console.error('Error saving car maintenance data:', error);
-        },
-      );
-    }, 2000);
-
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [cars, selectedCar, serviceEntries, serviceLocations, customCarParts, isLoaded, user]);
+  const dataToSave: CarMaintenanceData = {
+    cars,
+    selectedCar,
+    serviceEntries,
+    serviceLocations,
+    customCarParts,
+  };
+  useTinyDataSaver(DATABASE_PATHS.CAR_MAINTENANCE, dataToSave, isLoaded);
 
   // Upload file to Firebase Storage
   const uploadAttachment = useCallback(

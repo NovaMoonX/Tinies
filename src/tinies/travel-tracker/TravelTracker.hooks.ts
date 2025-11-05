@@ -1,21 +1,18 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Destination, Photo, DestinationType, TravelTrackerData } from './TravelTracker.types';
 import { useAuth } from '@hooks/useAuth';
 import {
   DATABASE_PATHS,
   STORAGE_PATHS,
-  getTinyData,
-  saveTinyData,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
+import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
 
 export function useTravelTracker() {
   const { user } = useAuth();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetData = useCallback(() => {
     setDestinations([]);
@@ -23,62 +20,23 @@ export function useTravelTracker() {
   }, []);
 
   // Load data from Firebase on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<TravelTrackerData>(
+    DATABASE_PATHS.TRAVEL_TRACKER,
+    resetData,
+  );
+
+  // Update local state when data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      if (!user) {
-        setIsLoaded(true);
-        return;
-      }
-
-      try {
-        const data = await getTinyData<TravelTrackerData>(
-          DATABASE_PATHS.TRAVEL_TRACKER,
-          user.uid,
-        );
-
-        if (data) {
-          setDestinations(data.destinations || []);
-        }
-      } catch (error) {
-        console.error('Error loading travel tracker data:', error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    if (!user) {
-      resetData();
+    if (loadedData) {
+      setDestinations(loadedData.destinations || []);
     }
-
-    loadData();
-  }, [user, resetData]);
+  }, [loadedData]);
 
   // Save data to Firebase with debouncing
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(() => {
-      const dataToSave: TravelTrackerData = {
-        destinations,
-      };
-
-      saveTinyData(DATABASE_PATHS.TRAVEL_TRACKER, user.uid, dataToSave).catch(
-        (error) => {
-          console.error('Error saving travel tracker data:', error);
-        },
-      );
-    }, 2000);
-
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [destinations, isLoaded, user]);
+  const dataToSave: TravelTrackerData = {
+    destinations,
+  };
+  useTinyDataSaver(DATABASE_PATHS.TRAVEL_TRACKER, dataToSave, isLoaded);
 
   // Upload photo to Firebase Storage
   const uploadPhoto = useCallback(

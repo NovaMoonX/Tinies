@@ -1,7 +1,7 @@
-import { useAuth } from '@hooks/useAuth';
-import { DATABASE_PATHS, getTinyData, saveTinyData } from '@lib/firebase';
+import { DATABASE_PATHS } from '@lib/firebase';
+import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   DEFAULT_COST_CATEGORIES,
   DEFAULT_ONE_TIME_FEES,
@@ -22,7 +22,6 @@ import {
 
 export function useApartmentTourData() {
   const actionModal = useActionModal();
-  const { user } = useAuth();
 
   const [customQuestions, setCustomQuestions] = useState<Question[]>([]);
   const [apartments, setApartments] = useState<Apartment[]>([]);
@@ -34,7 +33,6 @@ export function useApartmentTourData() {
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [costs, setCosts] = useState<ApartmentCost[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   const resetData = useCallback(() => {
     setCustomQuestions([]);
@@ -47,88 +45,28 @@ export function useApartmentTourData() {
     setUnits([]);
   }, []);
 
-  // Debounce timer ref
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
-
   // Load data from Firebase Realtime Database on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<ApartmentTourQuestionsData>(
+    DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
+    resetData,
+  );
+
+  // Update local state when data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      if (!user) {
-        setIsLoaded(true);
-        return;
-      }
-
-      try {
-        const data = await getTinyData<ApartmentTourQuestionsData>(
-          DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
-          user.uid,
-        );
-
-        if (data) {
-          setCustomQuestions((prev) => data.customQuestions || prev || []);
-          setApartments((prev) => data.apartments || prev || []);
-          setSelectedApartment(
-            (prev) => data.selectedApartment || prev || null,
-          );
-          setAnswers((prev) => data.answers || prev || []);
-          setNotes((prev) => data.notes || prev || []);
-          setFollowUps((prev) => data.followUps || prev || []);
-          setCosts((prev) => data.costs || prev || []);
-          setUnits((prev) => data.units || prev || []);
-        }
-      } catch (error) {
-        console.error('Error loading apartment tour data:', error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    if (!user) {
-      resetData();
+    if (loadedData) {
+      setCustomQuestions(loadedData.customQuestions || []);
+      setApartments(loadedData.apartments || []);
+      setSelectedApartment(loadedData.selectedApartment || null);
+      setAnswers(loadedData.answers || []);
+      setNotes(loadedData.notes || []);
+      setFollowUps(loadedData.followUps || []);
+      setCosts(loadedData.costs || []);
+      setUnits(loadedData.units || []);
     }
-
-    loadData();
-  }, [user, resetData]);
+  }, [loadedData]);
 
   // Save data to Firebase Realtime Database with debouncing
-  useEffect(() => {
-    // Don't save until initial data is loaded
-    if (!isLoaded || !user) return;
-
-    // Clear existing timer
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    // Set new timer to save after 2 seconds of inactivity
-    saveTimerRef.current = setTimeout(() => {
-      const dataToSave: ApartmentTourQuestionsData = {
-        customQuestions,
-        apartments,
-        selectedApartment,
-        answers,
-        notes,
-        followUps,
-        costs,
-        units,
-      };
-
-      saveTinyData(
-        DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
-        user.uid,
-        dataToSave,
-      ).catch((error) => {
-        console.error('Error saving apartment tour data:', error);
-      });
-    }, 2000);
-
-    // Cleanup function
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [
+  const dataToSave: ApartmentTourQuestionsData = {
     customQuestions,
     apartments,
     selectedApartment,
@@ -137,9 +75,8 @@ export function useApartmentTourData() {
     followUps,
     costs,
     units,
-    isLoaded,
-    user,
-  ]);
+  };
+  useTinyDataSaver(DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS, dataToSave, isLoaded);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 

@@ -2,20 +2,17 @@ import { useAuth } from '@hooks/useAuth';
 import {
   DATABASE_PATHS,
   STORAGE_PATHS,
-  getTinyData,
-  saveTinyData,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useCallback, useEffect, useState } from 'react';
 import { Contact, Artifact, PersonalCrmData } from './PersonalCrm.types';
 
 export function usePersonalCrmData() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetData = useCallback(() => {
     setContacts([]);
@@ -23,64 +20,25 @@ export function usePersonalCrmData() {
   }, []);
 
   // Load data from Firebase on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<PersonalCrmData>(
+    DATABASE_PATHS.PERSONAL_CRM,
+    resetData,
+  );
+
+  // Update local state when data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      if (!user) {
-        setIsLoaded(true);
-        return;
-      }
-
-      try {
-        const data = await getTinyData<PersonalCrmData>(
-          DATABASE_PATHS.PERSONAL_CRM,
-          user.uid,
-        );
-
-        if (data) {
-          setContacts(data.contacts || []);
-          setArtifacts(data.artifacts || []);
-        }
-      } catch (error) {
-        console.error('Error loading personal CRM data:', error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    if (!user) {
-      resetData();
+    if (loadedData) {
+      setContacts(loadedData.contacts || []);
+      setArtifacts(loadedData.artifacts || []);
     }
-
-    loadData();
-  }, [user, resetData]);
+  }, [loadedData]);
 
   // Save data to Firebase with debouncing
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(() => {
-      const dataToSave: PersonalCrmData = {
-        contacts,
-        artifacts,
-      };
-
-      saveTinyData(DATABASE_PATHS.PERSONAL_CRM, user.uid, dataToSave).catch(
-        (error) => {
-          console.error('Error saving personal CRM data:', error);
-        },
-      );
-    }, 2000);
-
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [contacts, artifacts, isLoaded, user]);
+  const dataToSave: PersonalCrmData = {
+    contacts,
+    artifacts,
+  };
+  useTinyDataSaver(DATABASE_PATHS.PERSONAL_CRM, dataToSave, isLoaded);
 
   // Upload avatar image
   const uploadAvatar = useCallback(
