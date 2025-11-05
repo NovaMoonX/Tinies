@@ -1,9 +1,117 @@
-import { useState, useCallback } from 'react';
-import { Destination, Photo, DestinationType } from './TravelTracker.types';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Destination, Photo, DestinationType, TravelTrackerData } from './TravelTracker.types';
+import { useAuth } from '@hooks/useAuth';
+import {
+  DATABASE_PATHS,
+  STORAGE_PATHS,
+  getTinyData,
+  saveTinyData,
+  uploadFile,
+  deleteFile,
+} from '@lib/firebase';
 
 export function useTravelTracker() {
+  const { user } = useAuth();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetData = useCallback(() => {
+    setDestinations([]);
+    setSelectedDestination(null);
+  }, []);
+
+  // Load data from Firebase on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) {
+        setIsLoaded(true);
+        return;
+      }
+
+      try {
+        const data = await getTinyData<TravelTrackerData>(
+          DATABASE_PATHS.TRAVEL_TRACKER,
+          user.uid,
+        );
+
+        if (data) {
+          setDestinations(data.destinations || []);
+        }
+      } catch (error) {
+        console.error('Error loading travel tracker data:', error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    if (!user) {
+      resetData();
+    }
+
+    loadData();
+  }, [user, resetData]);
+
+  // Save data to Firebase with debouncing
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = setTimeout(() => {
+      const dataToSave: TravelTrackerData = {
+        destinations,
+      };
+
+      saveTinyData(DATABASE_PATHS.TRAVEL_TRACKER, user.uid, dataToSave).catch(
+        (error) => {
+          console.error('Error saving travel tracker data:', error);
+        },
+      );
+    }, 2000);
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [destinations, isLoaded, user]);
+
+  // Upload photo to Firebase Storage
+  const uploadPhoto = useCallback(
+    async (destinationId: string, file: File): Promise<string> => {
+      if (!user) throw new Error('User not authenticated');
+
+      const photoId = `photo-${Date.now()}`;
+      const path = `tinies/${STORAGE_PATHS.TRAVEL_TRACKER}/${user.uid}/${destinationId}/${photoId}`;
+      const downloadURL = await uploadFile(path, file);
+      return downloadURL;
+    },
+    [user],
+  );
+
+  // Delete photo from Firebase Storage
+  const deletePhotoFile = useCallback(
+    async (photoUrl: string): Promise<void> => {
+      if (!user) return;
+
+      try {
+        const urlObj = new URL(photoUrl);
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+)/);
+        if (pathMatch) {
+          const encodedPath = pathMatch[1].split('?')[0];
+          const path = decodeURIComponent(encodedPath);
+          await deleteFile(path);
+        }
+      } catch (error) {
+        console.error('Error deleting photo file:', error);
+      }
+    },
+    [user],
+  );
 
   const addDestination = useCallback((
     type: DestinationType,
@@ -74,7 +182,15 @@ export function useTravelTracker() {
     });
   }, []);
 
-  const deletePhoto = useCallback((destinationId: string, photoId: string) => {
+  const deletePhoto = useCallback(async (destinationId: string, photoId: string) => {
+    // Find the photo to get its URL for deletion from storage
+    const destination = destinations.find((d) => d.id === destinationId);
+    const photo = destination?.photos.find((p) => p.id === photoId);
+    
+    if (photo?.url) {
+      await deletePhotoFile(photo.url);
+    }
+
     setDestinations((prev) => {
       const result = prev.map((d) =>
         d.id === destinationId
@@ -83,7 +199,7 @@ export function useTravelTracker() {
       );
       return result;
     });
-  }, []);
+  }, [destinations, deletePhotoFile]);
 
   const updatePhotoCaption = useCallback((
     destinationId: string,
@@ -122,5 +238,6 @@ export function useTravelTracker() {
     deletePhoto,
     updatePhotoCaption,
     getDestination,
+    uploadPhoto,
   };
 }

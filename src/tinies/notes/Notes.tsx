@@ -11,9 +11,10 @@ import {
   sortNotes,
 } from './Notes.utils';
 import TinyPage from '@ui/layout/TinyPage';
+import { useNotesData } from './Notes.hooks';
 
 export function Notes() {
-  const [notes, setNotes] = useState<Note[]>([]);
+  const { notes, setNotes } = useNotesData();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
