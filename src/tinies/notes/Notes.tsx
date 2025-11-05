@@ -185,7 +185,7 @@ export function Notes() {
       {/* Add Note Button */}
       {filters.status === 'active' && (
         <div className='flex justify-center'>
-          <Button onClick={() => setIsAddModalOpen(true)} size='lg'>
+          <Button onClick={() => setIsAddModalOpen(true)}>
             <Plus className='h-5 w-5' />
             Add Note
           </Button>
