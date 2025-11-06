@@ -33,3 +33,8 @@ export interface NoteFilters {
   selectedColors: NoteColor[];
   status: NoteStatus;
 }
+
+export interface NotesData extends Record<string, unknown> {
+  notes: Note[];
+}
+

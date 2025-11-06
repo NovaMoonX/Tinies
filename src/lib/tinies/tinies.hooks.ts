@@ -8,11 +8,8 @@ import { useEffect, useRef, useState } from 'react';
  * @param defaults - Default values for all fields
  * @returns Complete data object with all fields
  */
-function withDefaults<T extends Record<string, unknown>>(
-  data: Partial<T>,
-  defaults: T,
-): T {
-  return { ...defaults, ...data };
+export function withDefaults<T>(data: Partial<T>, defaults: T): T {
+  return { ...defaults, ...data } as T;
 }
 
 /**
@@ -98,5 +95,4 @@ export function useTinyDataSaver<T extends Record<string, unknown>>(
   }, [data, isLoaded, user, tinyPath, debounceMs]);
 }
 
-// Export the utility function for use in individual tiny hooks
-export { withDefaults };
+

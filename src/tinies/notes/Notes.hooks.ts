@@ -1,30 +1,8 @@
 import { FIREBASE_TINY_PATH } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
-import { Note } from './Notes.types';
-
-export interface NotesData extends Record<string, unknown> {
-  notes: Note[];
-}
-
-const defaultNotesData: NotesData = {
-  notes: [],
-};
-
-const defaultNote: Note = {
-  id: '',
-  title: '',
-  content: '',
-  list: null,
-  emoji: null,
-  color: 'default',
-  tags: [],
-  isPinned: false,
-  status: 'active',
-  createdAt: 0,
-  lastEditedAt: 0,
-  trashedAt: null,
-};
+import { defaultNote, defaultNotesData } from './Notes.defaults';
+import { Note, NotesData } from './Notes.types';
 
 export function useNotesData() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -45,12 +23,9 @@ export function useNotesData() {
       const normalized = withDefaults(loadedData, defaultNotesData);
       // Normalize each individual note
       const normalizedNotes = normalized.notes.map((note) =>
-        withDefaults(
-          note as Partial<Note> as Partial<Record<string, unknown>>,
-          defaultNote as unknown as Record<string, unknown>,
-        ),
+        withDefaults<Note>(note, defaultNote),
       );
-      setNotes(normalizedNotes as unknown as Note[]);
+      setNotes(normalizedNotes);
     }
   }, [loadedData]);
 

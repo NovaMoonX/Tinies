@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Car,
-  ServiceEntry,
-  ServiceLocation,
+  CarMaintenanceData,
   CarPart,
   FileAttachment,
-  CarMaintenanceData,
+  ServiceEntry,
+  ServiceLocation,
 } from './CarMaintenance.types';
 import {
   generateId,
@@ -19,68 +19,14 @@ import {
   deleteFile,
 } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
-
-const defaultCarMaintenanceData: CarMaintenanceData = {
-  cars: [],
-  selectedCar: null,
-  serviceEntries: [],
-  serviceLocations: [],
-  customCarParts: [],
-};
-
-const defaultCar: Car = {
-  id: '',
-  name: '',
-  make: '',
-  model: '',
-  year: null,
-  vin: '',
-  licensePlate: '',
-  mileage: null,
-  notes: '',
-};
-
-const defaultServiceLocation: ServiceLocation = {
-  id: '',
-  name: '',
-  address: '',
-  phoneNumber: '',
-  website: '',
-  email: '',
-  notes: '',
-};
-
-const defaultFileAttachment: FileAttachment = {
-  id: '',
-  name: '',
-  url: '',
-  type: 'document',
-  size: 0,
-};
-
-const defaultCarPart: CarPart = {
-  id: '',
-  name: '',
-  category: 'internal',
-  isCustom: false,
-};
-
-const defaultServiceEntry: ServiceEntry = {
-  id: '',
-  carId: '',
-  serviceType: '',
-  isRoutine: false,
-  title: '',
-  description: '',
-  date: '',
-  time: '',
-  locationId: null,
-  mileage: null,
-  cost: null,
-  notes: '',
-  attachments: [],
-  carParts: [],
-};
+import {
+  defaultCar,
+  defaultCarMaintenanceData,
+  defaultCarPart,
+  defaultFileAttachment,
+  defaultServiceEntry,
+  defaultServiceLocation,
+} from './CarMaintenance.defaults';
 
 export function useCarMaintenance() {
   const { user } = useAuth();
@@ -114,50 +60,35 @@ export function useCarMaintenance() {
       
       // Normalize each individual car
       const normalizedCars = normalized.cars.map((car) =>
-        withDefaults(
-          car as Partial<Car> as Partial<Record<string, unknown>>,
-          defaultCar as unknown as Record<string, unknown>,
-        ),
+        withDefaults(car, defaultCar),
       );
       
       // Normalize each individual service location
       const normalizedServiceLocations = normalized.serviceLocations.map((location) =>
-        withDefaults(
-          location as Partial<ServiceLocation> as Partial<Record<string, unknown>>,
-          defaultServiceLocation as unknown as Record<string, unknown>,
-        ),
+        withDefaults(location, defaultServiceLocation),
       );
       
       // Normalize each individual service entry and its nested objects
       const normalizedServiceEntries = normalized.serviceEntries.map((entry) => {
-        const normalizedEntry = withDefaults(
-          entry as Partial<ServiceEntry> as Partial<Record<string, unknown>>,
-          defaultServiceEntry as unknown as Record<string, unknown>,
-        );
+        const normalizedEntry = withDefaults(entry, defaultServiceEntry);
         return {
           ...normalizedEntry,
-          attachments: (normalizedEntry.attachments as FileAttachment[]).map((attachment) =>
-            withDefaults(
-              attachment as Partial<FileAttachment> as Partial<Record<string, unknown>>,
-              defaultFileAttachment as unknown as Record<string, unknown>,
-            ),
+          attachments: normalizedEntry.attachments.map((attachment) =>
+            withDefaults(attachment, defaultFileAttachment),
           ),
         };
       });
       
       // Normalize each individual custom car part
       const normalizedCustomCarParts = normalized.customCarParts.map((part) =>
-        withDefaults(
-          part as Partial<CarPart> as Partial<Record<string, unknown>>,
-          defaultCarPart as unknown as Record<string, unknown>,
-        ),
+        withDefaults(part, defaultCarPart),
       );
       
-      setCars(normalizedCars as unknown as Car[]);
+      setCars(normalizedCars);
       setSelectedCar(normalized.selectedCar);
-      setServiceEntries(normalizedServiceEntries as unknown as ServiceEntry[]);
-      setServiceLocations(normalizedServiceLocations as unknown as ServiceLocation[]);
-      setCustomCarParts(normalizedCustomCarParts as unknown as CarPart[]);
+      setServiceEntries(normalizedServiceEntries);
+      setServiceLocations(normalizedServiceLocations);
+      setCustomCarParts(normalizedCustomCarParts);
     }
   }, [loadedData]);
 

@@ -220,6 +220,40 @@ export interface CalculatorState {
 }
 ```
 
+#### Defaults File
+
+**File:** `Calculator.defaults.ts`
+
+This file contains default values for all data objects used in Firebase persistence. Every tiny that persists data to Firebase must have a defaults file.
+
+```typescript
+import { CalculatorState, CalculatorData } from './Calculator.types';
+
+export interface CalculatorData extends Record<string, unknown> {
+  history: CalculatorOperation[];
+  savedValues: number[];
+}
+
+export const defaultCalculatorData: CalculatorData = {
+  history: [],
+  savedValues: [],
+};
+
+export const defaultCalculatorState: CalculatorState = {
+  display: '0',
+  previousValue: null,
+  operation: null,
+};
+
+export type { CalculatorData };
+```
+
+**Key Points:**
+- Define a data interface that extends `Record<string, unknown>` for the top-level Firebase data
+- Export default values for every object type that will be normalized when loading from Firebase
+- Re-export the data interface as a type for use in the hooks file
+- Use these defaults with the `withDefaults()` utility from `@lib/tinies/tinies.hooks`
+
 #### Data File
 
 **File:** `Calculator.data.ts`
@@ -382,6 +416,7 @@ Add a new lazy-loaded route in `src/routes/AppRoutes.tsx`:
 ### ✅ Allowed File Qualifiers
 
 - `.types.ts` - TypeScript interfaces and types
+- `.defaults.ts` - Default values for Firebase data normalization (required for tinies with persistence)
 - `.data.ts` - Static data, constants, and arrays
 - `.utils.ts` - Pure utility functions
 - `.hooks.ts` - Custom React hooks
@@ -399,6 +434,7 @@ Add a new lazy-loaded route in `src/routes/AppRoutes.tsx`:
 src/tinies/calculator/
 ├── Calculator.tsx          # Main component (required)
 ├── Calculator.types.ts     # Types and interfaces (never have undefined fields. Use null instead)
+├── Calculator.defaults.ts  # Default values for Firebase data (required if using Firebase)
 ├── Calculator.data.ts      # Static data
 ├── Calculator.utils.ts     # Utility functions
 ├── Calculator.hooks.ts     # Custom hooks

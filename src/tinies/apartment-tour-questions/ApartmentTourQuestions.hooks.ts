@@ -19,81 +19,18 @@ import {
   Question,
   Unit,
 } from './ApartmentTourQuestions.types';
-
-const defaultApartmentTourData: ApartmentTourQuestionsData = {
-  customQuestions: [],
-  apartments: [],
-  selectedApartment: null,
-  answers: [],
-  notes: [],
-  followUps: [],
-  costs: [],
-  units: [],
-};
-
-const defaultQuestion: Question = {
-  id: '',
-  category: '',
-  question: '',
-  isCustom: false,
-  associatedApartments: [],
-};
-
-const defaultCustomLink: CustomLink = {
-  id: '',
-  label: '',
-  url: '',
-};
-
-const defaultApartment: Apartment = {
-  id: '',
-  name: '',
-  address: '',
-  website: '',
-  phoneNumber: '',
-  email: '',
-  customLinks: [],
-  keyAmenities: [],
-};
-
-const defaultUnit: Unit = {
-  id: '',
-  name: '',
-  apartmentId: '',
-  rentPrice: null,
-};
-
-const defaultAnswer: Answer = {
-  questionId: '',
-  apartmentId: '',
-  answer: '',
-};
-
-const defaultApartmentNote: ApartmentNote = {
-  apartmentId: '',
-  note: '',
-};
-
-const defaultFollowUpItem: FollowUpItem = {
-  id: '',
-  apartmentId: '',
-  text: '',
-  completed: false,
-};
-
-const defaultCostItem: CostItem = {
-  id: '',
-  label: '',
-  amount: 0,
-  isCustom: false,
-  unitId: null,
-  isOneTime: false,
-};
-
-const defaultApartmentCost: ApartmentCost = {
-  apartmentId: '',
-  costs: [],
-};
+import {
+  defaultAnswer,
+  defaultApartment,
+  defaultApartmentCost,
+  defaultApartmentNote,
+  defaultApartmentTourData,
+  defaultCostItem,
+  defaultCustomLink,
+  defaultFollowUpItem,
+  defaultQuestion,
+  defaultUnit,
+} from './ApartmentTourQuestions.defaults';
 
 export function useApartmentTourData() {
   const actionModal = useActionModal();
@@ -133,86 +70,59 @@ export function useApartmentTourData() {
       
       // Normalize each individual question
       const normalizedCustomQuestions = normalized.customQuestions.map((question) =>
-        withDefaults(
-          question as Partial<Question> as Partial<Record<string, unknown>>,
-          defaultQuestion as unknown as Record<string, unknown>,
-        ),
+        withDefaults(question, defaultQuestion),
       );
       
       // Normalize each individual apartment and its nested objects
       const normalizedApartments = normalized.apartments.map((apartment) => {
-        const normalizedApartment = withDefaults(
-          apartment as Partial<Apartment> as Partial<Record<string, unknown>>,
-          defaultApartment as unknown as Record<string, unknown>,
-        );
+        const normalizedApartment = withDefaults(apartment, defaultApartment);
         return {
           ...normalizedApartment,
-          customLinks: (normalizedApartment.customLinks as CustomLink[]).map((link) =>
-            withDefaults(
-              link as Partial<CustomLink> as Partial<Record<string, unknown>>,
-              defaultCustomLink as unknown as Record<string, unknown>,
-            ),
+          customLinks: normalizedApartment.customLinks.map((link) =>
+            withDefaults(link, defaultCustomLink),
           ),
         };
       });
       
       // Normalize each individual unit
       const normalizedUnits = normalized.units.map((unit) =>
-        withDefaults(
-          unit as Partial<Unit> as Partial<Record<string, unknown>>,
-          defaultUnit as unknown as Record<string, unknown>,
-        ),
+        withDefaults(unit, defaultUnit),
       );
       
       // Normalize each individual answer
       const normalizedAnswers = normalized.answers.map((answer) =>
-        withDefaults(
-          answer as Partial<Answer> as Partial<Record<string, unknown>>,
-          defaultAnswer as unknown as Record<string, unknown>,
-        ),
+        withDefaults(answer, defaultAnswer),
       );
       
       // Normalize each individual note
       const normalizedNotes = normalized.notes.map((note) =>
-        withDefaults(
-          note as Partial<ApartmentNote> as Partial<Record<string, unknown>>,
-          defaultApartmentNote as unknown as Record<string, unknown>,
-        ),
+        withDefaults(note, defaultApartmentNote),
       );
       
       // Normalize each individual follow-up
       const normalizedFollowUps = normalized.followUps.map((followUp) =>
-        withDefaults(
-          followUp as Partial<FollowUpItem> as Partial<Record<string, unknown>>,
-          defaultFollowUpItem as unknown as Record<string, unknown>,
-        ),
+        withDefaults(followUp, defaultFollowUpItem),
       );
       
       // Normalize each individual apartment cost and its nested cost items
       const normalizedCosts = normalized.costs.map((apartmentCost) => {
-        const normalizedApartmentCost = withDefaults(
-          apartmentCost as Partial<ApartmentCost> as Partial<Record<string, unknown>>,
-          defaultApartmentCost as unknown as Record<string, unknown>,
-        );
+        const normalizedApartmentCost = withDefaults(apartmentCost, defaultApartmentCost);
         return {
           ...normalizedApartmentCost,
-          costs: (normalizedApartmentCost.costs as CostItem[]).map((costItem) =>
-            withDefaults(
-              costItem as Partial<CostItem> as Partial<Record<string, unknown>>,
-              defaultCostItem as unknown as Record<string, unknown>,
-            ),
+          costs: normalizedApartmentCost.costs.map((costItem) =>
+            withDefaults(costItem, defaultCostItem),
           ),
         };
       });
       
-      setCustomQuestions(normalizedCustomQuestions as unknown as Question[]);
-      setApartments(normalizedApartments as unknown as Apartment[]);
+      setCustomQuestions(normalizedCustomQuestions);
+      setApartments(normalizedApartments);
       setSelectedApartment(normalized.selectedApartment);
-      setAnswers(normalizedAnswers as unknown as Answer[]);
-      setNotes(normalizedNotes as unknown as ApartmentNote[]);
-      setFollowUps(normalizedFollowUps as unknown as FollowUpItem[]);
-      setCosts(normalizedCosts as unknown as ApartmentCost[]);
-      setUnits(normalizedUnits as unknown as Unit[]);
+      setAnswers(normalizedAnswers);
+      setNotes(normalizedNotes);
+      setFollowUps(normalizedFollowUps);
+      setCosts(normalizedCosts);
+      setUnits(normalizedUnits);
     }
   }, [loadedData]);
 

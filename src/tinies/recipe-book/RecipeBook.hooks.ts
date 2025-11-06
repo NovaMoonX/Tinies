@@ -6,37 +6,12 @@ import {
 } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
-import { Recipe, Ingredient } from './RecipeBook.types';
-
-export interface RecipeBookData extends Record<string, unknown> {
-  recipes: Recipe[];
-}
-
-const defaultRecipeBookData: RecipeBookData = {
-  recipes: [],
-};
-
-const defaultIngredient: Ingredient = {
-  id: '',
-  name: '',
-  amount: '',
-  unit: '',
-};
-
-const defaultRecipe: Recipe = {
-  id: '',
-  name: '',
-  type: 'lunch',
-  description: '',
-  prepTime: 0,
-  cookTime: 0,
-  servings: 0,
-  ingredients: [],
-  instructions: [],
-  tags: [],
-  imageUrl: null,
-  dateAdded: '',
-};
+import {
+  defaultIngredient,
+  defaultRecipe,
+  defaultRecipeBookData,
+} from './RecipeBook.defaults';
+import { Ingredient, Recipe, RecipeBookData } from './RecipeBook.types';
 
 export function useRecipeBookData() {
   const { user } = useAuth();
@@ -58,21 +33,15 @@ export function useRecipeBookData() {
       const normalized = withDefaults(loadedData, defaultRecipeBookData);
       // Normalize each individual recipe and its ingredients
       const normalizedRecipes = normalized.recipes.map((recipe) => {
-        const normalizedRecipe = withDefaults(
-          recipe as Partial<Recipe> as Partial<Record<string, unknown>>,
-          defaultRecipe as unknown as Record<string, unknown>,
-        );
+        const normalizedRecipe = withDefaults<Recipe>(recipe, defaultRecipe);
         return {
           ...normalizedRecipe,
-          ingredients: (normalizedRecipe.ingredients as Ingredient[]).map((ingredient) =>
-            withDefaults(
-              ingredient as Partial<Ingredient> as Partial<Record<string, unknown>>,
-              defaultIngredient as unknown as Record<string, unknown>,
-            ),
+          ingredients: normalizedRecipe.ingredients.map((ingredient) =>
+            withDefaults<Ingredient>(ingredient, defaultIngredient),
           ),
         };
       });
-      setRecipes(normalizedRecipes as unknown as Recipe[]);
+      setRecipes(normalizedRecipes);
     }
   }, [loadedData]);
 

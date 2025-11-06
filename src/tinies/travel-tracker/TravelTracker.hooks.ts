@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Destination, Photo, DestinationType, TravelTrackerData } from './TravelTracker.types';
+import { Destination, DestinationType, Photo, TravelTrackerData } from './TravelTracker.types';
 import { useAuth } from '@hooks/useAuth';
 import {
   FIREBASE_TINY_PATH,
@@ -7,26 +7,11 @@ import {
   deleteFile,
 } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
-
-const defaultTravelTrackerData: TravelTrackerData = {
-  destinations: [],
-};
-
-const defaultPhoto: Photo = {
-  id: '',
-  url: '',
-  caption: '',
-};
-
-const defaultDestination: Destination = {
-  id: '',
-  type: 'us-state',
-  name: '',
-  country: null,
-  description: '',
-  photos: [],
-  visitDate: '',
-};
+import {
+  defaultDestination,
+  defaultPhoto,
+  defaultTravelTrackerData,
+} from './TravelTracker.defaults';
 
 export function useTravelTracker() {
   const { user } = useAuth();
@@ -50,21 +35,15 @@ export function useTravelTracker() {
       const normalized = withDefaults(loadedData, defaultTravelTrackerData);
       // Normalize each individual destination and its photos
       const normalizedDestinations = normalized.destinations.map((destination) => {
-        const normalizedDestination = withDefaults(
-          destination as Partial<Destination> as Partial<Record<string, unknown>>,
-          defaultDestination as unknown as Record<string, unknown>,
-        );
+        const normalizedDestination = withDefaults<Destination>(destination, defaultDestination);
         return {
           ...normalizedDestination,
-          photos: (normalizedDestination.photos as Photo[]).map((photo) =>
-            withDefaults(
-              photo as Partial<Photo> as Partial<Record<string, unknown>>,
-              defaultPhoto as unknown as Record<string, unknown>,
-            ),
+          photos: normalizedDestination.photos.map((photo) =>
+            withDefaults<Photo>(photo, defaultPhoto),
           ),
         };
       });
-      setDestinations(normalizedDestinations as unknown as Destination[]);
+      setDestinations(normalizedDestinations);
     }
   }, [loadedData]);
 
