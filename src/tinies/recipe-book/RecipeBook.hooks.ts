@@ -4,13 +4,17 @@ import {
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
-import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { Recipe } from './RecipeBook.types';
 
 export interface RecipeBookData extends Record<string, unknown> {
   recipes: Recipe[];
 }
+
+const defaultRecipeBookData: RecipeBookData = {
+  recipes: [],
+};
 
 export function useRecipeBookData() {
   const { user } = useAuth();
@@ -29,7 +33,8 @@ export function useRecipeBookData() {
   // Update local state when data is loaded
   useEffect(() => {
     if (loadedData) {
-      setRecipes(loadedData.recipes || []);
+      const normalized = withDefaults(loadedData, defaultRecipeBookData);
+      setRecipes(normalized.recipes);
     }
   }, [loadedData]);
 

@@ -6,7 +6,11 @@ import {
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
-import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
+
+const defaultTravelTrackerData: TravelTrackerData = {
+  destinations: [],
+};
 
 export function useTravelTracker() {
   const { user } = useAuth();
@@ -27,7 +31,8 @@ export function useTravelTracker() {
   // Update local state when data is loaded
   useEffect(() => {
     if (loadedData) {
-      setDestinations(loadedData.destinations || []);
+      const normalized = withDefaults(loadedData, defaultTravelTrackerData);
+      setDestinations(normalized.destinations);
     }
   }, [loadedData]);
 

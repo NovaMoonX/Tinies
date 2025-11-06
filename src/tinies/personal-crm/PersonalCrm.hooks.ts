@@ -4,9 +4,14 @@ import {
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
-import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { Contact, Artifact, PersonalCrmData } from './PersonalCrm.types';
+
+const defaultPersonalCrmData: PersonalCrmData = {
+  contacts: [],
+  artifacts: [],
+};
 
 export function usePersonalCrmData() {
   const { user } = useAuth();
@@ -27,8 +32,9 @@ export function usePersonalCrmData() {
   // Update local state when data is loaded
   useEffect(() => {
     if (loadedData) {
-      setContacts(loadedData.contacts || []);
-      setArtifacts(loadedData.artifacts || []);
+      const normalized = withDefaults(loadedData, defaultPersonalCrmData);
+      setContacts(normalized.contacts);
+      setArtifacts(normalized.artifacts);
     }
   }, [loadedData]);
 

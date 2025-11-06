@@ -1,5 +1,5 @@
 import { FIREBASE_TINY_PATH } from '@lib/firebase';
-import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -19,6 +19,17 @@ import {
   Question,
   Unit,
 } from './ApartmentTourQuestions.types';
+
+const defaultApartmentTourData: ApartmentTourQuestionsData = {
+  customQuestions: [],
+  apartments: [],
+  selectedApartment: null,
+  answers: [],
+  notes: [],
+  followUps: [],
+  costs: [],
+  units: [],
+};
 
 export function useApartmentTourData() {
   const actionModal = useActionModal();
@@ -54,14 +65,15 @@ export function useApartmentTourData() {
   // Update local state when data is loaded
   useEffect(() => {
     if (loadedData) {
-      setCustomQuestions(loadedData.customQuestions || []);
-      setApartments(loadedData.apartments || []);
-      setSelectedApartment(loadedData.selectedApartment || null);
-      setAnswers(loadedData.answers || []);
-      setNotes(loadedData.notes || []);
-      setFollowUps(loadedData.followUps || []);
-      setCosts(loadedData.costs || []);
-      setUnits(loadedData.units || []);
+      const normalized = withDefaults(loadedData, defaultApartmentTourData);
+      setCustomQuestions(normalized.customQuestions);
+      setApartments(normalized.apartments);
+      setSelectedApartment(normalized.selectedApartment);
+      setAnswers(normalized.answers);
+      setNotes(normalized.notes);
+      setFollowUps(normalized.followUps);
+      setCosts(normalized.costs);
+      setUnits(normalized.units);
     }
   }, [loadedData]);
 

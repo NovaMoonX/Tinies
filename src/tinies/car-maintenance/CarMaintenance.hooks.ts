@@ -18,7 +18,15 @@ import {
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
-import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
+
+const defaultCarMaintenanceData: CarMaintenanceData = {
+  cars: [],
+  selectedCar: null,
+  serviceEntries: [],
+  serviceLocations: [],
+  customCarParts: [],
+};
 
 export function useCarMaintenance() {
   const { user } = useAuth();
@@ -48,11 +56,12 @@ export function useCarMaintenance() {
   // Update local state when data is loaded
   useEffect(() => {
     if (loadedData) {
-      setCars(loadedData.cars || []);
-      setSelectedCar(loadedData.selectedCar || null);
-      setServiceEntries(loadedData.serviceEntries || []);
-      setServiceLocations(loadedData.serviceLocations || []);
-      setCustomCarParts(loadedData.customCarParts || []);
+      const normalized = withDefaults(loadedData, defaultCarMaintenanceData);
+      setCars(normalized.cars);
+      setSelectedCar(normalized.selectedCar);
+      setServiceEntries(normalized.serviceEntries);
+      setServiceLocations(normalized.serviceLocations);
+      setCustomCarParts(normalized.customCarParts);
     }
   }, [loadedData]);
 
