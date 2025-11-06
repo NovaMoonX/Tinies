@@ -2,8 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Destination, Photo, DestinationType, TravelTrackerData } from './TravelTracker.types';
 import { useAuth } from '@hooks/useAuth';
 import {
-  DATABASE_PATHS,
-  STORAGE_PATHS,
+  FIREBASE_TINY_PATH,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
@@ -21,7 +20,7 @@ export function useTravelTracker() {
 
   // Load data from Firebase on mount
   const { data: loadedData, isLoaded } = useTinyDataLoader<TravelTrackerData>(
-    DATABASE_PATHS.TRAVEL_TRACKER,
+    FIREBASE_TINY_PATH.TRAVEL_TRACKER,
     resetData,
   );
 
@@ -36,7 +35,7 @@ export function useTravelTracker() {
   const dataToSave: TravelTrackerData = {
     destinations,
   };
-  useTinyDataSaver(DATABASE_PATHS.TRAVEL_TRACKER, dataToSave, isLoaded);
+  useTinyDataSaver(FIREBASE_TINY_PATH.TRAVEL_TRACKER, dataToSave, isLoaded);
 
   // Upload photo to Firebase Storage
   const uploadPhoto = useCallback(
@@ -44,7 +43,7 @@ export function useTravelTracker() {
       if (!user) throw new Error('User not authenticated');
 
       const photoId = `photo-${Date.now()}`;
-      const path = `tinies/${STORAGE_PATHS.TRAVEL_TRACKER}/${user.uid}/${destinationId}/${photoId}`;
+      const path = `tinies/${FIREBASE_TINY_PATH.TRAVEL_TRACKER}/${user.uid}/${destinationId}/${photoId}`;
       const downloadURL = await uploadFile(path, file);
       return downloadURL;
     },

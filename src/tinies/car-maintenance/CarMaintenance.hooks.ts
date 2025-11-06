@@ -14,8 +14,7 @@ import {
 } from './CarMaintenance.utils';
 import { useAuth } from '@hooks/useAuth';
 import {
-  DATABASE_PATHS,
-  STORAGE_PATHS,
+  FIREBASE_TINY_PATH,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
@@ -42,7 +41,7 @@ export function useCarMaintenance() {
 
   // Load data from Firebase on mount
   const { data: loadedData, isLoaded } = useTinyDataLoader<CarMaintenanceData>(
-    DATABASE_PATHS.CAR_MAINTENANCE,
+    FIREBASE_TINY_PATH.CAR_MAINTENANCE,
     resetData,
   );
 
@@ -65,7 +64,7 @@ export function useCarMaintenance() {
     serviceLocations,
     customCarParts,
   };
-  useTinyDataSaver(DATABASE_PATHS.CAR_MAINTENANCE, dataToSave, isLoaded);
+  useTinyDataSaver(FIREBASE_TINY_PATH.CAR_MAINTENANCE, dataToSave, isLoaded);
 
   // Upload file to Firebase Storage
   const uploadAttachment = useCallback(
@@ -73,7 +72,7 @@ export function useCarMaintenance() {
       if (!user) throw new Error('User not authenticated');
 
       const attachmentId = `attachment-${Date.now()}`;
-      const path = `tinies/${STORAGE_PATHS.CAR_MAINTENANCE}/${user.uid}/${serviceEntryId}/${attachmentId}-${file.name}`;
+      const path = `tinies/${FIREBASE_TINY_PATH.CAR_MAINTENANCE}/${user.uid}/${serviceEntryId}/${attachmentId}-${file.name}`;
       const downloadURL = await uploadFile(path, file);
 
       const attachment: FileAttachment = {

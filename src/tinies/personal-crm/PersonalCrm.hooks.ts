@@ -1,7 +1,6 @@
 import { useAuth } from '@hooks/useAuth';
 import {
-  DATABASE_PATHS,
-  STORAGE_PATHS,
+  FIREBASE_TINY_PATH,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
@@ -21,7 +20,7 @@ export function usePersonalCrmData() {
 
   // Load data from Firebase on mount
   const { data: loadedData, isLoaded } = useTinyDataLoader<PersonalCrmData>(
-    DATABASE_PATHS.PERSONAL_CRM,
+    FIREBASE_TINY_PATH.PERSONAL_CRM,
     resetData,
   );
 
@@ -38,14 +37,14 @@ export function usePersonalCrmData() {
     contacts,
     artifacts,
   };
-  useTinyDataSaver(DATABASE_PATHS.PERSONAL_CRM, dataToSave, isLoaded);
+  useTinyDataSaver(FIREBASE_TINY_PATH.PERSONAL_CRM, dataToSave, isLoaded);
 
   // Upload avatar image
   const uploadAvatar = useCallback(
     async (contactId: string, file: File): Promise<string> => {
       if (!user) throw new Error('User not authenticated');
 
-      const path = `tinies/${STORAGE_PATHS.PERSONAL_CRM}/${user.uid}/avatars/${contactId}/${file.name}`;
+      const path = `tinies/${FIREBASE_TINY_PATH.PERSONAL_CRM}/${user.uid}/avatars/${contactId}/${file.name}`;
       const downloadURL = await uploadFile(path, file);
       return downloadURL;
     },
@@ -77,7 +76,7 @@ export function usePersonalCrmData() {
     async (artifactId: string, file: File): Promise<string> => {
       if (!user) throw new Error('User not authenticated');
 
-      const path = `tinies/${STORAGE_PATHS.PERSONAL_CRM}/${user.uid}/artifacts/${artifactId}/${file.name}`;
+      const path = `tinies/${FIREBASE_TINY_PATH.PERSONAL_CRM}/${user.uid}/artifacts/${artifactId}/${file.name}`;
       const downloadURL = await uploadFile(path, file);
       return downloadURL;
     },

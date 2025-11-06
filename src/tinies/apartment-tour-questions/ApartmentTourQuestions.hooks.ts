@@ -1,4 +1,4 @@
-import { DATABASE_PATHS } from '@lib/firebase';
+import { FIREBASE_TINY_PATH } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { useCallback, useEffect, useState } from 'react';
@@ -47,7 +47,7 @@ export function useApartmentTourData() {
 
   // Load data from Firebase Realtime Database on mount
   const { data: loadedData, isLoaded } = useTinyDataLoader<ApartmentTourQuestionsData>(
-    DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS,
+    FIREBASE_TINY_PATH.APARTMENT_TOUR_QUESTIONS,
     resetData,
   );
 
@@ -76,7 +76,7 @@ export function useApartmentTourData() {
     costs,
     units,
   };
-  useTinyDataSaver(DATABASE_PATHS.APARTMENT_TOUR_QUESTIONS, dataToSave, isLoaded);
+  useTinyDataSaver(FIREBASE_TINY_PATH.APARTMENT_TOUR_QUESTIONS, dataToSave, isLoaded);
 
   const allQuestions = [...QUESTIONS, ...customQuestions];
 

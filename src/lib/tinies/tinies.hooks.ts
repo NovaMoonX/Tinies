@@ -3,8 +3,21 @@ import { getTinyData, saveTinyData } from '@lib/firebase';
 import { useEffect, useRef, useState } from 'react';
 
 /**
+ * Utility function to merge data with defaults, ensuring all fields have values
+ * @param data - Partial data from Firebase (may have missing fields)
+ * @param defaults - Default values for all fields
+ * @returns Complete data object with all fields
+ */
+function withDefaults<T extends Record<string, unknown>>(
+  data: Partial<T>,
+  defaults: T,
+): T {
+  return { ...defaults, ...data };
+}
+
+/**
  * Hook to load data from Firebase Realtime Database for a specific tiny
- * @param tinyPath - The path name from DATABASE_PATHS
+ * @param tinyPath - The path name from FIREBASE_TINY_PATH
  * @param resetData - Callback to reset local state when user logs out
  * @returns Object containing loaded data and loading state
  */
@@ -27,6 +40,8 @@ export function useTinyDataLoader<T extends Record<string, unknown>>(
         const loadedData = await getTinyData<T>(tinyPath, user.uid);
 
         if (loadedData) {
+          // Normalize the data by ensuring all expected fields exist
+          // Firebase may not return fields that were never set or are undefined
           setData(loadedData);
         }
       } catch (error) {
@@ -48,7 +63,7 @@ export function useTinyDataLoader<T extends Record<string, unknown>>(
 
 /**
  * Hook to save data to Firebase Realtime Database with debouncing
- * @param tinyPath - The path name from DATABASE_PATHS
+ * @param tinyPath - The path name from FIREBASE_TINY_PATH
  * @param data - The data to save
  * @param isLoaded - Whether initial data has been loaded (prevents saving before load)
  * @param debounceMs - Debounce time in milliseconds (default: 2000)
@@ -82,3 +97,6 @@ export function useTinyDataSaver<T extends Record<string, unknown>>(
     };
   }, [data, isLoaded, user, tinyPath, debounceMs]);
 }
+
+// Export the utility function for use in individual tiny hooks
+export { withDefaults };

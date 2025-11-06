@@ -1,4 +1,4 @@
-import { DATABASE_PATHS } from '@lib/firebase';
+import { FIREBASE_TINY_PATH } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { Note } from './Notes.types';
@@ -16,7 +16,7 @@ export function useNotesData() {
 
   // Load data from Firebase on mount
   const { data: loadedData, isLoaded } = useTinyDataLoader<NotesData>(
-    DATABASE_PATHS.NOTES,
+    FIREBASE_TINY_PATH.NOTES,
     resetData,
   );
 
@@ -31,7 +31,7 @@ export function useNotesData() {
   const dataToSave: NotesData = {
     notes,
   };
-  useTinyDataSaver(DATABASE_PATHS.NOTES, dataToSave, isLoaded);
+  useTinyDataSaver(FIREBASE_TINY_PATH.NOTES, dataToSave, isLoaded);
 
   return {
     notes,

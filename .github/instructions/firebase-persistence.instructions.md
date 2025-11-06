@@ -8,6 +8,7 @@ All tinies should persist their data to Firebase to provide users with a seamles
 
 1. **Firebase Realtime Database** - For storing structured data (JSON)
 2. **Firebase Storage** - For storing files and images
+3. **Reusable Hooks** - Centralized persistence logic via `useTinyDataLoader` and `useTinyDataSaver`
 
 ## Firebase Realtime Database
 
@@ -25,33 +26,32 @@ export interface MyTinyData extends Record<string, unknown> {
 
 **Important:** Never use `undefined` fields in your types. Use `null` instead.
 
-### Step 2: Add Database Path
+### Step 2: Add Firebase Path
 
-Add your tiny's database path to `src/lib/firebase/firebase.const.ts`:
+Add your tiny's path to `src/lib/firebase/firebase.const.ts`:
 
 ```typescript
-export const DATABASE_PATHS = {
+export const FIREBASE_TINY_PATH = {
   // ... existing paths
   MY_TINY: 'my-tiny',
 } as const;
 ```
 
+This path is used for both Database and Storage operations.
+
 ### Step 3: Create a Hooks File
 
-Create a `.hooks.ts` file for your tiny that handles Firebase persistence. Reference the Apartment Tour Questions tiny as an example:
+Create a `.hooks.ts` file for your tiny that uses the reusable Firebase hooks:
 
 ```typescript
-import { useAuth } from '@hooks/useAuth';
-import { DATABASE_PATHS, getTinyData, saveTinyData } from '@lib/firebase';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { FIREBASE_TINY_PATH } from '@lib/firebase';
+import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useCallback, useEffect, useState } from 'react';
 import { MyTinyData, Item } from './MyTiny.types';
 
 export function useMyTinyData() {
-  const { user } = useAuth();
   const [items, setItems] = useState<Item[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetData = useCallback(() => {
     setItems([]);
@@ -59,64 +59,25 @@ export function useMyTinyData() {
   }, []);
 
   // Load data from Firebase on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<MyTinyData>(
+    FIREBASE_TINY_PATH.MY_TINY,
+    resetData,
+  );
+
+  // Update local state when data is loaded
   useEffect(() => {
-    const loadData = async () => {
-      if (!user) {
-        setIsLoaded(true);
-        return;
-      }
-
-      try {
-        const data = await getTinyData<MyTinyData>(
-          DATABASE_PATHS.MY_TINY,
-          user.uid,
-        );
-
-        if (data) {
-          setItems(data.items || []);
-          setSelectedId(data.selectedId || null);
-        }
-      } catch (error) {
-        console.error('Error loading my tiny data:', error);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    if (!user) {
-      resetData();
+    if (loadedData) {
+      setItems(loadedData.items || []);
+      setSelectedId(loadedData.selectedId || null);
     }
+  }, [loadedData]);
 
-    loadData();
-  }, [user, resetData]);
-
-  // Save data to Firebase with debouncing (2 seconds)
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(() => {
-      const dataToSave: MyTinyData = {
-        items,
-        selectedId,
-      };
-
-      saveTinyData(DATABASE_PATHS.MY_TINY, user.uid, dataToSave).catch(
-        (error) => {
-          console.error('Error saving my tiny data:', error);
-        },
-      );
-    }, 2000);
-
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, [items, selectedId, isLoaded, user]);
+  // Save data to Firebase with debouncing
+  const dataToSave: MyTinyData = {
+    items,
+    selectedId,
+  };
+  useTinyDataSaver(FIREBASE_TINY_PATH.MY_TINY, dataToSave, isLoaded);
 
   return {
     items,
@@ -141,19 +102,45 @@ export function MyTiny() {
 }
 ```
 
+## Handling Missing Fields
+
+Firebase may not return fields that were never set or contain `undefined` values. Always provide default values when extracting data:
+
+```typescript
+useEffect(() => {
+  if (loadedData) {
+    // Use || for arrays and objects that should default to empty
+    setItems(loadedData.items || []);
+    setSettings(loadedData.settings || {});
+    
+    // Use || for strings that should default to empty string
+    setName(loadedData.name || '');
+    
+    // Use || for null values
+    setSelectedId(loadedData.selectedId || null);
+    
+    // Use ?? for booleans to preserve false values
+    setCompleted(loadedData.completed ?? false);
+    setEnabled(loadedData.enabled ?? true);
+  }
+}, [loadedData]);
+```
+
 ## Firebase Storage
 
 For tinies that need to store files or images, use Firebase Storage.
 
-### Step 1: Add Storage Path
+### Step 1: Import Storage Functions
 
-Add your tiny's storage path to `src/lib/firebase/firebase.const.ts`:
+The storage path uses the same `FIREBASE_TINY_PATH` constant:
 
 ```typescript
-export const STORAGE_PATHS = {
-  // ... existing paths
-  MY_TINY: 'my-tiny',
-} as const;
+import { useAuth } from '@hooks/useAuth';
+import {
+  FIREBASE_TINY_PATH,
+  uploadFile,
+  deleteFile,
+} from '@lib/firebase';
 ```
 
 ### Step 2: Add File Upload/Delete Methods to Your Hook
@@ -161,24 +148,16 @@ export const STORAGE_PATHS = {
 Extend your hooks file with file upload and delete functionality:
 
 ```typescript
-import {
-  DATABASE_PATHS,
-  STORAGE_PATHS,
-  getTinyData,
-  saveTinyData,
-  uploadFile,
-  deleteFile,
-} from '@lib/firebase';
-
 export function useMyTinyData() {
-  // ... existing state and effects
+  const { user } = useAuth();
+  // ... existing state and hooks
 
   // Upload file to Firebase Storage
   const uploadItemImage = useCallback(
     async (itemId: string, file: File): Promise<string> => {
       if (!user) throw new Error('User not authenticated');
 
-      const path = \`tinies/\${STORAGE_PATHS.MY_TINY}/\${user.uid}/\${itemId}/\${file.name}\`;
+      const path = `tinies/${FIREBASE_TINY_PATH.MY_TINY}/${user.uid}/${itemId}/${file.name}`;
       const downloadURL = await uploadFile(path, file);
       return downloadURL;
     },
@@ -193,7 +172,7 @@ export function useMyTinyData() {
       try {
         // Extract path from Firebase Storage URL
         const urlObj = new URL(imageUrl);
-        const pathMatch = urlObj.pathname.match(/\\/o\\/(.+)/);
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+)/);
         if (pathMatch) {
           const encodedPath = pathMatch[1].split('?')[0];
           const path = decodeURIComponent(encodedPath);
@@ -225,55 +204,90 @@ The following functions are available from `@lib/firebase`:
 - **listFiles(path)** - List all files in a directory
 - **deleteDirectory(path)** - Delete all files in a directory
 
+## Reusable Hooks
+
+### useTinyDataLoader
+
+Loads data from Firebase Realtime Database with proper authentication and error handling.
+
+```typescript
+const { data: loadedData, isLoaded } = useTinyDataLoader<MyTinyData>(
+  FIREBASE_TINY_PATH.MY_TINY,
+  resetData,
+);
+```
+
+**Parameters:**
+- `tinyPath` - Path from `FIREBASE_TINY_PATH` constant
+- `resetData` - Callback to reset local state when user logs out
+
+**Returns:**
+- `data` - The loaded data (or null if not loaded yet)
+- `isLoaded` - Boolean indicating if the initial load is complete
+
+### useTinyDataSaver
+
+Saves data to Firebase Realtime Database with automatic debouncing.
+
+```typescript
+const dataToSave: MyTinyData = { items, selectedId };
+useTinyDataSaver(FIREBASE_TINY_PATH.MY_TINY, dataToSave, isLoaded);
+```
+
+**Parameters:**
+- `tinyPath` - Path from `FIREBASE_TINY_PATH` constant
+- `data` - The data object to save
+- `isLoaded` - Boolean to prevent saving before initial load completes
+- `debounceMs` - Optional debounce time in milliseconds (default: 2000)
+
 ## Best Practices
 
 ### 1. Debouncing
 
-Always debounce save operations to avoid excessive writes to Firebase. The standard debounce time is **2 seconds**.
+All save operations are automatically debounced by 2 seconds through `useTinyDataSaver`. No need to implement this manually.
 
 ### 2. Loading State
 
-Track loading state with `isLoaded` to prevent saving data before the initial load completes.
+Always use the `isLoaded` state to prevent saving data before the initial load completes:
+
+```typescript
+const { data: loadedData, isLoaded } = useTinyDataLoader<MyTinyData>(
+  FIREBASE_TINY_PATH.MY_TINY,
+  resetData,
+);
+
+// Only saves after isLoaded is true
+useTinyDataSaver(FIREBASE_TINY_PATH.MY_TINY, dataToSave, isLoaded);
+```
 
 ### 3. User Authentication
 
-Always check if the user is authenticated before loading or saving data:
-
-```typescript
-if (!user) {
-  setIsLoaded(true);
-  return;
-}
-```
+The hooks automatically handle user authentication. Data is:
+- Loaded only when user is authenticated
+- Reset when user logs out
+- Scoped to the current user's ID
 
 ### 4. Reset on Logout
 
-Reset all data when the user logs out:
+Always provide a `resetData` callback to clear local state when user logs out:
 
 ```typescript
-if (!user) {
-  resetData();
-}
+const resetData = useCallback(() => {
+  setItems([]);
+  setSelectedId(null);
+}, []);
 ```
 
 ### 5. Error Handling
 
-Always catch and log errors from Firebase operations:
-
-```typescript
-try {
-  await saveTinyData(path, userId, data);
-} catch (error) {
-  console.error('Error saving data:', error);
-}
-```
+Errors are automatically logged by the hooks. No additional error handling is required unless you need custom behavior.
 
 ### 6. File Path Structure
 
 Use a consistent structure for file paths:
 
 ```
-tinies/{STORAGE_PATH}/{userId}/{entityId}/{fileName}
+tinies/{FIREBASE_TINY_PATH}/{userId}/{entityId}/{fileName}
 ```
 
 Example:
@@ -321,20 +335,21 @@ For example:
 
 If you have an existing tiny without Firebase persistence:
 
-1. Define your data type
-2. Add database and storage paths to constants
-3. Create a hooks file with Firebase integration
+1. Define your data type (extends `Record<string, unknown>`)
+2. Add the path to `FIREBASE_TINY_PATH` in `firebase.const.ts`
+3. Create a hooks file using `useTinyDataLoader` and `useTinyDataSaver`
 4. Update your main component to use the new hook
 5. Test that data persists across page refreshes
 6. Test that data resets when user logs out
+7. For file storage, add upload/delete methods using the storage functions
 
 ## Examples
 
 For complete examples, refer to these tinies:
 
-- **Apartment Tour Questions** - Full Firebase Realtime Database integration
-- **Car Maintenance** - Firebase Realtime Database + Storage for file attachments
-- **Travel Tracker** - Firebase Realtime Database + Storage for photos
-- **Recipe Book** - Firebase Realtime Database with support for image uploads
-- **Personal CRM** - Firebase Realtime Database + Storage for avatars and artifact files
 - **Notes** - Simple Firebase Realtime Database integration
+- **Recipe Book** - Database + support for image uploads
+- **Personal CRM** - Database + Storage for avatars and artifact files
+- **Travel Tracker** - Database + Storage for destination photos
+- **Car Maintenance** - Database + Storage for file attachments
+- **Apartment Tour Questions** - Complex data structure with multiple entities

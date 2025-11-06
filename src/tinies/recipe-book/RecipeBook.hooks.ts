@@ -1,7 +1,6 @@
 import { useAuth } from '@hooks/useAuth';
 import {
-  DATABASE_PATHS,
-  STORAGE_PATHS,
+  FIREBASE_TINY_PATH,
   uploadFile,
   deleteFile,
 } from '@lib/firebase';
@@ -23,7 +22,7 @@ export function useRecipeBookData() {
 
   // Load data from Firebase on mount
   const { data: loadedData, isLoaded } = useTinyDataLoader<RecipeBookData>(
-    DATABASE_PATHS.RECIPE_BOOK,
+    FIREBASE_TINY_PATH.RECIPE_BOOK,
     resetData,
   );
 
@@ -38,14 +37,14 @@ export function useRecipeBookData() {
   const dataToSave: RecipeBookData = {
     recipes,
   };
-  useTinyDataSaver(DATABASE_PATHS.RECIPE_BOOK, dataToSave, isLoaded);
+  useTinyDataSaver(FIREBASE_TINY_PATH.RECIPE_BOOK, dataToSave, isLoaded);
 
   // Upload recipe image
   const uploadRecipeImage = useCallback(
     async (recipeId: string, file: File): Promise<string> => {
       if (!user) throw new Error('User not authenticated');
 
-      const path = `tinies/${STORAGE_PATHS.RECIPE_BOOK}/${user.uid}/${recipeId}/${file.name}`;
+      const path = `tinies/${FIREBASE_TINY_PATH.RECIPE_BOOK}/${user.uid}/${recipeId}/${file.name}`;
       const downloadURL = await uploadFile(path, file);
       return downloadURL;
     },
