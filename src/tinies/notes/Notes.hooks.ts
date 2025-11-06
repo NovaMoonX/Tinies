@@ -11,6 +11,21 @@ const defaultNotesData: NotesData = {
   notes: [],
 };
 
+const defaultNote: Note = {
+  id: '',
+  title: '',
+  content: '',
+  list: null,
+  emoji: null,
+  color: 'default',
+  tags: [],
+  isPinned: false,
+  status: 'active',
+  createdAt: 0,
+  lastEditedAt: 0,
+  trashedAt: null,
+};
+
 export function useNotesData() {
   const [notes, setNotes] = useState<Note[]>([]);
 
@@ -28,7 +43,14 @@ export function useNotesData() {
   useEffect(() => {
     if (loadedData) {
       const normalized = withDefaults(loadedData, defaultNotesData);
-      setNotes(normalized.notes);
+      // Normalize each individual note
+      const normalizedNotes = normalized.notes.map((note) =>
+        withDefaults(
+          note as Partial<Note> as Partial<Record<string, unknown>>,
+          defaultNote as unknown as Record<string, unknown>,
+        ),
+      );
+      setNotes(normalizedNotes as unknown as Note[]);
     }
   }, [loadedData]);
 

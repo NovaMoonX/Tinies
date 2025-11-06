@@ -6,7 +6,7 @@ import {
 } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
-import { Recipe } from './RecipeBook.types';
+import { Recipe, Ingredient } from './RecipeBook.types';
 
 export interface RecipeBookData extends Record<string, unknown> {
   recipes: Recipe[];
@@ -14,6 +14,28 @@ export interface RecipeBookData extends Record<string, unknown> {
 
 const defaultRecipeBookData: RecipeBookData = {
   recipes: [],
+};
+
+const defaultIngredient: Ingredient = {
+  id: '',
+  name: '',
+  amount: '',
+  unit: '',
+};
+
+const defaultRecipe: Recipe = {
+  id: '',
+  name: '',
+  type: 'lunch',
+  description: '',
+  prepTime: 0,
+  cookTime: 0,
+  servings: 0,
+  ingredients: [],
+  instructions: [],
+  tags: [],
+  imageUrl: null,
+  dateAdded: '',
 };
 
 export function useRecipeBookData() {
@@ -34,7 +56,23 @@ export function useRecipeBookData() {
   useEffect(() => {
     if (loadedData) {
       const normalized = withDefaults(loadedData, defaultRecipeBookData);
-      setRecipes(normalized.recipes);
+      // Normalize each individual recipe and its ingredients
+      const normalizedRecipes = normalized.recipes.map((recipe) => {
+        const normalizedRecipe = withDefaults(
+          recipe as Partial<Recipe> as Partial<Record<string, unknown>>,
+          defaultRecipe as unknown as Record<string, unknown>,
+        );
+        return {
+          ...normalizedRecipe,
+          ingredients: (normalizedRecipe.ingredients as Ingredient[]).map((ingredient) =>
+            withDefaults(
+              ingredient as Partial<Ingredient> as Partial<Record<string, unknown>>,
+              defaultIngredient as unknown as Record<string, unknown>,
+            ),
+          ),
+        };
+      });
+      setRecipes(normalizedRecipes as unknown as Recipe[]);
     }
   }, [loadedData]);
 

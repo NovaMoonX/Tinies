@@ -31,6 +31,70 @@ const defaultApartmentTourData: ApartmentTourQuestionsData = {
   units: [],
 };
 
+const defaultQuestion: Question = {
+  id: '',
+  category: '',
+  question: '',
+  isCustom: false,
+  associatedApartments: [],
+};
+
+const defaultCustomLink: CustomLink = {
+  id: '',
+  label: '',
+  url: '',
+};
+
+const defaultApartment: Apartment = {
+  id: '',
+  name: '',
+  address: '',
+  website: '',
+  phoneNumber: '',
+  email: '',
+  customLinks: [],
+  keyAmenities: [],
+};
+
+const defaultUnit: Unit = {
+  id: '',
+  name: '',
+  apartmentId: '',
+  rentPrice: null,
+};
+
+const defaultAnswer: Answer = {
+  questionId: '',
+  apartmentId: '',
+  answer: '',
+};
+
+const defaultApartmentNote: ApartmentNote = {
+  apartmentId: '',
+  note: '',
+};
+
+const defaultFollowUpItem: FollowUpItem = {
+  id: '',
+  apartmentId: '',
+  text: '',
+  completed: false,
+};
+
+const defaultCostItem: CostItem = {
+  id: '',
+  label: '',
+  amount: 0,
+  isCustom: false,
+  unitId: null,
+  isOneTime: false,
+};
+
+const defaultApartmentCost: ApartmentCost = {
+  apartmentId: '',
+  costs: [],
+};
+
 export function useApartmentTourData() {
   const actionModal = useActionModal();
 
@@ -66,14 +130,89 @@ export function useApartmentTourData() {
   useEffect(() => {
     if (loadedData) {
       const normalized = withDefaults(loadedData, defaultApartmentTourData);
-      setCustomQuestions(normalized.customQuestions);
-      setApartments(normalized.apartments);
+      
+      // Normalize each individual question
+      const normalizedCustomQuestions = normalized.customQuestions.map((question) =>
+        withDefaults(
+          question as Partial<Question> as Partial<Record<string, unknown>>,
+          defaultQuestion as unknown as Record<string, unknown>,
+        ),
+      );
+      
+      // Normalize each individual apartment and its nested objects
+      const normalizedApartments = normalized.apartments.map((apartment) => {
+        const normalizedApartment = withDefaults(
+          apartment as Partial<Apartment> as Partial<Record<string, unknown>>,
+          defaultApartment as unknown as Record<string, unknown>,
+        );
+        return {
+          ...normalizedApartment,
+          customLinks: (normalizedApartment.customLinks as CustomLink[]).map((link) =>
+            withDefaults(
+              link as Partial<CustomLink> as Partial<Record<string, unknown>>,
+              defaultCustomLink as unknown as Record<string, unknown>,
+            ),
+          ),
+        };
+      });
+      
+      // Normalize each individual unit
+      const normalizedUnits = normalized.units.map((unit) =>
+        withDefaults(
+          unit as Partial<Unit> as Partial<Record<string, unknown>>,
+          defaultUnit as unknown as Record<string, unknown>,
+        ),
+      );
+      
+      // Normalize each individual answer
+      const normalizedAnswers = normalized.answers.map((answer) =>
+        withDefaults(
+          answer as Partial<Answer> as Partial<Record<string, unknown>>,
+          defaultAnswer as unknown as Record<string, unknown>,
+        ),
+      );
+      
+      // Normalize each individual note
+      const normalizedNotes = normalized.notes.map((note) =>
+        withDefaults(
+          note as Partial<ApartmentNote> as Partial<Record<string, unknown>>,
+          defaultApartmentNote as unknown as Record<string, unknown>,
+        ),
+      );
+      
+      // Normalize each individual follow-up
+      const normalizedFollowUps = normalized.followUps.map((followUp) =>
+        withDefaults(
+          followUp as Partial<FollowUpItem> as Partial<Record<string, unknown>>,
+          defaultFollowUpItem as unknown as Record<string, unknown>,
+        ),
+      );
+      
+      // Normalize each individual apartment cost and its nested cost items
+      const normalizedCosts = normalized.costs.map((apartmentCost) => {
+        const normalizedApartmentCost = withDefaults(
+          apartmentCost as Partial<ApartmentCost> as Partial<Record<string, unknown>>,
+          defaultApartmentCost as unknown as Record<string, unknown>,
+        );
+        return {
+          ...normalizedApartmentCost,
+          costs: (normalizedApartmentCost.costs as CostItem[]).map((costItem) =>
+            withDefaults(
+              costItem as Partial<CostItem> as Partial<Record<string, unknown>>,
+              defaultCostItem as unknown as Record<string, unknown>,
+            ),
+          ),
+        };
+      });
+      
+      setCustomQuestions(normalizedCustomQuestions as unknown as Question[]);
+      setApartments(normalizedApartments as unknown as Apartment[]);
       setSelectedApartment(normalized.selectedApartment);
-      setAnswers(normalized.answers);
-      setNotes(normalized.notes);
-      setFollowUps(normalized.followUps);
-      setCosts(normalized.costs);
-      setUnits(normalized.units);
+      setAnswers(normalizedAnswers as unknown as Answer[]);
+      setNotes(normalizedNotes as unknown as ApartmentNote[]);
+      setFollowUps(normalizedFollowUps as unknown as FollowUpItem[]);
+      setCosts(normalizedCosts as unknown as ApartmentCost[]);
+      setUnits(normalizedUnits as unknown as Unit[]);
     }
   }, [loadedData]);
 

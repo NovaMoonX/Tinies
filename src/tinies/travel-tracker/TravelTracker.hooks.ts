@@ -12,6 +12,22 @@ const defaultTravelTrackerData: TravelTrackerData = {
   destinations: [],
 };
 
+const defaultPhoto: Photo = {
+  id: '',
+  url: '',
+  caption: '',
+};
+
+const defaultDestination: Destination = {
+  id: '',
+  type: 'us-state',
+  name: '',
+  country: null,
+  description: '',
+  photos: [],
+  visitDate: '',
+};
+
 export function useTravelTracker() {
   const { user } = useAuth();
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -32,7 +48,23 @@ export function useTravelTracker() {
   useEffect(() => {
     if (loadedData) {
       const normalized = withDefaults(loadedData, defaultTravelTrackerData);
-      setDestinations(normalized.destinations);
+      // Normalize each individual destination and its photos
+      const normalizedDestinations = normalized.destinations.map((destination) => {
+        const normalizedDestination = withDefaults(
+          destination as Partial<Destination> as Partial<Record<string, unknown>>,
+          defaultDestination as unknown as Record<string, unknown>,
+        );
+        return {
+          ...normalizedDestination,
+          photos: (normalizedDestination.photos as Photo[]).map((photo) =>
+            withDefaults(
+              photo as Partial<Photo> as Partial<Record<string, unknown>>,
+              defaultPhoto as unknown as Record<string, unknown>,
+            ),
+          ),
+        };
+      });
+      setDestinations(normalizedDestinations as unknown as Destination[]);
     }
   }, [loadedData]);
 

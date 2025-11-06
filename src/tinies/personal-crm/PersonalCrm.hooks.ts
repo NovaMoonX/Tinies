@@ -6,11 +6,63 @@ import {
 } from '@lib/firebase';
 import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
-import { Contact, Artifact, PersonalCrmData } from './PersonalCrm.types';
+import { Contact, Artifact, PersonalCrmData, PhoneNumber, Email, ContactNote, ArtifactComment } from './PersonalCrm.types';
 
 const defaultPersonalCrmData: PersonalCrmData = {
   contacts: [],
   artifacts: [],
+};
+
+const defaultPhoneNumber: PhoneNumber = {
+  id: '',
+  label: '',
+  number: '',
+};
+
+const defaultEmail: Email = {
+  id: '',
+  label: '',
+  address: '',
+};
+
+const defaultContactNote: ContactNote = {
+  id: '',
+  text: '',
+  dateAdded: '',
+};
+
+const defaultContact: Contact = {
+  id: '',
+  name: '',
+  phones: [],
+  emails: [],
+  birthday: null,
+  relationshipType: 'other',
+  notes: [],
+  interestingFacts: [],
+  likes: [],
+  dislikes: [],
+  avatarUrl: null,
+  dateAdded: '',
+};
+
+const defaultArtifactComment: ArtifactComment = {
+  id: '',
+  text: '',
+  contactId: '',
+  dateAdded: '',
+};
+
+const defaultArtifact: Artifact = {
+  id: '',
+  type: 'text',
+  title: '',
+  content: '',
+  description: '',
+  contactIds: [],
+  comments: [],
+  dateAdded: '',
+  tags: [],
 };
 
 export function usePersonalCrmData() {
@@ -33,8 +85,55 @@ export function usePersonalCrmData() {
   useEffect(() => {
     if (loadedData) {
       const normalized = withDefaults(loadedData, defaultPersonalCrmData);
-      setContacts(normalized.contacts);
-      setArtifacts(normalized.artifacts);
+      
+      // Normalize each individual contact and its nested objects
+      const normalizedContacts = normalized.contacts.map((contact) => {
+        const normalizedContact = withDefaults(
+          contact as Partial<Contact> as Partial<Record<string, unknown>>,
+          defaultContact as unknown as Record<string, unknown>,
+        );
+        return {
+          ...normalizedContact,
+          phones: (normalizedContact.phones as PhoneNumber[]).map((phone) =>
+            withDefaults(
+              phone as Partial<PhoneNumber> as Partial<Record<string, unknown>>,
+              defaultPhoneNumber as unknown as Record<string, unknown>,
+            ),
+          ),
+          emails: (normalizedContact.emails as Email[]).map((email) =>
+            withDefaults(
+              email as Partial<Email> as Partial<Record<string, unknown>>,
+              defaultEmail as unknown as Record<string, unknown>,
+            ),
+          ),
+          notes: (normalizedContact.notes as ContactNote[]).map((note) =>
+            withDefaults(
+              note as Partial<ContactNote> as Partial<Record<string, unknown>>,
+              defaultContactNote as unknown as Record<string, unknown>,
+            ),
+          ),
+        };
+      });
+      
+      // Normalize each individual artifact and its nested objects
+      const normalizedArtifacts = normalized.artifacts.map((artifact) => {
+        const normalizedArtifact = withDefaults(
+          artifact as Partial<Artifact> as Partial<Record<string, unknown>>,
+          defaultArtifact as unknown as Record<string, unknown>,
+        );
+        return {
+          ...normalizedArtifact,
+          comments: (normalizedArtifact.comments as ArtifactComment[]).map((comment) =>
+            withDefaults(
+              comment as Partial<ArtifactComment> as Partial<Record<string, unknown>>,
+              defaultArtifactComment as unknown as Record<string, unknown>,
+            ),
+          ),
+        };
+      });
+      
+      setContacts(normalizedContacts as unknown as Contact[]);
+      setArtifacts(normalizedArtifacts as unknown as Artifact[]);
     }
   }, [loadedData]);
 
