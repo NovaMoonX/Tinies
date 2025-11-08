@@ -11,9 +11,20 @@ import {
   Disclosure,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { Plus, Trash, X, ChevronLeft, ChevronRight } from '@moondreamsdev/dreamer-ui/symbols';
+import {
+  Plus,
+  Trash,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from '@moondreamsdev/dreamer-ui/symbols';
 import { useState, useMemo } from 'react';
-import { Saying, SayingFilters, SortOption, QuizQuestion } from './Sayings.types';
+import {
+  Saying,
+  SayingFilters,
+  SortOption,
+  QuizQuestion,
+} from './Sayings.types';
 
 interface SayingCardProps {
   saying: Saying;
@@ -22,13 +33,19 @@ interface SayingCardProps {
   onToggleFavorite: () => void;
 }
 
-export function SayingCard({ saying, onView, onDelete, onToggleFavorite }: SayingCardProps) {
+export function SayingCard({
+  saying,
+  onView,
+  onDelete,
+  onToggleFavorite,
+}: SayingCardProps) {
   const { confirm } = useActionModal();
 
   const handleDelete = async () => {
     const confirmed = await confirm({
       title: 'Delete Saying',
-      message: 'Are you sure you want to delete this saying? This action cannot be undone.',
+      message:
+        'Are you sure you want to delete this saying? This action cannot be undone.',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       destructive: true,
@@ -47,14 +64,16 @@ export function SayingCard({ saying, onView, onDelete, onToggleFavorite }: Sayin
             <div className='mb-2 flex items-center gap-2'>
               <button
                 onClick={onToggleFavorite}
-                className='hover:scale-110 transition-transform text-2xl'
+                className='text-2xl transition-transform hover:scale-110'
                 aria-label={saying.isFavorite ? 'Unfavorite' : 'Favorite'}
               >
                 {saying.isFavorite ? '⭐' : '☆'}
               </button>
               <h3 className='text-lg font-semibold'>{saying.saying}</h3>
             </div>
-            <p className='text-foreground/60 line-clamp-3 text-sm'>{saying.meaning}</p>
+            <p className='text-foreground/60 line-clamp-3 text-sm'>
+              {saying.meaning}
+            </p>
           </div>
           <Button
             onClick={handleDelete}
@@ -67,17 +86,15 @@ export function SayingCard({ saying, onView, onDelete, onToggleFavorite }: Sayin
         </div>
 
         {saying.author && (
-          <p className='text-foreground/70 mb-2 text-sm italic'>— {saying.author}</p>
+          <p className='text-foreground/70 mb-2 text-sm italic'>
+            — {saying.author}
+          </p>
         )}
 
         {saying.tags.length > 0 && (
           <div className='mb-3 flex flex-wrap gap-1'>
             {saying.tags.map((tag) => (
-              <Badge 
-                key={tag} 
-                variant='muted' 
-                size='sm'
-              >
+              <Badge key={tag} variant='muted' size='sm'>
                 {tag}
               </Badge>
             ))}
@@ -114,12 +131,12 @@ export function SayingDetailsModal({
         <div className='flex items-center gap-2'>
           <button
             onClick={onToggleFavorite}
-            className='hover:scale-110 transition-transform text-2xl'
+            className='text-2xl transition-transform hover:scale-110'
             aria-label={saying.isFavorite ? 'Unfavorite' : 'Favorite'}
           >
             {saying.isFavorite ? '⭐' : '☆'}
           </button>
-          <span className='text-sm text-foreground/60'>
+          <span className='text-foreground/60 text-sm'>
             {saying.isFavorite ? 'Favorited' : 'Click to favorite'}
           </span>
         </div>
@@ -168,10 +185,7 @@ export function SayingDetailsModal({
             <Label className='mb-2'>Tags</Label>
             <div className='flex flex-wrap gap-2'>
               {saying.tags.map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant='secondary'
-                >
+                <Badge key={tag} variant='secondary'>
                   {tag}
                 </Badge>
               ))}
@@ -199,7 +213,12 @@ interface AddSayingModalProps {
   existingTags: string[];
 }
 
-export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayingModalProps) {
+export function AddSayingModal({
+  isOpen,
+  onClose,
+  onAdd,
+  existingTags,
+}: AddSayingModalProps) {
   const [saying, setSaying] = useState('');
   const [meaning, setMeaning] = useState('');
   const [author, setAuthor] = useState('');
@@ -324,7 +343,7 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
                   {tag}
                   <button
                     onClick={() => handleRemoveTag(tag)}
-                    className='ml-1 hover:text-destructive'
+                    className='hover:text-destructive ml-1'
                   >
                     <X className='h-3 w-3' />
                   </button>
@@ -345,7 +364,11 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
               }}
               placeholder='Add a tag...'
             />
-            <Button onClick={() => handleAddTag(newTag)} variant='outline' size='sm'>
+            <Button
+              onClick={() => handleAddTag(newTag)}
+              variant='outline'
+              size='sm'
+            >
               <Plus className='h-4 w-4' />
             </Button>
           </div>
@@ -356,7 +379,7 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
                   key={tag}
                   variant='muted'
                   size='sm'
-                  className='cursor-pointer hover:bg-primary hover:text-primary-foreground'
+                  className='hover:bg-primary hover:text-primary-foreground cursor-pointer'
                   onClick={() => handleAddTag(tag)}
                 >
                   {tag}
@@ -413,7 +436,9 @@ export function EditSayingModal({
   const [author, setAuthor] = useState(saying.author || '');
   const [moreInfo, setMoreInfo] = useState(saying.moreInfo || '');
   const [dateHeard, setDateHeard] = useState(
-    saying.dateHeard ? new Date(saying.dateHeard).toISOString().split('T')[0] : ''
+    saying.dateHeard
+      ? new Date(saying.dateHeard).toISOString().split('T')[0]
+      : '',
   );
   const [tags, setTags] = useState<string[]>(saying.tags);
   const [newTag, setNewTag] = useState('');
@@ -526,7 +551,7 @@ export function EditSayingModal({
                   {tag}
                   <button
                     onClick={() => handleRemoveTag(tag)}
-                    className='ml-1 hover:text-destructive'
+                    className='hover:text-destructive ml-1'
                   >
                     <X className='h-3 w-3' />
                   </button>
@@ -547,7 +572,11 @@ export function EditSayingModal({
               }}
               placeholder='Add a tag...'
             />
-            <Button onClick={() => handleAddTag(newTag)} variant='outline' size='sm'>
+            <Button
+              onClick={() => handleAddTag(newTag)}
+              variant='outline'
+              size='sm'
+            >
               <Plus className='h-4 w-4' />
             </Button>
           </div>
@@ -558,7 +587,7 @@ export function EditSayingModal({
                   key={tag}
                   variant='muted'
                   size='sm'
-                  className='cursor-pointer hover:bg-primary hover:text-primary-foreground'
+                  className='hover:bg-primary hover:text-primary-foreground cursor-pointer'
                   onClick={() => handleAddTag(tag)}
                 >
                   {tag}
@@ -637,10 +666,10 @@ export function FilterSection({
           </div>
           <div className='w-full sm:w-48'>
             <Select
-              name='sort'
+              id='sort'
               options={sortOptions}
               value={sortOption}
-              onChange={(e) => onSortChange(e.target.value as SortOption)}
+              onChange={(value) => onSortChange(value as SortOption)}
             />
           </div>
         </div>
@@ -671,7 +700,7 @@ export function FilterSection({
                   return (
                     <Badge
                       key={tag}
-                      variant={isSelected ? 'default' : 'muted'}
+                      variant={isSelected ? 'primary' : 'muted'}
                       size='sm'
                       className='cursor-pointer'
                       onClick={() => {
@@ -791,39 +820,47 @@ export function QuizModal({ isOpen, onClose, sayings }: QuizModalProps) {
 
         {/* Question */}
         <div className='bg-muted/30 min-h-32 rounded-xl p-6'>
-          <Label className='mb-3 text-sm uppercase tracking-wide'>
-            {currentQuestion.type === 'saying' ? 'What is the meaning?' : 'What is the saying?'}
+          <Label className='mb-3 text-sm tracking-wide uppercase'>
+            {currentQuestion.type === 'saying'
+              ? 'What is the meaning?'
+              : 'What is the saying?'}
           </Label>
           <p className='text-lg font-medium'>
             {currentQuestion.type === 'saying'
               ? currentQuestion.saying.saying
               : currentQuestion.saying.meaning}
           </p>
-          {currentQuestion.saying.author && currentQuestion.type === 'saying' && (
-            <p className='text-foreground/70 mt-2 text-sm italic'>
-              — {currentQuestion.saying.author}
-            </p>
-          )}
+          {currentQuestion.saying.author &&
+            currentQuestion.type === 'saying' && (
+              <p className='text-foreground/70 mt-2 text-sm italic'>
+                — {currentQuestion.saying.author}
+              </p>
+            )}
         </div>
 
         {/* Answer */}
         {showAnswer ? (
           <div className='bg-primary/10 rounded-xl p-6'>
-            <Label className='mb-3 text-sm uppercase tracking-wide'>Answer</Label>
+            <Label className='mb-3 text-sm tracking-wide uppercase'>
+              Answer
+            </Label>
             <p className='text-lg font-medium'>
               {currentQuestion.type === 'saying'
                 ? currentQuestion.saying.meaning
                 : currentQuestion.saying.saying}
             </p>
-            {currentQuestion.saying.author && currentQuestion.type === 'meaning' && (
-              <p className='text-foreground/70 mt-2 text-sm italic'>
-                — {currentQuestion.saying.author}
-              </p>
-            )}
+            {currentQuestion.saying.author &&
+              currentQuestion.type === 'meaning' && (
+                <p className='text-foreground/70 mt-2 text-sm italic'>
+                  — {currentQuestion.saying.author}
+                </p>
+              )}
             {currentQuestion.saying.moreInfo && (
               <div className='mt-4'>
                 <Label className='mb-2 text-sm'>More Info</Label>
-                <p className='text-foreground/80 text-sm'>{currentQuestion.saying.moreInfo}</p>
+                <p className='text-foreground/80 text-sm'>
+                  {currentQuestion.saying.moreInfo}
+                </p>
               </div>
             )}
           </div>
