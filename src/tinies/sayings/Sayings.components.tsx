@@ -11,8 +11,7 @@ import {
   Disclosure,
 } from '@moondreamsdev/dreamer-ui/components';
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
-import { Plus, Trash, X, Star, ChevronLeft, ChevronRight } from '@moondreamsdev/dreamer-ui/symbols';
-import { join } from '@moondreamsdev/dreamer-ui/utils';
+import { Plus, Trash, X, ChevronLeft, ChevronRight } from '@moondreamsdev/dreamer-ui/symbols';
 import { useState, useMemo } from 'react';
 import { Saying, SayingFilters, SortOption, QuizQuestion } from './Sayings.types';
 
@@ -24,15 +23,20 @@ interface SayingCardProps {
 }
 
 export function SayingCard({ saying, onView, onDelete, onToggleFavorite }: SayingCardProps) {
-  const { showActionModal } = useActionModal();
+  const { confirm } = useActionModal();
 
-  const handleDelete = () => {
-    showActionModal({
+  const handleDelete = async () => {
+    const confirmed = await confirm({
       title: 'Delete Saying',
-      description: 'Are you sure you want to delete this saying? This action cannot be undone.',
-      confirmLabel: 'Delete',
-      onConfirm: onDelete,
+      message: 'Are you sure you want to delete this saying? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
     });
+
+    if (confirmed) {
+      onDelete();
+    }
   };
 
   return (
@@ -43,14 +47,10 @@ export function SayingCard({ saying, onView, onDelete, onToggleFavorite }: Sayin
             <div className='mb-2 flex items-center gap-2'>
               <button
                 onClick={onToggleFavorite}
-                className='hover:scale-110 transition-transform'
+                className='hover:scale-110 transition-transform text-2xl'
+                aria-label={saying.isFavorite ? 'Unfavorite' : 'Favorite'}
               >
-                <Star 
-                  className={join(
-                    'h-5 w-5',
-                    saying.isFavorite ? 'text-primary fill-current' : 'text-muted-foreground'
-                  )}
-                />
+                {saying.isFavorite ? '⭐' : '☆'}
               </button>
               <h3 className='text-lg font-semibold'>{saying.saying}</h3>
             </div>
@@ -114,14 +114,10 @@ export function SayingDetailsModal({
         <div className='flex items-center gap-2'>
           <button
             onClick={onToggleFavorite}
-            className='hover:scale-110 transition-transform'
+            className='hover:scale-110 transition-transform text-2xl'
+            aria-label={saying.isFavorite ? 'Unfavorite' : 'Favorite'}
           >
-            <Star 
-              className={join(
-                'h-6 w-6',
-                saying.isFavorite ? 'text-primary fill-current' : 'text-muted-foreground'
-              )}
-            />
+            {saying.isFavorite ? '⭐' : '☆'}
           </button>
           <span className='text-sm text-foreground/60'>
             {saying.isFavorite ? 'Favorited' : 'Click to favorite'}
@@ -619,9 +615,9 @@ export function FilterSection({
   availableTags,
 }: FilterSectionProps) {
   const sortOptions = [
-    { value: 'newest' as const, label: 'Newest First' },
-    { value: 'oldest' as const, label: 'Oldest First' },
-    { value: 'alphabetical' as const, label: 'Alphabetical' },
+    { value: 'newest' as const, text: 'Newest First' },
+    { value: 'oldest' as const, text: 'Oldest First' },
+    { value: 'alphabetical' as const, text: 'Alphabetical' },
   ];
 
   return (
