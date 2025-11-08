@@ -120,7 +120,6 @@ export function Sayings() {
               key={saying.id}
               saying={saying}
               onView={() => setSelectedSaying(saying)}
-              onDelete={() => handleDeleteSaying(saying.id)}
               onToggleFavorite={() => handleToggleFavorite(saying.id)}
             />
           ))}

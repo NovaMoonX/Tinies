@@ -28,14 +28,12 @@ import {
 interface SayingCardProps {
   saying: Saying;
   onView: () => void;
-  onDelete: () => void;
   onToggleFavorite: () => void;
 }
 
 export function SayingCard({
   saying,
   onView,
-  onDelete,
   onToggleFavorite,
 }: SayingCardProps) {
   return (
