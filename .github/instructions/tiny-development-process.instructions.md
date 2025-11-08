@@ -81,6 +81,41 @@ export function MySingleFieldComponent({ options, value, onChange }) {
 ### 🚫 No Persistent Storage by Default
 **Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state.
 
+### ⏰ Date and Time Storage
+**Always store date and time values as milliseconds (numbers) using `Date.now()` or `new Date().getTime()`.**
+
+- Store timestamps as `number` type, not as ISO strings or Date objects
+- Use `Date.now()` for current timestamps
+- Convert date inputs to milliseconds: `new Date(dateString).getTime()`
+- Display dates by converting from milliseconds: `new Date(timestamp).toLocaleDateString()`
+
+Example:
+```tsx
+// ✅ Correct - store as milliseconds
+interface MyData {
+  createdAt: number;  // timestamp in milliseconds
+  lastModified: number | null;  // optional timestamp
+}
+
+// Creating timestamps
+const newItem = {
+  id: generateId(),
+  createdAt: Date.now(),  // current time in ms
+  lastModified: null,
+};
+
+// Converting from date input
+const dateHeard = dateInputValue ? new Date(dateInputValue).getTime() : null;
+
+// Displaying dates
+<p>{new Date(item.createdAt).toLocaleDateString()}</p>
+
+// ❌ Wrong - don't use ISO strings
+const newItem = {
+  createdAt: new Date().toISOString(),  // Don't do this
+};
+```
+
 ### 🗑️ Always Confirm Deletions
 **Always use `useActionModal` to confirm any destructive actions (such as deleting vehicles, service entries, or locations).**
 

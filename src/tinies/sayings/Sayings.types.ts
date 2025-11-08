@@ -4,10 +4,10 @@ export interface Saying {
   meaning: string;
   author: string | null;
   moreInfo: string | null;
-  dateHeard: string | null; // ISO date string
+  dateHeard: number | null; // timestamp in milliseconds
   tags: string[];
   isFavorite: boolean;
-  dateAdded: string; // ISO date string
+  dateAdded: number; // timestamp in milliseconds
 }
 
 export interface SayingFilters {

@@ -43,7 +43,7 @@ export function Sayings() {
     const newSaying: Saying = {
       ...sayingData,
       id: generateSayingId(),
-      dateAdded: new Date().toISOString(),
+      dateAdded: Date.now(),
     };
 
     setSayings([newSaying, ...sayings]);

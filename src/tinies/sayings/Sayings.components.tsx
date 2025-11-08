@@ -221,7 +221,7 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
       meaning: meaning.trim(),
       author: author.trim() || null,
       moreInfo: moreInfo.trim() || null,
-      dateHeard: dateHeard || null,
+      dateHeard: dateHeard ? new Date(dateHeard).getTime() : null,
       tags,
       isFavorite,
     });
@@ -416,7 +416,9 @@ export function EditSayingModal({
   const [meaning, setMeaning] = useState(saying.meaning);
   const [author, setAuthor] = useState(saying.author || '');
   const [moreInfo, setMoreInfo] = useState(saying.moreInfo || '');
-  const [dateHeard, setDateHeard] = useState(saying.dateHeard || '');
+  const [dateHeard, setDateHeard] = useState(
+    saying.dateHeard ? new Date(saying.dateHeard).toISOString().split('T')[0] : ''
+  );
   const [tags, setTags] = useState<string[]>(saying.tags);
   const [newTag, setNewTag] = useState('');
   const [isFavorite, setIsFavorite] = useState(saying.isFavorite);
@@ -430,7 +432,7 @@ export function EditSayingModal({
       meaning: meaning.trim(),
       author: author.trim() || null,
       moreInfo: moreInfo.trim() || null,
-      dateHeard: dateHeard || null,
+      dateHeard: dateHeard ? new Date(dateHeard).getTime() : null,
       tags,
       isFavorite,
     });

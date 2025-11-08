@@ -13,5 +13,5 @@ export const defaultSaying: Saying = {
   dateHeard: null,
   tags: [],
   isFavorite: false,
-  dateAdded: '',
+  dateAdded: 0,
 };
