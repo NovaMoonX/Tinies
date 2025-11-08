@@ -39,14 +39,44 @@ export const FIREBASE_TINY_PATH = {
 
 This path is used for both Database and Storage operations.
 
-### Step 3: Create a Hooks File
+### Step 3: Create a Defaults File
+
+Create a `.defaults.ts` file with default values for all data objects. This is required for proper data normalization when loading from Firebase.
+
+**File:** `MyTiny.defaults.ts`
+
+```typescript
+import { MyTinyData, Item } from './MyTiny.types';
+
+export const defaultMyTinyData: MyTinyData = {
+  items: [],
+  selectedId: null,
+  customSettings: {
+    theme: 'light',
+    notifications: true,
+  },
+};
+
+export const defaultItem: Item = {
+  id: '',
+  name: '',
+  description: '',
+  createdAt: '',
+  tags: [],
+};
+```
+
+This file should export default values for every field in your data type. These defaults will be used with the `withDefaults()` utility to ensure all fields are present even when Firebase doesn't return certain fields.
+
+### Step 4: Create a Hooks File
 
 Create a `.hooks.ts` file for your tiny that uses the reusable Firebase hooks:
 
 ```typescript
 import { FIREBASE_TINY_PATH } from '@lib/firebase';
-import { useTinyDataLoader, useTinyDataSaver } from '@lib/tinies/tinies.hooks';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
 import { useCallback, useEffect, useState } from 'react';
+import { defaultItem, defaultMyTinyData } from './MyTiny.defaults';
 import { MyTinyData, Item } from './MyTiny.types';
 
 export function useMyTinyData() {
@@ -68,7 +98,11 @@ export function useMyTinyData() {
   useEffect(() => {
     if (loadedData) {
       const normalized = withDefaults(loadedData, defaultMyTinyData);
-      setItems(normalized.items);
+      // Normalize nested items if needed
+      const normalizedItems = normalized.items.map((item) =>
+        withDefaults<Item>(item, defaultItem),
+      );
+      setItems(normalizedItems);
       setSelectedId(normalized.selectedId);
     }
   }, [loadedData]);
@@ -89,7 +123,7 @@ export function useMyTinyData() {
 }
 ```
 
-### Step 4: Use the Hook in Your Main Component
+### Step 5: Use the Hook in Your Main Component
 
 Update your main component to use the new hook:
 

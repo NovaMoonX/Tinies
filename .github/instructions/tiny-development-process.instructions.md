@@ -227,12 +227,7 @@ export interface CalculatorState {
 This file contains default values for all data objects used in Firebase persistence. Every tiny that persists data to Firebase must have a defaults file.
 
 ```typescript
-import { CalculatorState, CalculatorData } from './Calculator.types';
-
-export interface CalculatorData extends Record<string, unknown> {
-  history: CalculatorOperation[];
-  savedValues: number[];
-}
+import { CalculatorState, CalculatorData, CalculatorOperation } from './Calculator.types';
 
 export const defaultCalculatorData: CalculatorData = {
   history: [],
@@ -244,14 +239,11 @@ export const defaultCalculatorState: CalculatorState = {
   previousValue: null,
   operation: null,
 };
-
-export type { CalculatorData };
 ```
 
 **Key Points:**
-- Define a data interface that extends `Record<string, unknown>` for the top-level Firebase data
+- Import all interfaces from the `.types.ts` file (data interfaces should be defined in `.types.ts`, not `.defaults.ts`)
 - Export default values for every object type that will be normalized when loading from Firebase
-- Re-export the data interface as a type for use in the hooks file
 - Use these defaults with the `withDefaults()` utility from `@lib/tinies/tinies.hooks`
 
 #### Data File
