@@ -6,20 +6,20 @@ export interface Saying {
   moreInfo: string | null;
   dateHeard: string | null; // ISO date string
   tags: string[];
+  isFavorite: boolean;
   dateAdded: string; // ISO date string
 }
 
 export interface SayingFilters {
   searchQuery: string;
   selectedTags: string[];
-  favoriteTagsOnly: boolean;
+  favoritesOnly: boolean;
 }
 
 export type SortOption = 'newest' | 'oldest' | 'alphabetical';
 
 export interface SayingsData extends Record<string, unknown> {
   sayings: Saying[];
-  favoriteTags: string[];
 }
 
 export interface QuizQuestion {

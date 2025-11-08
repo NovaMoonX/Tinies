@@ -7,7 +7,6 @@ export function generateSayingId(): string {
 export function filterSayings(
   sayings: Saying[],
   filters: SayingFilters,
-  favoriteTags: string[],
 ): Saying[] {
   const result = sayings.filter((saying) => {
     // Search filter
@@ -33,12 +32,9 @@ export function filterSayings(
       }
     }
 
-    // Favorite tags filter
-    if (filters.favoriteTagsOnly) {
-      const hasFavoriteTag = saying.tags.some((tag) => favoriteTags.includes(tag));
-      if (!hasFavoriteTag) {
-        return false;
-      }
+    // Favorites filter
+    if (filters.favoritesOnly && !saying.isFavorite) {
+      return false;
     }
 
     return true;

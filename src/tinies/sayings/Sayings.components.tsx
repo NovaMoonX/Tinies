@@ -20,10 +20,10 @@ interface SayingCardProps {
   saying: Saying;
   onView: () => void;
   onDelete: () => void;
-  favoriteTags: string[];
+  onToggleFavorite: () => void;
 }
 
-export function SayingCard({ saying, onView, onDelete, favoriteTags }: SayingCardProps) {
+export function SayingCard({ saying, onView, onDelete, onToggleFavorite }: SayingCardProps) {
   const { showActionModal } = useActionModal();
 
   const handleDelete = () => {
@@ -35,17 +35,23 @@ export function SayingCard({ saying, onView, onDelete, favoriteTags }: SayingCar
     });
   };
 
-  const hasFavoriteTag = saying.tags.some((tag) => favoriteTags.includes(tag));
-
   return (
     <Card className='group h-full transition-all hover:shadow-lg'>
       <div className='flex h-full flex-col p-4'>
         <div className='mb-3 flex items-start justify-between gap-2'>
           <div className='flex-1'>
             <div className='mb-2 flex items-center gap-2'>
-              {hasFavoriteTag && (
-                <Star className='text-primary h-4 w-4 fill-current' />
-              )}
+              <button
+                onClick={onToggleFavorite}
+                className='hover:scale-110 transition-transform'
+              >
+                <Star 
+                  className={join(
+                    'h-5 w-5',
+                    saying.isFavorite ? 'text-primary fill-current' : 'text-muted-foreground'
+                  )}
+                />
+              </button>
               <h3 className='text-lg font-semibold'>{saying.saying}</h3>
             </div>
             <p className='text-foreground/60 line-clamp-3 text-sm'>{saying.meaning}</p>
@@ -69,7 +75,7 @@ export function SayingCard({ saying, onView, onDelete, favoriteTags }: SayingCar
             {saying.tags.map((tag) => (
               <Badge 
                 key={tag} 
-                variant={favoriteTags.includes(tag) ? 'default' : 'muted'} 
+                variant='muted' 
                 size='sm'
               >
                 {tag}
@@ -91,7 +97,7 @@ interface SayingDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: () => void;
-  favoriteTags: string[];
+  onToggleFavorite: () => void;
 }
 
 export function SayingDetailsModal({
@@ -99,11 +105,29 @@ export function SayingDetailsModal({
   isOpen,
   onClose,
   onEdit,
-  favoriteTags,
+  onToggleFavorite,
 }: SayingDetailsModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title='Saying Details'>
       <div className='space-y-6'>
+        {/* Favorite Toggle */}
+        <div className='flex items-center gap-2'>
+          <button
+            onClick={onToggleFavorite}
+            className='hover:scale-110 transition-transform'
+          >
+            <Star 
+              className={join(
+                'h-6 w-6',
+                saying.isFavorite ? 'text-primary fill-current' : 'text-muted-foreground'
+              )}
+            />
+          </button>
+          <span className='text-sm text-foreground/60'>
+            {saying.isFavorite ? 'Favorited' : 'Click to favorite'}
+          </span>
+        </div>
+
         {/* Saying */}
         <div>
           <Label className='mb-2'>Saying</Label>
@@ -150,7 +174,7 @@ export function SayingDetailsModal({
               {saying.tags.map((tag) => (
                 <Badge 
                   key={tag} 
-                  variant={favoriteTags.includes(tag) ? 'default' : 'secondary'}
+                  variant='secondary'
                 >
                   {tag}
                 </Badge>
@@ -187,6 +211,7 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
   const [dateHeard, setDateHeard] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
+  const [isFavorite, setIsFavorite] = useState(false);
 
   const handleSubmit = () => {
     if (!saying.trim() || !meaning.trim()) return;
@@ -198,6 +223,7 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
       moreInfo: moreInfo.trim() || null,
       dateHeard: dateHeard || null,
       tags,
+      isFavorite,
     });
 
     // Reset form
@@ -208,6 +234,7 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
     setDateHeard('');
     setTags([]);
     setNewTag('');
+    setIsFavorite(false);
     onClose();
   };
 
@@ -343,6 +370,16 @@ export function AddSayingModal({ isOpen, onClose, onAdd, existingTags }: AddSayi
           )}
         </div>
 
+        {/* Favorite */}
+        <div className='flex items-center gap-2'>
+          <Checkbox
+            id='isFavorite'
+            checked={isFavorite}
+            onCheckedChange={(checked) => setIsFavorite(checked as boolean)}
+          />
+          <Label htmlFor='isFavorite'>Mark as favorite</Label>
+        </div>
+
         <div className='flex gap-2'>
           <Button onClick={onClose} variant='outline' className='flex-1'>
             Cancel
@@ -382,6 +419,7 @@ export function EditSayingModal({
   const [dateHeard, setDateHeard] = useState(saying.dateHeard || '');
   const [tags, setTags] = useState<string[]>(saying.tags);
   const [newTag, setNewTag] = useState('');
+  const [isFavorite, setIsFavorite] = useState(saying.isFavorite);
 
   const handleSubmit = () => {
     if (!sayingText.trim() || !meaning.trim()) return;
@@ -394,6 +432,7 @@ export function EditSayingModal({
       moreInfo: moreInfo.trim() || null,
       dateHeard: dateHeard || null,
       tags,
+      isFavorite,
     });
 
     onClose();
@@ -531,6 +570,16 @@ export function EditSayingModal({
           )}
         </div>
 
+        {/* Favorite */}
+        <div className='flex items-center gap-2'>
+          <Checkbox
+            id='edit-isFavorite'
+            checked={isFavorite}
+            onCheckedChange={(checked) => setIsFavorite(checked as boolean)}
+          />
+          <Label htmlFor='edit-isFavorite'>Mark as favorite</Label>
+        </div>
+
         <div className='flex gap-2'>
           <Button onClick={onClose} variant='outline' className='flex-1'>
             Cancel
@@ -556,8 +605,6 @@ interface FilterSectionProps {
   totalSayings: number;
   filteredSayings: number;
   availableTags: string[];
-  favoriteTags: string[];
-  onToggleFavoriteTag: (tag: string) => void;
 }
 
 export function FilterSection({
@@ -568,8 +615,6 @@ export function FilterSection({
   totalSayings,
   filteredSayings,
   availableTags,
-  favoriteTags,
-  onToggleFavoriteTag,
 }: FilterSectionProps) {
   const sortOptions = [
     { value: 'newest' as const, label: 'Newest First' },
@@ -602,16 +647,16 @@ export function FilterSection({
           </div>
         </div>
 
-        {/* Favorite Tags Filter */}
+        {/* Favorites Filter */}
         <div className='flex items-center gap-2'>
           <Checkbox
-            id='favorite-tags-only'
-            checked={filters.favoriteTagsOnly}
+            id='favorites-only'
+            checked={filters.favoritesOnly}
             onCheckedChange={(checked) =>
-              onFiltersChange({ ...filters, favoriteTagsOnly: checked as boolean })
+              onFiltersChange({ ...filters, favoritesOnly: checked as boolean })
             }
           />
-          <Label htmlFor='favorite-tags-only'>Show only favorite tags</Label>
+          <Label htmlFor='favorites-only'>Show only favorites</Label>
         </div>
       </div>
 
@@ -625,13 +670,12 @@ export function FilterSection({
               <div className='flex flex-wrap gap-2'>
                 {availableTags.map((tag) => {
                   const isSelected = filters.selectedTags.includes(tag);
-                  const isFavorite = favoriteTags.includes(tag);
                   return (
                     <Badge
                       key={tag}
                       variant={isSelected ? 'default' : 'muted'}
                       size='sm'
-                      className='group cursor-pointer'
+                      className='cursor-pointer'
                       onClick={() => {
                         const newTags = isSelected
                           ? filters.selectedTags.filter((t) => t !== tag)
@@ -640,18 +684,6 @@ export function FilterSection({
                       }}
                     >
                       {tag}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavoriteTag(tag);
-                        }}
-                        className={join(
-                          'ml-1',
-                          isFavorite ? 'text-primary' : 'opacity-0 group-hover:opacity-100'
-                        )}
-                      >
-                        <Star className={join('h-3 w-3', isFavorite && 'fill-current')} />
-                      </button>
                     </Badge>
                   );
                 })}

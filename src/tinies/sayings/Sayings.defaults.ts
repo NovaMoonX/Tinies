@@ -2,7 +2,6 @@ import { Saying, SayingsData } from './Sayings.types';
 
 export const defaultSayingsData: SayingsData = {
   sayings: [],
-  favoriteTags: [],
 };
 
 export const defaultSaying: Saying = {
@@ -13,5 +12,6 @@ export const defaultSaying: Saying = {
   moreInfo: null,
   dateHeard: null,
   tags: [],
+  isFavorite: false,
   dateAdded: '',
 };

@@ -15,7 +15,7 @@ import TinyPage from '@ui/layout/TinyPage';
 import { useSayingsData } from './Sayings.hooks';
 
 export function Sayings() {
-  const { sayings, setSayings, favoriteTags, setFavoriteTags } = useSayingsData();
+  const { sayings, setSayings } = useSayingsData();
   const [selectedSaying, setSelectedSaying] = useState<Saying | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -23,15 +23,15 @@ export function Sayings() {
   const [filters, setFilters] = useState<SayingFilters>({
     searchQuery: '',
     selectedTags: [],
-    favoriteTagsOnly: false,
+    favoritesOnly: false,
   });
   const [sortOption, setSortOption] = useState<SortOption>('newest');
 
   const filteredSayings = useMemo(() => {
-    const filtered = filterSayings(sayings, filters, favoriteTags);
+    const filtered = filterSayings(sayings, filters);
     const sorted = sortSayings(filtered, sortOption);
     return sorted;
-  }, [sayings, filters, sortOption, favoriteTags]);
+  }, [sayings, filters, sortOption]);
 
   const allTags = useMemo(() => {
     const tags = sayings.flatMap((saying) => saying.tags);
@@ -67,12 +67,10 @@ export function Sayings() {
     setIsEditModalOpen(true);
   };
 
-  const handleToggleFavoriteTag = (tag: string) => {
-    if (favoriteTags.includes(tag)) {
-      setFavoriteTags(favoriteTags.filter((t) => t !== tag));
-    } else {
-      setFavoriteTags([...favoriteTags, tag]);
-    }
+  const handleToggleFavorite = (id: string) => {
+    setSayings(
+      sayings.map((s) => (s.id === id ? { ...s, isFavorite: !s.isFavorite } : s))
+    );
   };
 
   return (
@@ -112,8 +110,6 @@ export function Sayings() {
         totalSayings={sayings.length}
         filteredSayings={filteredSayings.length}
         availableTags={allTags}
-        favoriteTags={favoriteTags}
-        onToggleFavoriteTag={handleToggleFavoriteTag}
       />
 
       {/* Sayings Grid */}
@@ -125,7 +121,7 @@ export function Sayings() {
               saying={saying}
               onView={() => setSelectedSaying(saying)}
               onDelete={() => handleDeleteSaying(saying.id)}
-              favoriteTags={favoriteTags}
+              onToggleFavorite={() => handleToggleFavorite(saying.id)}
             />
           ))}
         </div>
@@ -147,7 +143,7 @@ export function Sayings() {
             isOpen={!!selectedSaying && !isEditModalOpen}
             onClose={() => setSelectedSaying(null)}
             onEdit={handleEditClick}
-            favoriteTags={favoriteTags}
+            onToggleFavorite={() => handleToggleFavorite(selectedSaying.id)}
           />
           <EditSayingModal
             saying={selectedSaying}
