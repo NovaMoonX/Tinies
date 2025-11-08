@@ -107,21 +107,25 @@ export function MyTiny() {
 Firebase may not return fields that were never set or contain `undefined` values. Always provide default values when extracting data:
 
 ```typescript
+import { withDefaults } from '@lib/withDefaults';
+import { defaultMyTinyData, defaultItem } from './MyTiny.data';
+
 useEffect(() => {
   if (loadedData) {
-    // Use || for arrays and objects that should default to empty
-    setItems(loadedData.items || []);
-    setSettings(loadedData.settings || {});
-    
-    // Use || for strings that should default to empty string
-    setName(loadedData.name || '');
-    
-    // Use || for null values
-    setSelectedId(loadedData.selectedId || null);
-    
-    // Use ?? for booleans to preserve false values
-    setCompleted(loadedData.completed ?? false);
-    setEnabled(loadedData.enabled ?? true);
+    // Normalize loaded data using withDefaults to ensure all fields are present
+    const normalized = withDefaults(loadedData, defaultMyTinyData);
+
+    // If you have nested arrays/objects, normalize them as well
+    const normalizedItems = normalized.items.map((item) =>
+      withDefaults(item, defaultItem),
+    );
+    setItems(normalizedItems);
+
+    setSelectedId(normalized.selectedId);
+    setSettings(normalized.customSettings);
+    setName(normalized.name);
+    setCompleted(normalized.completed);
+    setEnabled(normalized.enabled);
   }
 }, [loadedData]);
 ```
