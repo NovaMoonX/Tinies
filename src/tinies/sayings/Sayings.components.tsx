@@ -59,22 +59,15 @@ export function SayingCard({
   return (
     <Card className='group h-full transition-all hover:shadow-lg'>
       <div className='flex h-full flex-col p-4'>
+        {/* Header with favorite and delete */}
         <div className='mb-3 flex items-start justify-between gap-2'>
-          <div className='flex-1'>
-            <div className='mb-2 flex items-center gap-2'>
-              <button
-                onClick={onToggleFavorite}
-                className='text-2xl transition-transform hover:scale-110'
-                aria-label={saying.isFavorite ? 'Unfavorite' : 'Favorite'}
-              >
-                {saying.isFavorite ? '⭐' : '☆'}
-              </button>
-              <h3 className='text-lg font-semibold'>{saying.saying}</h3>
-            </div>
-            <p className='text-foreground/60 line-clamp-3 text-sm'>
-              {saying.meaning}
-            </p>
-          </div>
+          <button
+            onClick={onToggleFavorite}
+            className='text-2xl transition-transform hover:scale-110'
+            aria-label={saying.isFavorite ? 'Unfavorite' : 'Favorite'}
+          >
+            {saying.isFavorite ? '⭐' : '☆'}
+          </button>
           <Button
             onClick={handleDelete}
             variant='destructive'
@@ -84,6 +77,16 @@ export function SayingCard({
             <Trash className='h-4 w-4' />
           </Button>
         </div>
+
+        {/* Saying - more prominent */}
+        <div className='mb-4'>
+          <p className='text-xl font-bold leading-snug'>{saying.saying}</p>
+        </div>
+
+        {/* Meaning */}
+        <p className='text-foreground/70 mb-3 line-clamp-3 text-sm'>
+          {saying.meaning}
+        </p>
 
         {saying.author && (
           <p className='text-foreground/70 mb-2 text-sm italic'>
