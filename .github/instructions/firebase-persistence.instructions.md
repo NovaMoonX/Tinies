@@ -67,8 +67,9 @@ export function useMyTinyData() {
   // Update local state when data is loaded
   useEffect(() => {
     if (loadedData) {
-      setItems(loadedData.items || []);
-      setSelectedId(loadedData.selectedId || null);
+      const normalized = withDefaults(loadedData, defaultMyTinyData);
+      setItems(normalized.items);
+      setSelectedId(normalized.selectedId);
     }
   }, [loadedData]);
 
