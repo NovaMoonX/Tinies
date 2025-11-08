@@ -139,6 +139,41 @@ function handleDelete(id: string) {
 
 This applies to all destructive actions in tinies.
 
+### 🚫 Avoid Hover-Only Actions
+**Never use hover-only actions (like `opacity-0 group-hover:opacity-100`) for critical functionality such as delete buttons.**
+
+- Hover states don't work on mobile devices
+- Actions should always be visible or accessible through a menu/modal
+- For delete actions, place them in detail modals or use a visible button
+- Hover can be used for visual feedback (like shadows or scale), but not for revealing essential controls
+
+Bad example:
+```tsx
+// ❌ Delete button only visible on hover - doesn't work on mobile
+<Button
+  onClick={handleDelete}
+  variant='destructive'
+  className='opacity-0 group-hover:opacity-100'
+>
+  <Trash />
+</Button>
+```
+
+Good examples:
+```tsx
+// ✅ Delete button in detail modal (always accessible)
+<Modal>
+  <Button onClick={handleDelete} variant='destructive'>
+    Delete
+  </Button>
+</Modal>
+
+// ✅ Or always visible on the card
+<Button onClick={handleDelete} variant='destructive' size='sm'>
+  <Trash />
+</Button>
+```
+
 ### 📂 Use Disclosure for Expand/Collapse
 **Always use the `Disclosure` component for collapsible sections with expand/collapse functionality.**
 

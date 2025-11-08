@@ -143,6 +143,7 @@ export function Sayings() {
             isOpen={!!selectedSaying && !isEditModalOpen}
             onClose={() => setSelectedSaying(null)}
             onEdit={handleEditClick}
+            onDelete={() => handleDeleteSaying(selectedSaying.id)}
             onToggleFavorite={() => handleToggleFavorite(selectedSaying.id)}
           />
           <EditSayingModal

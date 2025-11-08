@@ -13,5 +13,6 @@ export const defaultSaying: Saying = {
   dateHeard: null,
   tags: [],
   isFavorite: false,
+  link: null,
   dateAdded: 0,
 };

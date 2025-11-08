@@ -13,7 +13,6 @@ import {
 import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import {
   Plus,
-  Trash,
   X,
   ChevronLeft,
   ChevronRight,
@@ -39,27 +38,10 @@ export function SayingCard({
   onDelete,
   onToggleFavorite,
 }: SayingCardProps) {
-  const { confirm } = useActionModal();
-
-  const handleDelete = async () => {
-    const confirmed = await confirm({
-      title: 'Delete Saying',
-      message:
-        'Are you sure you want to delete this saying? This action cannot be undone.',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      destructive: true,
-    });
-
-    if (confirmed) {
-      onDelete();
-    }
-  };
-
   return (
-    <Card className='group h-full transition-all hover:shadow-lg'>
-      <div className='flex h-full flex-col p-4'>
-        {/* Header with favorite and delete */}
+    <Card className='transition-all hover:shadow-lg'>
+      <div className='flex flex-col p-4'>
+        {/* Header with favorite */}
         <div className='mb-3 flex items-start justify-between gap-2'>
           <button
             onClick={onToggleFavorite}
@@ -68,14 +50,6 @@ export function SayingCard({
           >
             {saying.isFavorite ? '⭐' : '☆'}
           </button>
-          <Button
-            onClick={handleDelete}
-            variant='destructive'
-            size='sm'
-            className='opacity-0 transition-opacity group-hover:opacity-100'
-          >
-            <Trash className='h-4 w-4' />
-          </Button>
         </div>
 
         {/* Saying - more prominent */}
@@ -104,7 +78,7 @@ export function SayingCard({
           </div>
         )}
 
-        <Button onClick={onView} variant='outline' className='mt-auto w-full'>
+        <Button onClick={onView} variant='outline' className='w-full'>
           View Details
         </Button>
       </div>
@@ -117,6 +91,7 @@ interface SayingDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: () => void;
+  onDelete: () => void;
   onToggleFavorite: () => void;
 }
 
@@ -125,8 +100,27 @@ export function SayingDetailsModal({
   isOpen,
   onClose,
   onEdit,
+  onDelete,
   onToggleFavorite,
 }: SayingDetailsModalProps) {
+  const { confirm } = useActionModal();
+
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: 'Delete Saying',
+      message:
+        'Are you sure you want to delete this saying? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      onDelete();
+      onClose();
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title='Saying Details'>
       <div className='space-y-6'>
@@ -172,6 +166,21 @@ export function SayingDetailsModal({
           </div>
         )}
 
+        {/* Link */}
+        {saying.link && (
+          <div>
+            <Label className='mb-2'>Link</Label>
+            <a
+              href={saying.link}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-primary hover:underline text-sm break-all'
+            >
+              {saying.link}
+            </a>
+          </div>
+        )}
+
         {/* Date Heard */}
         {saying.dateHeard && (
           <div>
@@ -200,8 +209,12 @@ export function SayingDetailsModal({
           <Button onClick={onEdit} variant='outline' className='flex-1'>
             Edit Saying
           </Button>
-          <Button onClick={onClose} className='flex-1'>
-            Close
+          <Button
+            onClick={handleDelete}
+            variant='destructive'
+            className='flex-1'
+          >
+            Delete
           </Button>
         </div>
       </div>
@@ -226,6 +239,7 @@ export function AddSayingModal({
   const [meaning, setMeaning] = useState('');
   const [author, setAuthor] = useState('');
   const [moreInfo, setMoreInfo] = useState('');
+  const [link, setLink] = useState('');
   const [dateHeard, setDateHeard] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -239,6 +253,7 @@ export function AddSayingModal({
       meaning: meaning.trim(),
       author: author.trim() || null,
       moreInfo: moreInfo.trim() || null,
+      link: link.trim() || null,
       dateHeard: dateHeard ? new Date(dateHeard).getTime() : null,
       tags,
       isFavorite,
@@ -249,6 +264,7 @@ export function AddSayingModal({
     setMeaning('');
     setAuthor('');
     setMoreInfo('');
+    setLink('');
     setDateHeard('');
     setTags([]);
     setNewTag('');
@@ -321,6 +337,19 @@ export function AddSayingModal({
             onChange={(e) => setMoreInfo(e.target.value)}
             placeholder='Additional context or information...'
             rows={2}
+          />
+        </div>
+
+        {/* Link */}
+        <div>
+          <Label htmlFor='link'>Link</Label>
+          <Input
+            id='link'
+            name='link'
+            type='url'
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder='https://...'
           />
         </div>
 
@@ -438,6 +467,7 @@ export function EditSayingModal({
   const [meaning, setMeaning] = useState(saying.meaning);
   const [author, setAuthor] = useState(saying.author || '');
   const [moreInfo, setMoreInfo] = useState(saying.moreInfo || '');
+  const [link, setLink] = useState(saying.link || '');
   const [dateHeard, setDateHeard] = useState(
     saying.dateHeard
       ? new Date(saying.dateHeard).toISOString().split('T')[0]
@@ -456,6 +486,7 @@ export function EditSayingModal({
       meaning: meaning.trim(),
       author: author.trim() || null,
       moreInfo: moreInfo.trim() || null,
+      link: link.trim() || null,
       dateHeard: dateHeard ? new Date(dateHeard).getTime() : null,
       tags,
       isFavorite,
@@ -529,6 +560,19 @@ export function EditSayingModal({
             onChange={(e) => setMoreInfo(e.target.value)}
             placeholder='Additional context or information...'
             rows={2}
+          />
+        </div>
+
+        {/* Link */}
+        <div>
+          <Label htmlFor='edit-link'>Link</Label>
+          <Input
+            id='edit-link'
+            name='link'
+            type='url'
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder='https://...'
           />
         </div>
 
@@ -665,6 +709,7 @@ export function FilterSection({
                 onFiltersChange({ ...filters, searchQuery: e.target.value })
               }
               placeholder='Search sayings, meanings, authors, or tags...'
+              className='h-[42px]'
             />
           </div>
           <div className='w-full sm:w-48'>

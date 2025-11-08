@@ -7,6 +7,7 @@ export interface Saying {
   dateHeard: number | null; // timestamp in milliseconds
   tags: string[];
   isFavorite: boolean;
+  link: string | null;
   dateAdded: number; // timestamp in milliseconds
 }
 
