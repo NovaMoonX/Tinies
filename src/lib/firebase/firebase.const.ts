@@ -5,5 +5,6 @@ export const FIREBASE_TINY_PATH = {
   NOTES: 'notes',
   PERSONAL_CRM: 'personal-crm',
   RECIPE_BOOK: 'recipe-book',
+  SAYINGS: 'sayings',
   TRAVEL_TRACKER: 'travel-tracker',
 } as const;
