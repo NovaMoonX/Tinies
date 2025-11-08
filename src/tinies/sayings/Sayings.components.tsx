@@ -121,7 +121,7 @@ export function SayingDetailsModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title='Saying Details'>
-      <div className='space-y-6'>
+      <div className='space-y-4'>
         {/* Favorite Toggle */}
         <div className='flex items-center gap-2'>
           <button
@@ -139,20 +139,20 @@ export function SayingDetailsModal({
         {/* Saying */}
         <div>
           <Label className='mb-2'>Saying</Label>
-          <p className='text-lg font-semibold'>{saying.saying}</p>
+          <p>{saying.saying}</p>
         </div>
 
         {/* Meaning */}
         <div>
           <Label className='mb-2'>Meaning</Label>
-          <p className='text-foreground/80'>{saying.meaning}</p>
+          <p>{saying.meaning}</p>
         </div>
 
         {/* Author */}
         {saying.author && (
           <div>
             <Label className='mb-2'>Author</Label>
-            <p className='text-foreground/80 italic'>— {saying.author}</p>
+            <p className='italic'>{saying.author}</p>
           </div>
         )}
 
@@ -160,7 +160,7 @@ export function SayingDetailsModal({
         {saying.moreInfo && (
           <div>
             <Label className='mb-2'>More Info</Label>
-            <p className='text-foreground/80'>{saying.moreInfo}</p>
+            <p>{saying.moreInfo}</p>
           </div>
         )}
 
@@ -168,14 +168,16 @@ export function SayingDetailsModal({
         {saying.link && (
           <div>
             <Label className='mb-2'>Link</Label>
-            <a
-              href={saying.link}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-primary hover:underline text-sm break-all'
-            >
-              {saying.link}
-            </a>
+            <div>
+              <a
+                href={saying.link}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-primary hover:underline break-all'
+              >
+                {saying.link}
+              </a>
+            </div>
           </div>
         )}
 
@@ -183,9 +185,7 @@ export function SayingDetailsModal({
         {saying.dateHeard && (
           <div>
             <Label className='mb-2'>Date Heard</Label>
-            <p className='text-foreground/80'>
-              {new Date(saying.dateHeard).toLocaleDateString()}
-            </p>
+            <p>{new Date(saying.dateHeard).toLocaleDateString()}</p>
           </div>
         )}
 
@@ -876,12 +876,6 @@ export function QuizModal({ isOpen, onClose, sayings }: QuizModalProps) {
               ? currentQuestion.saying.saying
               : currentQuestion.saying.meaning}
           </p>
-          {currentQuestion.saying.author &&
-            currentQuestion.type === 'saying' && (
-              <p className='text-foreground/70 mt-2 text-sm italic'>
-                — {currentQuestion.saying.author}
-              </p>
-            )}
         </div>
 
         {/* Answer */}
@@ -895,12 +889,11 @@ export function QuizModal({ isOpen, onClose, sayings }: QuizModalProps) {
                 ? currentQuestion.saying.meaning
                 : currentQuestion.saying.saying}
             </p>
-            {currentQuestion.saying.author &&
-              currentQuestion.type === 'meaning' && (
-                <p className='text-foreground/70 mt-2 text-sm italic'>
-                  — {currentQuestion.saying.author}
-                </p>
-              )}
+            {currentQuestion.saying.author && (
+              <p className='text-foreground/70 mt-2 text-sm italic'>
+                — {currentQuestion.saying.author}
+              </p>
+            )}
             {currentQuestion.saying.moreInfo && (
               <div className='mt-4'>
                 <Label className='mb-2 text-sm'>More Info</Label>
