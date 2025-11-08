@@ -340,13 +340,16 @@ For example:
 
 If you have an existing tiny without Firebase persistence:
 
-1. Define your data type (extends `Record<string, unknown>`)
-2. Add the path to `FIREBASE_TINY_PATH` in `firebase.const.ts`
-3. Create a hooks file using `useTinyDataLoader` and `useTinyDataSaver`
-4. Update your main component to use the new hook
-5. Test that data persists across page refreshes
-6. Test that data resets when user logs out
-7. For file storage, add upload/delete methods using the storage functions
+1. Define your data type (extends `Record<string, unknown>`) in `.types.ts`
+2. Create a `.defaults.ts` file with default values for all data objects
+   - This file should export an object containing default values for every field in your data type.
+   - This is required for proper data normalization when loading from Firebase.
+3. Add the path to `FIREBASE_TINY_PATH` in `firebase.const.ts`
+4. Create a hooks file using `useTinyDataLoader`, `useTinyDataSaver`, and `withDefaults`
+5. Update your main component to use the new hook
+6. Test that data persists across page refreshes
+7. Test that data resets when user logs out
+8. For file storage, add upload/delete methods using the storage functions
 
 ## Examples
 
