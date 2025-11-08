@@ -29,3 +29,8 @@ export interface RecipeFilters {
   maxPrepTime: number | null;
   noPrepTime: boolean;
 }
+
+export interface RecipeBookData extends Record<string, unknown> {
+  recipes: Recipe[];
+}
+

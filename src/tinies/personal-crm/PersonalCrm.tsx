@@ -25,11 +25,16 @@ import {
   filterContacts,
   generateId,
 } from './PersonalCrm.utils';
+import { usePersonalCrmData } from './PersonalCrm.hooks';
 
 export function PersonalCrm() {
   const { confirm } = useActionModal();
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const {
+    contacts,
+    setContacts,
+    artifacts,
+    setArtifacts,
+  } = usePersonalCrmData();
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null,

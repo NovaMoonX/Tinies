@@ -67,3 +67,11 @@ export interface PersonalCrmFilters {
   selectedArtifactTypes: ArtifactType[];
   selectedContactIds: string[]; // Filter artifacts by associated contacts
 }
+
+/**
+ * Data structure for Personal CRM
+ */
+export interface PersonalCrmData extends Record<string, unknown> {
+  contacts: Contact[];
+  artifacts: Artifact[];
+}

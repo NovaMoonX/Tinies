@@ -11,9 +11,10 @@ import {
 } from './RecipeBook.components';
 import { filterRecipes, generateRecipeId } from './RecipeBook.utils';
 import TinyPage from '@ui/layout/TinyPage';
+import { useRecipeBookData } from './RecipeBook.hooks';
 
 export function RecipeBook() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const { recipes, setRecipes } = useRecipeBookData();
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

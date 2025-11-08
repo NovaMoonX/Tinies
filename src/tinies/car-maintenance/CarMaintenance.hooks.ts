@@ -1,18 +1,35 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Car,
-  ServiceEntry,
-  ServiceLocation,
+  CarMaintenanceData,
   CarPart,
   FileAttachment,
+  ServiceEntry,
+  ServiceLocation,
 } from './CarMaintenance.types';
 import {
   generateId,
   getAllDefaultParts,
   autoDetectCarParts,
 } from './CarMaintenance.utils';
+import { useAuth } from '@hooks/useAuth';
+import {
+  FIREBASE_TINY_PATH,
+  uploadFile,
+  deleteFile,
+} from '@lib/firebase';
+import { useTinyDataLoader, useTinyDataSaver, withDefaults } from '@lib/tinies/tinies.hooks';
+import {
+  defaultCar,
+  defaultCarMaintenanceData,
+  defaultCarPart,
+  defaultFileAttachment,
+  defaultServiceEntry,
+  defaultServiceLocation,
+} from './CarMaintenance.defaults';
 
 export function useCarMaintenance() {
+  const { user } = useAuth();
   // State
   const [cars, setCars] = useState<Car[]>([]);
   const [selectedCar, setSelectedCar] = useState<string | null>(null);
@@ -21,6 +38,111 @@ export function useCarMaintenance() {
     [],
   );
   const [customCarParts, setCustomCarParts] = useState<CarPart[]>([]);
+
+  const resetData = useCallback(() => {
+    setCars([]);
+    setSelectedCar(null);
+    setServiceEntries([]);
+    setServiceLocations([]);
+    setCustomCarParts([]);
+  }, []);
+
+  // Load data from Firebase on mount
+  const { data: loadedData, isLoaded } = useTinyDataLoader<CarMaintenanceData>(
+    FIREBASE_TINY_PATH.CAR_MAINTENANCE,
+    resetData,
+  );
+
+  // Update local state when data is loaded
+  useEffect(() => {
+    if (loadedData) {
+      const normalized = withDefaults(loadedData, defaultCarMaintenanceData);
+      
+      // Normalize each individual car
+      const normalizedCars = normalized.cars.map((car) =>
+        withDefaults(car, defaultCar),
+      );
+      
+      // Normalize each individual service location
+      const normalizedServiceLocations = normalized.serviceLocations.map((location) =>
+        withDefaults(location, defaultServiceLocation),
+      );
+      
+      // Normalize each individual service entry and its nested objects
+      const normalizedServiceEntries = normalized.serviceEntries.map((entry) => {
+        const normalizedEntry = withDefaults(entry, defaultServiceEntry);
+        return {
+          ...normalizedEntry,
+          attachments: normalizedEntry.attachments.map((attachment) =>
+            withDefaults(attachment, defaultFileAttachment),
+          ),
+        };
+      });
+      
+      // Normalize each individual custom car part
+      const normalizedCustomCarParts = normalized.customCarParts.map((part) =>
+        withDefaults(part, defaultCarPart),
+      );
+      
+      setCars(normalizedCars);
+      setSelectedCar(normalized.selectedCar);
+      setServiceEntries(normalizedServiceEntries);
+      setServiceLocations(normalizedServiceLocations);
+      setCustomCarParts(normalizedCustomCarParts);
+    }
+  }, [loadedData]);
+
+  // Save data to Firebase with debouncing
+  const dataToSave: CarMaintenanceData = {
+    cars,
+    selectedCar,
+    serviceEntries,
+    serviceLocations,
+    customCarParts,
+  };
+  useTinyDataSaver(FIREBASE_TINY_PATH.CAR_MAINTENANCE, dataToSave, isLoaded);
+
+  // Upload file to Firebase Storage
+  const uploadAttachment = useCallback(
+    async (serviceEntryId: string, file: File): Promise<FileAttachment> => {
+      if (!user) throw new Error('User not authenticated');
+
+      const attachmentId = `attachment-${Date.now()}`;
+      const path = `tinies/${FIREBASE_TINY_PATH.CAR_MAINTENANCE}/${user.uid}/${serviceEntryId}/${attachmentId}-${file.name}`;
+      const downloadURL = await uploadFile(path, file);
+
+      const attachment: FileAttachment = {
+        id: attachmentId,
+        name: file.name,
+        url: downloadURL,
+        type: file.type.startsWith('image/') ? 'image' : 'document',
+        size: file.size,
+      };
+
+      return attachment;
+    },
+    [user],
+  );
+
+  // Delete file from Firebase Storage
+  const deleteAttachmentFile = useCallback(
+    async (attachmentUrl: string): Promise<void> => {
+      if (!user) return;
+
+      try {
+        const urlObj = new URL(attachmentUrl);
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+)/);
+        if (pathMatch) {
+          const encodedPath = pathMatch[1].split('?')[0];
+          const path = decodeURIComponent(encodedPath);
+          await deleteFile(path);
+        }
+      } catch (error) {
+        console.error('Error deleting attachment file:', error);
+      }
+    },
+    [user],
+  );
 
   // Get all available car parts (default + custom)
   const allCarParts = useMemo(() => {
@@ -294,5 +416,9 @@ export function useCarMaintenance() {
     addCustomCarPart,
     deleteCustomCarPart,
     updateServiceCarParts,
+
+    // File operations
+    uploadAttachment,
+    deleteAttachmentFile,
   };
 }
