@@ -35,6 +35,17 @@ export interface CarPart {
   isCustom: boolean;
 }
 
+export interface Issue {
+  id: string;
+  carId: string;
+  title: string;
+  description: string;
+  carParts: string[]; // Array of car part IDs
+  createdAt: number; // timestamp in milliseconds
+  status: 'open' | 'resolved';
+  notes: string;
+}
+
 export interface ServiceEntry {
   id: string;
   carId: string;
@@ -50,6 +61,7 @@ export interface ServiceEntry {
   notes: string;
   attachments: FileAttachment[];
   carParts: string[]; // Array of car part IDs
+  issueIds: string[]; // Array of issue IDs assigned to this service entry
 }
 
 /**
@@ -61,4 +73,5 @@ export interface CarMaintenanceData extends Record<string, unknown> {
   serviceEntries: ServiceEntry[];
   serviceLocations: ServiceLocation[];
   customCarParts: CarPart[];
+  issues: Issue[];
 }
