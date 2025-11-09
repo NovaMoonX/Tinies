@@ -6,10 +6,13 @@ import {
   AddServiceEntryForm,
   EditServiceEntryForm,
   ServiceEntryCard,
+  AddIssueForm,
+  EditIssueForm,
+  IssueCard,
 } from './CarMaintenance.components';
 import { useCarMaintenance } from './CarMaintenance.hooks';
 import { getServiceSummary } from './CarMaintenance.utils';
-import { ServiceEntry } from './CarMaintenance.types';
+import { Issue, ServiceEntry } from './CarMaintenance.types';
 import TinyPage from '@ui/layout/TinyPage';
 
 export function CarMaintenance() {
@@ -28,14 +31,26 @@ export function CarMaintenance() {
     updateServiceEntry,
     getServiceEntriesForCar,
     addServiceLocation,
+    addIssue,
+    deleteIssue,
+    updateIssue,
+    getIssuesForCar,
+    assignIssueToServiceEntry,
+    unassignIssueFromServiceEntry,
   } = useCarMaintenance();
 
   const [editingEntry, setEditingEntry] = useState<ServiceEntry | null>(null);
+  const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
 
   const currentCar = selectedCar ? getCar(selectedCar) : null;
   const serviceEntries = useMemo(
     () => (selectedCar ? getServiceEntriesForCar(selectedCar) : []),
     [selectedCar, getServiceEntriesForCar],
+  );
+  
+  const carIssues = useMemo(
+    () => (selectedCar ? getIssuesForCar(selectedCar) : []),
+    [selectedCar, getIssuesForCar],
   );
 
   const serviceSummary = useMemo(() => {
@@ -70,6 +85,21 @@ export function CarMaintenance() {
   ) => {
     updateServiceEntry(entryId, updates);
     setEditingEntry(null);
+  };
+
+  const handleUpdateIssue = (
+    issueId: string,
+    title: string,
+    description: string,
+    carParts: string[],
+    notes: string,
+  ) => {
+    updateIssue(issueId, { title, description, carParts, notes });
+    setEditingIssue(null);
+  };
+
+  const handleUpdateIssueStatus = (issueId: string, status: 'open' | 'resolved') => {
+    updateIssue(issueId, { status });
   };
 
   return (
@@ -114,6 +144,7 @@ export function CarMaintenance() {
             variant='underline'
             tabsList={[
               { value: 'services', label: '🔧 Services' },
+              { value: 'issues', label: '⚠️ Issues' },
               { value: 'details', label: '🚗 Details' },
             ]}
           >
@@ -152,6 +183,7 @@ export function CarMaintenance() {
                             entry={entry}
                             location={location}
                             allCarParts={allCarParts}
+                            issues={carIssues}
                             onDelete={deleteServiceEntry}
                             onEdit={setEditingEntry}
                           />
@@ -166,6 +198,55 @@ export function CarMaintenance() {
                       <p className='text-sm'>
                         Add your first service entry to start tracking maintenance
                         for this vehicle.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value='issues'>
+              <div className='space-y-6 pt-6'>
+                {!editingIssue ? (
+                  <AddIssueForm
+                    carId={selectedCar}
+                    allCarParts={allCarParts}
+                    onAdd={addIssue}
+                  />
+                ) : (
+                  <EditIssueForm
+                    issue={editingIssue}
+                    allCarParts={allCarParts}
+                    onUpdate={handleUpdateIssue}
+                    onCancel={() => setEditingIssue(null)}
+                  />
+                )}
+
+                {carIssues.length > 0 ? (
+                  <div className='space-y-4'>
+                    <h3 className='text-lg font-semibold'>Reported Issues</h3>
+                    <div className='space-y-3'>
+                      {carIssues.map((issue) => (
+                        <IssueCard
+                          key={issue.id}
+                          issue={issue}
+                          allCarParts={allCarParts}
+                          serviceEntries={serviceEntries}
+                          onDelete={deleteIssue}
+                          onUpdateStatus={handleUpdateIssueStatus}
+                          onEdit={setEditingIssue}
+                          onAssignToServiceEntry={assignIssueToServiceEntry}
+                          onUnassignFromServiceEntry={unassignIssueFromServiceEntry}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className='rounded-2xl border border-dashed border-border bg-muted/30 p-12 text-center'>
+                    <div className='space-y-2 text-foreground/60'>
+                      <p className='text-lg font-medium'>No issues reported yet</p>
+                      <p className='text-sm'>
+                        Report any issues you notice with your vehicle, and assign them to service entries when they're addressed.
                       </p>
                     </div>
                   </div>

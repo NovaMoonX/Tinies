@@ -1189,6 +1189,7 @@ interface ServiceEntryCardProps {
   entry: ServiceEntry;
   location: ServiceLocation | undefined;
   allCarParts: CarPart[];
+  issues?: Issue[];
   onDelete: (entryId: string) => void;
   onEdit: (entry: ServiceEntry) => void;
 }
@@ -1197,11 +1198,16 @@ export function ServiceEntryCard({
   entry,
   location,
   allCarParts,
+  issues = [],
   onDelete,
   onEdit,
 }: ServiceEntryCardProps) {
   const affectedParts = allCarParts.filter((part) =>
     entry.carParts.includes(part.id),
+  );
+
+  const assignedIssues = issues.filter((issue) =>
+    entry.issueIds.includes(issue.id),
   );
 
   return (
@@ -1266,11 +1272,638 @@ export function ServiceEntryCard({
         </div>
       )}
 
+      {assignedIssues.length > 0 && (
+        <div className='rounded-lg bg-muted/30 p-3'>
+          <div className='mb-2 text-xs font-semibold text-foreground/70'>
+            Assigned Issues:
+          </div>
+          <div className='space-y-2'>
+            {assignedIssues.map((issue) => (
+              <div
+                key={issue.id}
+                className='flex items-center justify-between text-sm'
+              >
+                <span className='text-foreground/80'>{issue.title}</span>
+                <Badge
+                  variant={issue.status === 'open' ? 'destructive' : 'success'}
+                  size='xs'
+                >
+                  {issue.status === 'open' ? 'Open' : 'Resolved'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {entry.notes && (
         <Disclosure label='Notes' buttonClassName='text-sm'>
           <p className='mt-2 text-sm text-foreground/70'>{entry.notes}</p>
         </Disclosure>
       )}
+    </div>
+  );
+}
+
+/* ===== Issue Components ===== */
+
+import { Issue } from './CarMaintenance.types';
+
+interface AddIssueFormProps {
+  carId: string;
+  allCarParts: CarPart[];
+  onAdd: (
+    carId: string,
+    title: string,
+    description: string,
+    carParts: string[],
+    notes: string,
+  ) => string;
+}
+
+export function AddIssueForm({ carId, allCarParts, onAdd }: AddIssueFormProps) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
+  const [showCarPartsModal, setShowCarPartsModal] = useState(false);
+  const [selectedCarParts, setSelectedCarParts] = useState<string[]>([]);
+
+  const handleAdd = () => {
+    if (title.trim() && description.trim()) {
+      onAdd(carId, title.trim(), description.trim(), selectedCarParts, notes.trim());
+      setTitle('');
+      setDescription('');
+      setNotes('');
+      setSelectedCarParts([]);
+    }
+  };
+
+  const handleToggleCarPart = (partId: string) => {
+    setSelectedCarParts((prev) =>
+      prev.includes(partId)
+        ? prev.filter((id) => id !== partId)
+        : [...prev, partId],
+    );
+  };
+
+  const internalParts = allCarParts.filter((p) => p.category === 'internal');
+  const externalParts = allCarParts.filter((p) => p.category === 'external');
+
+  return (
+    <div className='rounded-2xl border border-border bg-card p-6'>
+      <h3 className='mb-4 text-lg font-semibold'>Report New Issue</h3>
+      
+      <div className='space-y-4'>
+        <Input
+          name='title'
+          placeholder='Issue title (e.g., "Strange noise when braking")'
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        
+        <Textarea
+          name='description'
+          placeholder='Describe the issue in detail...'
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+        />
+
+        <div>
+          <Button
+            onClick={() => setShowCarPartsModal(true)}
+            variant='outline'
+            size='sm'
+          >
+            <Plus className='h-4 w-4' />
+            Specify Affected Parts ({selectedCarParts.length})
+          </Button>
+          
+          {selectedCarParts.length > 0 && (
+            <div className='mt-2 flex flex-wrap gap-1'>
+              {selectedCarParts.map((partId) => {
+                const part = allCarParts.find((p) => p.id === partId);
+                return part ? (
+                  <Badge
+                    key={part.id}
+                    variant={part.isCustom ? 'primary' : 'secondary'}
+                    size='xs'
+                  >
+                    {part.name}
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+        
+        <Disclosure label='Additional Notes' buttonClassName='text-sm'>
+          <div className='mt-2'>
+            <Textarea
+              name='notes'
+              placeholder='Any additional notes about this issue...'
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </Disclosure>
+        
+        <Button
+          onClick={handleAdd}
+          disabled={!title.trim() || !description.trim()}
+          className='w-full'
+        >
+          Report Issue
+        </Button>
+      </div>
+
+      {/* Car Parts Selection Modal */}
+      <Modal
+        isOpen={showCarPartsModal}
+        onClose={() => setShowCarPartsModal(false)}
+        title='Select Affected Parts'
+      >
+        <ScrollArea className='max-h-[60vh]'>
+          <div className='space-y-6 p-4'>
+            <div>
+              <h4 className='mb-3 text-sm font-semibold text-foreground/80'>
+                Internal Parts
+              </h4>
+              <div className='space-y-2'>
+                {internalParts.map((part) => (
+                  <div key={part.id} className='flex items-center gap-2'>
+                    <Checkbox
+                      checked={selectedCarParts.includes(part.id)}
+                      onCheckedChange={() => handleToggleCarPart(part.id)}
+                    />
+                    <span className='text-sm'>{part.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className='mb-3 text-sm font-semibold text-foreground/80'>
+                External Parts
+              </h4>
+              <div className='space-y-2'>
+                {externalParts.map((part) => (
+                  <div key={part.id} className='flex items-center gap-2'>
+                    <Checkbox
+                      checked={selectedCarParts.includes(part.id)}
+                      onCheckedChange={() => handleToggleCarPart(part.id)}
+                    />
+                    <span className='text-sm'>{part.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+        
+        <div className='mt-4 flex justify-end'>
+          <Button onClick={() => setShowCarPartsModal(false)}>Done</Button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+interface IssueCardProps {
+  issue: Issue;
+  allCarParts: CarPart[];
+  serviceEntries: ServiceEntry[];
+  onDelete: (issueId: string) => void;
+  onUpdateStatus: (issueId: string, status: 'open' | 'resolved') => void;
+  onEdit: (issue: Issue) => void;
+  onAssignToServiceEntry: (issueId: string, entryId: string) => void;
+  onUnassignFromServiceEntry: (issueId: string, entryId: string) => void;
+}
+
+export function IssueCard({
+  issue,
+  allCarParts,
+  serviceEntries,
+  onDelete,
+  onUpdateStatus,
+  onEdit,
+  onAssignToServiceEntry,
+  onUnassignFromServiceEntry,
+}: IssueCardProps) {
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+
+  const affectedParts = allCarParts.filter((part) =>
+    issue.carParts.includes(part.id),
+  );
+
+  const assignedEntries = serviceEntries.filter((entry) =>
+    entry.issueIds.includes(issue.id),
+  );
+
+  const availableEntries = serviceEntries.filter(
+    (entry) => !entry.issueIds.includes(issue.id) && entry.carId === issue.carId,
+  );
+
+  return (
+    <>
+      <div
+        className={join(
+          'rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-muted/30',
+          issue.status === 'resolved' && 'opacity-60',
+        )}
+      >
+        <div className='mb-2 flex items-start justify-between gap-3'>
+          <div className='flex-1'>
+            <div className='mb-1 flex items-center gap-2'>
+              <h4 className='font-semibold'>{issue.title}</h4>
+              <Badge
+                variant={issue.status === 'open' ? 'destructive' : 'success'}
+                size='xs'
+              >
+                {issue.status === 'open' ? '🔴 Open' : '✅ Resolved'}
+              </Badge>
+            </div>
+            <p className='text-sm text-foreground/60'>
+              {new Date(issue.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowDetailsModal(true)}
+            variant='outline'
+            size='sm'
+          >
+            View Details
+          </Button>
+        </div>
+
+        <p className='mb-3 text-sm text-foreground/80'>{issue.description}</p>
+
+        {affectedParts.length > 0 && (
+          <div className='mb-3 flex flex-wrap gap-1'>
+            {affectedParts.map((part) => (
+              <Badge
+                key={part.id}
+                variant={part.isCustom ? 'primary' : 'secondary'}
+                size='xs'
+              >
+                {part.name}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {assignedEntries.length > 0 && (
+          <div className='text-xs text-foreground/60'>
+            📋 Assigned to {assignedEntries.length} service{' '}
+            {assignedEntries.length === 1 ? 'entry' : 'entries'}
+          </div>
+        )}
+      </div>
+
+      {/* Details Modal */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title={issue.title}
+      >
+        <div className='space-y-4'>
+          <div>
+            <div className='mb-2 flex items-center gap-2'>
+              <Badge
+                variant={issue.status === 'open' ? 'destructive' : 'success'}
+                size='sm'
+              >
+                {issue.status === 'open' ? '🔴 Open' : '✅ Resolved'}
+              </Badge>
+              <span className='text-sm text-foreground/60'>
+                Reported: {new Date(issue.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <h4 className='mb-2 text-sm font-semibold'>Description</h4>
+            <p className='text-sm text-foreground/80'>{issue.description}</p>
+          </div>
+
+          {affectedParts.length > 0 && (
+            <div>
+              <h4 className='mb-2 text-sm font-semibold'>Affected Parts</h4>
+              <div className='flex flex-wrap gap-1'>
+                {affectedParts.map((part) => (
+                  <Badge
+                    key={part.id}
+                    variant={part.isCustom ? 'primary' : 'secondary'}
+                    size='xs'
+                  >
+                    {part.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {issue.notes && (
+            <div>
+              <h4 className='mb-2 text-sm font-semibold'>Additional Notes</h4>
+              <p className='text-sm text-foreground/70'>{issue.notes}</p>
+            </div>
+          )}
+
+          {assignedEntries.length > 0 && (
+            <div>
+              <h4 className='mb-2 text-sm font-semibold'>
+                Assigned to Service Entries
+              </h4>
+              <div className='space-y-2'>
+                {assignedEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className='flex items-center justify-between rounded-lg bg-muted/30 p-2 text-sm'
+                  >
+                    <div>
+                      <div className='font-medium'>{entry.title}</div>
+                      <div className='text-xs text-foreground/60'>
+                        {formatDate(entry.date)}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        onUnassignFromServiceEntry(issue.id, entry.id);
+                      }}
+                      variant='secondary'
+                      size='sm'
+                    >
+                      Unassign
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className='flex gap-2'>
+            <Button
+              onClick={() => setShowAssignModal(true)}
+              variant='outline'
+              className='flex-1'
+              disabled={availableEntries.length === 0}
+            >
+              Assign to Service Entry
+            </Button>
+            <Button
+              onClick={() => {
+                onUpdateStatus(
+                  issue.id,
+                  issue.status === 'open' ? 'resolved' : 'open',
+                );
+                setShowDetailsModal(false);
+              }}
+              variant={issue.status === 'open' ? 'primary' : 'outline'}
+              className='flex-1'
+            >
+              {issue.status === 'open' ? 'Mark Resolved' : 'Reopen'}
+            </Button>
+          </div>
+
+          <div className='flex gap-2'>
+            <Button
+              onClick={() => {
+                onEdit(issue);
+                setShowDetailsModal(false);
+              }}
+              variant='secondary'
+              className='flex-1'
+            >
+              Edit Issue
+            </Button>
+            <Button
+              onClick={() => {
+                onDelete(issue.id);
+                setShowDetailsModal(false);
+              }}
+              variant='destructive'
+              className='flex-1'
+            >
+              Delete Issue
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Assign to Service Entry Modal */}
+      <Modal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title='Assign to Service Entry'
+      >
+        <div className='space-y-3'>
+          {availableEntries.length > 0 ? (
+            <>
+              <p className='text-sm text-foreground/70'>
+                Select a service entry to assign this issue. The affected car
+                parts will be automatically added to the service entry.
+              </p>
+              <ScrollArea className='max-h-[400px]'>
+                <div className='space-y-2'>
+                  {availableEntries.map((entry) => (
+                    <button
+                      key={entry.id}
+                      onClick={() => {
+                        onAssignToServiceEntry(issue.id, entry.id);
+                        setShowAssignModal(false);
+                        setShowDetailsModal(false);
+                      }}
+                      className='w-full rounded-lg border border-border bg-card p-3 text-left transition-colors hover:bg-muted/30'
+                    >
+                      <div className='font-medium'>{entry.title}</div>
+                      <div className='text-xs text-foreground/60'>
+                        {formatDate(entry.date)} • {entry.serviceType}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </>
+          ) : (
+            <p className='text-center text-sm text-foreground/60'>
+              No available service entries to assign this issue to.
+            </p>
+          )}
+        </div>
+      </Modal>
+    </>
+  );
+}
+
+interface EditIssueFormProps {
+  issue: Issue;
+  allCarParts: CarPart[];
+  onUpdate: (
+    issueId: string,
+    title: string,
+    description: string,
+    carParts: string[],
+    notes: string,
+  ) => void;
+  onCancel: () => void;
+}
+
+export function EditIssueForm({
+  issue,
+  allCarParts,
+  onUpdate,
+  onCancel,
+}: EditIssueFormProps) {
+  const [title, setTitle] = useState(issue.title);
+  const [description, setDescription] = useState(issue.description);
+  const [notes, setNotes] = useState(issue.notes);
+  const [showCarPartsModal, setShowCarPartsModal] = useState(false);
+  const [selectedCarParts, setSelectedCarParts] = useState<string[]>(
+    issue.carParts,
+  );
+
+  const handleUpdate = () => {
+    if (title.trim() && description.trim()) {
+      onUpdate(issue.id, title.trim(), description.trim(), selectedCarParts, notes.trim());
+    }
+  };
+
+  const handleToggleCarPart = (partId: string) => {
+    setSelectedCarParts((prev) =>
+      prev.includes(partId)
+        ? prev.filter((id) => id !== partId)
+        : [...prev, partId],
+    );
+  };
+
+  const internalParts = allCarParts.filter((p) => p.category === 'internal');
+  const externalParts = allCarParts.filter((p) => p.category === 'external');
+
+  return (
+    <div className='rounded-2xl border border-border bg-card p-6'>
+      <h3 className='mb-4 text-lg font-semibold'>Edit Issue</h3>
+      
+      <div className='space-y-4'>
+        <Input
+          name='title'
+          placeholder='Issue title'
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        
+        <Textarea
+          name='description'
+          placeholder='Describe the issue in detail...'
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+        />
+
+        <div>
+          <Button
+            onClick={() => setShowCarPartsModal(true)}
+            variant='outline'
+            size='sm'
+          >
+            <Plus className='h-4 w-4' />
+            Specify Affected Parts ({selectedCarParts.length})
+          </Button>
+          
+          {selectedCarParts.length > 0 && (
+            <div className='mt-2 flex flex-wrap gap-1'>
+              {selectedCarParts.map((partId) => {
+                const part = allCarParts.find((p) => p.id === partId);
+                return part ? (
+                  <Badge
+                    key={part.id}
+                    variant={part.isCustom ? 'primary' : 'secondary'}
+                    size='xs'
+                  >
+                    {part.name}
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+        
+        <Disclosure label='Additional Notes' buttonClassName='text-sm'>
+          <div className='mt-2'>
+            <Textarea
+              name='notes'
+              placeholder='Any additional notes about this issue...'
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </Disclosure>
+        
+        <div className='flex gap-2'>
+          <Button
+            onClick={handleUpdate}
+            disabled={!title.trim() || !description.trim()}
+            className='flex-1'
+          >
+            Update Issue
+          </Button>
+          <Button onClick={onCancel} variant='outline' className='flex-1'>
+            Cancel
+          </Button>
+        </div>
+      </div>
+
+      {/* Car Parts Selection Modal */}
+      <Modal
+        isOpen={showCarPartsModal}
+        onClose={() => setShowCarPartsModal(false)}
+        title='Select Affected Parts'
+      >
+        <ScrollArea className='max-h-[60vh]'>
+          <div className='space-y-6 p-4'>
+            <div>
+              <h4 className='mb-3 text-sm font-semibold text-foreground/80'>
+                Internal Parts
+              </h4>
+              <div className='space-y-2'>
+                {internalParts.map((part) => (
+                  <div key={part.id} className='flex items-center gap-2'>
+                    <Checkbox
+                      checked={selectedCarParts.includes(part.id)}
+                      onCheckedChange={() => handleToggleCarPart(part.id)}
+                    />
+                    <span className='text-sm'>{part.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className='mb-3 text-sm font-semibold text-foreground/80'>
+                External Parts
+              </h4>
+              <div className='space-y-2'>
+                {externalParts.map((part) => (
+                  <div key={part.id} className='flex items-center gap-2'>
+                    <Checkbox
+                      checked={selectedCarParts.includes(part.id)}
+                      onCheckedChange={() => handleToggleCarPart(part.id)}
+                    />
+                    <span className='text-sm'>{part.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+        
+        <div className='mt-4 flex justify-end'>
+          <Button onClick={() => setShowCarPartsModal(false)}>Done</Button>
+        </div>
+      </Modal>
     </div>
   );
 }
