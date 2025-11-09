@@ -81,6 +81,41 @@ export function MySingleFieldComponent({ options, value, onChange }) {
 ### 🚫 No Persistent Storage by Default
 **Do NOT use localStorage or sessionStorage unless explicitly requested.** All tinies should work entirely in memory using React state.
 
+### ⏰ Date and Time Storage
+**Always store date and time values as milliseconds (numbers) using `Date.now()` or `new Date().getTime()`.**
+
+- Store timestamps as `number` type, not as ISO strings or Date objects
+- Use `Date.now()` for current timestamps
+- Convert date inputs to milliseconds: `new Date(dateString).getTime()`
+- Display dates by converting from milliseconds: `new Date(timestamp).toLocaleDateString()`
+
+Example:
+```tsx
+// ✅ Correct - store as milliseconds
+interface MyData {
+  createdAt: number;  // timestamp in milliseconds
+  lastModified: number | null;  // optional timestamp
+}
+
+// Creating timestamps
+const newItem = {
+  id: generateId(),
+  createdAt: Date.now(),  // current time in ms
+  lastModified: null,
+};
+
+// Converting from date input
+const dateHeard = dateInputValue ? new Date(dateInputValue).getTime() : null;
+
+// Displaying dates
+<p>{new Date(item.createdAt).toLocaleDateString()}</p>
+
+// ❌ Wrong - don't use ISO strings
+const newItem = {
+  createdAt: new Date().toISOString(),  // Don't do this
+};
+```
+
 ### 🗑️ Always Confirm Deletions
 **Always use `useActionModal` to confirm any destructive actions (such as deleting vehicles, service entries, or locations).**
 
@@ -103,6 +138,41 @@ function handleDelete(id: string) {
 ```
 
 This applies to all destructive actions in tinies.
+
+### 🚫 Avoid Hover-Only Actions
+**Never use hover-only actions (like `opacity-0 group-hover:opacity-100`) for critical functionality such as delete buttons.**
+
+- Hover states don't work on mobile devices
+- Actions should always be visible or accessible through a menu/modal
+- For delete actions, place them in detail modals or use a visible button
+- Hover can be used for visual feedback (like shadows or scale), but not for revealing essential controls
+
+Bad example:
+```tsx
+// ❌ Delete button only visible on hover - doesn't work on mobile
+<Button
+  onClick={handleDelete}
+  variant='destructive'
+  className='opacity-0 group-hover:opacity-100'
+>
+  <Trash />
+</Button>
+```
+
+Good examples:
+```tsx
+// ✅ Delete button in detail modal (always accessible)
+<Modal>
+  <Button onClick={handleDelete} variant='destructive'>
+    Delete
+  </Button>
+</Modal>
+
+// ✅ Or always visible on the card
+<Button onClick={handleDelete} variant='destructive' size='sm'>
+  <Trash />
+</Button>
+```
 
 ### 📂 Use Disclosure for Expand/Collapse
 **Always use the `Disclosure` component for collapsible sections with expand/collapse functionality.**

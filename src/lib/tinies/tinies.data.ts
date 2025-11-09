@@ -61,6 +61,16 @@ export const ALL_TINIES: Tiny[] = [
 		status: 'active',
 		route: '/notes',
 	},
+	{
+		id: 'sayings',
+		title: 'Sayings',
+		description: 'Remember and learn from wise sayings, proverbs, and quotes. Test your knowledge with a quiz, organize by tags, and favorite the ones that matter most.',
+		startDate: '2025-11-08',
+		tags: ['learning', 'wisdom'],
+		categories: ['lifestyle', 'productivity'],
+		status: 'active',
+		route: '/sayings',
+	},
 ];
 
 export const ALL_TAGS = Array.from(

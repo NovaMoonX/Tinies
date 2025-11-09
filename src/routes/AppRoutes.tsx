@@ -75,6 +75,15 @@ export const router = createBrowserRouter([
           return { Component: Notes };
         },
       },
+      // Sayings (lazy loaded)
+      {
+        path: 'sayings',
+        HydrateFallback: Loading,
+        lazy: async () => {
+          const { default: Sayings } = await import('@tinies/sayings/Sayings');
+          return { Component: Sayings };
+        },
+      },
     ],
   },
 ]);
