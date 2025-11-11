@@ -1,21 +1,36 @@
 import { Button } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@hooks/useAuth';
+import { saveTinyVisit } from '@lib/firebase';
 
 interface TinyPageProps {
   title: string;
   description: string;
   children: ReactNode;
   maxWidth?: 'max-w-4xl' | 'max-w-6xl' | 'max-w-7xl';
+  tinyId: string;
 }
 
 export function TinyPage({ 
   title, 
   description, 
   children, 
-  maxWidth = 'max-w-7xl' 
+  maxWidth = 'max-w-7xl',
+  tinyId,
 }: TinyPageProps) {
+  const { user } = useAuth();
+
+  // Log visit when page is mounted and user is authenticated
+  useEffect(() => {
+    if (user) {
+      saveTinyVisit(tinyId, user.uid).catch((error) => {
+        console.error('Error logging tiny visit:', error);
+      });
+    }
+  }, [tinyId, user]);
+
   return (
     <div className='tiny-page'>
       <div className={join('mx-auto space-y-6', maxWidth)}>

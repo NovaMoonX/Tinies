@@ -131,6 +131,7 @@ export function ApartmentTourQuestions() {
 
   return (
     <TinyPage
+      tinyId='apartment-tour-questions'
       title='Apartment Tour Questions'
       description='Track questions and answers for different apartments. Add your own custom questions and compare answers across multiple properties.'
       maxWidth='max-w-4xl'

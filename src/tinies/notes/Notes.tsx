@@ -168,6 +168,7 @@ export function Notes() {
 
   return (
     <TinyPage
+      tinyId='notes'
       title='📝 Notes'
       description='A simple note-taking app inspired by Google Keep. Create notes with titles, tags, emojis, and custom colors. Pin important notes, archive old ones, and move unwanted notes to trash (auto-deleted after 30 days).'
     >

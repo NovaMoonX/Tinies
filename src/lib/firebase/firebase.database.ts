@@ -64,3 +64,43 @@ export async function updateTinyData<T extends Record<string, unknown>>(
     throw error;
   }
 }
+
+/**
+ * Save a tiny visit timestamp for a user
+ * @param tinyId - The tiny's ID
+ * @param userId - The user's ID
+ */
+export async function saveTinyVisit(
+  tinyId: string,
+  userId: string,
+): Promise<void> {
+  try {
+    const visitRef = ref(database, `tiny-visits/${userId}/${tinyId}`);
+    await set(visitRef, { lastVisitedAt: Date.now() });
+  } catch (error) {
+    console.error('Error saving tiny visit:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all tiny visits for a user
+ * @param userId - The user's ID
+ * @returns Map of tiny IDs to visit timestamps
+ */
+export async function getTinyVisits(
+  userId: string,
+): Promise<Record<string, { lastVisitedAt: number }> | null> {
+  try {
+    const visitsRef = ref(database, `tiny-visits/${userId}`);
+    const snapshot = await get(visitsRef);
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting tiny visits:', error);
+    return null;
+  }
+}
