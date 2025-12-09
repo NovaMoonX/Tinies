@@ -169,6 +169,14 @@ export function ContactDetailsModal({
         <div className='space-y-4'>
           <h3 className='font-semibold'>Contact Information</h3>
 
+          {contact.phones.length === 0 &&
+            contact.emails.length === 0 &&
+            !contact.birthday && (
+              <p className='text-foreground/60 text-sm italic'>
+                No contact information available
+              </p>
+            )}
+
           {contact.phones.length > 0 && (
             <div className='space-y-2'>
               <p className='text-foreground/70 text-sm'>Phone Numbers</p>
