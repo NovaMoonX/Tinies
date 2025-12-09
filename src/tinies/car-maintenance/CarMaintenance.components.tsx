@@ -378,6 +378,7 @@ interface AddServiceEntryFormProps {
   carId: string;
   serviceLocations: ServiceLocation[];
   allCarParts: CarPart[];
+  issues: Issue[];
   onAdd: (
     carId: string,
     serviceType: string,
@@ -392,6 +393,7 @@ interface AddServiceEntryFormProps {
     notes: string,
     attachments: never[],
     carParts: string[],
+    issueIds: string[],
   ) => void;
   onAddLocation: (
     name: string,
@@ -407,6 +409,7 @@ export function AddServiceEntryForm({
   carId,
   serviceLocations,
   allCarParts,
+  issues,
   onAdd,
   onAddLocation,
 }: AddServiceEntryFormProps) {
@@ -422,6 +425,7 @@ export function AddServiceEntryForm({
   const [cost, setCost] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedParts, setSelectedParts] = useState<string[]>([]);
+  const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationAddress, setNewLocationAddress] = useState('');
@@ -447,6 +451,33 @@ export function AddServiceEntryForm({
 
   const handleFieldBlur = () => {
     autoDetectParts();
+  };
+
+  const handleIssueToggle = (issueId: string) => {
+    setSelectedIssues((prev) => {
+      const newSelected = prev.includes(issueId)
+        ? prev.filter((id) => id !== issueId)
+        : [...prev, issueId];
+      
+      // Update car parts based on selected issues
+      const issueCarParts = issues
+        .filter((issue) => newSelected.includes(issue.id))
+        .flatMap((issue) => issue.carParts);
+      
+      // Auto-detect parts from text fields
+      const autoDetectedParts = autoDetectCarParts(
+        title,
+        description,
+        notes,
+        allCarParts,
+      );
+      
+      // Merge all parts: auto-detected + issue parts + manually selected
+      const allParts = Array.from(new Set([...autoDetectedParts, ...issueCarParts, ...selectedParts]));
+      setSelectedParts(allParts);
+      
+      return newSelected;
+    });
   };
 
   const handleAddLocation = () => {
@@ -487,6 +518,7 @@ export function AddServiceEntryForm({
       notes.trim(),
       [],
       selectedParts,
+      selectedIssues,
     );
 
     // Reset form
@@ -501,6 +533,7 @@ export function AddServiceEntryForm({
     setCost('');
     setNotes('');
     setSelectedParts([]);
+    setSelectedIssues([]);
     setShowForm(false);
   };
 
@@ -774,6 +807,41 @@ export function AddServiceEntryForm({
             onTogglePart={togglePart}
           />
 
+          {issues.length > 0 && (
+            <div>
+              <label className='mb-2 block text-sm font-medium'>
+                Related Issues (Optional)
+              </label>
+              <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
+                {issues.map((issue) => (
+                  <div key={issue.id} className='flex items-start gap-2'>
+                    <Checkbox
+                      checked={selectedIssues.includes(issue.id)}
+                      onCheckedChange={() => handleIssueToggle(issue.id)}
+                    />
+                    <div className='flex-1'>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-sm font-medium'>{issue.title}</span>
+                        <Badge
+                          variant={issue.status === 'open' ? 'destructive' : 'success'}
+                          size='xs'
+                        >
+                          {issue.status === 'open' ? 'Open' : 'Resolved'}
+                        </Badge>
+                      </div>
+                      {issue.description && (
+                        <p className='text-xs text-foreground/60'>{issue.description}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className='mt-1 text-xs text-foreground/60'>
+                Selecting issues will automatically add their affected car parts to this service entry.
+              </p>
+            </div>
+          )}
+
           <div className='flex gap-2'>
             <Button onClick={handleSubmit} className='flex-1'>
               Add Service
@@ -797,6 +865,7 @@ interface EditServiceEntryFormProps {
   entry: ServiceEntry;
   serviceLocations: ServiceLocation[];
   allCarParts: CarPart[];
+  issues: Issue[];
   onUpdate: (
     entryId: string,
     updates: {
@@ -811,6 +880,7 @@ interface EditServiceEntryFormProps {
       cost: number | null;
       notes: string;
       carParts: string[];
+      issueIds: string[];
     },
   ) => void;
   onCancel: () => void;
@@ -828,6 +898,7 @@ export function EditServiceEntryForm({
   entry,
   serviceLocations,
   allCarParts,
+  issues,
   onUpdate,
   onCancel,
   onAddLocation,
@@ -843,6 +914,7 @@ export function EditServiceEntryForm({
   const [cost, setCost] = useState(entry.cost?.toString() || '');
   const [notes, setNotes] = useState(entry.notes);
   const [selectedParts, setSelectedParts] = useState<string[]>(entry.carParts);
+  const [selectedIssues, setSelectedIssues] = useState<string[]>(entry.issueIds);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [newLocationName, setNewLocationName] = useState('');
   const [newLocationAddress, setNewLocationAddress] = useState('');
@@ -868,6 +940,33 @@ export function EditServiceEntryForm({
 
   const handleFieldBlur = () => {
     autoDetectParts();
+  };
+
+  const handleIssueToggle = (issueId: string) => {
+    setSelectedIssues((prev) => {
+      const newSelected = prev.includes(issueId)
+        ? prev.filter((id) => id !== issueId)
+        : [...prev, issueId];
+      
+      // Update car parts based on selected issues
+      const issueCarParts = issues
+        .filter((issue) => newSelected.includes(issue.id))
+        .flatMap((issue) => issue.carParts);
+      
+      // Auto-detect parts from text fields
+      const autoDetectedParts = autoDetectCarParts(
+        title,
+        description,
+        notes,
+        allCarParts,
+      );
+      
+      // Merge all parts: auto-detected + issue parts + manually selected
+      const allParts = Array.from(new Set([...autoDetectedParts, ...issueCarParts, ...selectedParts]));
+      setSelectedParts(allParts);
+      
+      return newSelected;
+    });
   };
 
   const handleAddLocation = () => {
@@ -906,6 +1005,7 @@ export function EditServiceEntryForm({
       cost: cost ? parseFloat(cost) : null,
       notes: notes.trim(),
       carParts: selectedParts,
+      issueIds: selectedIssues,
     });
   };
 
@@ -1171,6 +1271,41 @@ export function EditServiceEntryForm({
         selectedParts={selectedParts}
         onTogglePart={togglePart}
       />
+
+      {issues.length > 0 && (
+        <div>
+          <label className='mb-2 block text-sm font-medium'>
+            Related Issues (Optional)
+          </label>
+          <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
+            {issues.map((issue) => (
+              <div key={issue.id} className='flex items-start gap-2'>
+                <Checkbox
+                  checked={selectedIssues.includes(issue.id)}
+                  onCheckedChange={() => handleIssueToggle(issue.id)}
+                />
+                <div className='flex-1'>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-sm font-medium'>{issue.title}</span>
+                    <Badge
+                      variant={issue.status === 'open' ? 'destructive' : 'success'}
+                      size='xs'
+                    >
+                      {issue.status === 'open' ? 'Open' : 'Resolved'}
+                    </Badge>
+                  </div>
+                  {issue.description && (
+                    <p className='text-xs text-foreground/60'>{issue.description}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className='mt-1 text-xs text-foreground/60'>
+            Selecting issues will automatically add their affected car parts to this service entry.
+          </p>
+        </div>
+      )}
 
       <div className='flex gap-2'>
         <Button onClick={handleSubmit} className='flex-1'>

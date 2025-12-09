@@ -225,6 +225,7 @@ export function useCarMaintenance() {
       notes: string,
       attachments: FileAttachment[],
       manualCarParts: string[],
+      issueIds: string[],
     ) => {
       // Auto-detect car parts from title, description, and notes
       const autoDetectedParts = autoDetectCarParts(
@@ -234,9 +235,14 @@ export function useCarMaintenance() {
         allCarParts,
       );
 
-      // Combine manual and auto-detected parts (remove duplicates)
+      // Get car parts from selected issues
+      const issueCarParts = issues
+        .filter((issue) => issueIds.includes(issue.id))
+        .flatMap((issue) => issue.carParts);
+
+      // Combine manual, auto-detected, and issue parts (remove duplicates)
       const allPartIds = Array.from(
-        new Set([...manualCarParts, ...autoDetectedParts]),
+        new Set([...manualCarParts, ...autoDetectedParts, ...issueCarParts]),
       );
 
       const newEntry: ServiceEntry = {
@@ -254,11 +260,11 @@ export function useCarMaintenance() {
         notes,
         attachments,
         carParts: allPartIds,
-        issueIds: [],
+        issueIds,
       };
       setServiceEntries((prev) => [newEntry, ...prev]);
     },
-    [allCarParts],
+    [allCarParts, issues],
   );
 
   const deleteServiceEntry = useCallback((entryId: string) => {

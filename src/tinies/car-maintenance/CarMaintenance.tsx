@@ -81,6 +81,7 @@ export function CarMaintenance() {
       cost: number | null;
       notes: string;
       carParts: string[];
+      issueIds: string[];
     },
   ) => {
     updateServiceEntry(entryId, updates);
@@ -156,6 +157,7 @@ export function CarMaintenance() {
                     carId={selectedCar}
                     serviceLocations={serviceLocations}
                     allCarParts={allCarParts}
+                    issues={carIssues}
                     onAdd={addServiceEntry}
                     onAddLocation={addServiceLocation}
                   />
@@ -164,6 +166,7 @@ export function CarMaintenance() {
                     entry={editingEntry}
                     serviceLocations={serviceLocations}
                     allCarParts={allCarParts}
+                    issues={carIssues}
                     onUpdate={handleUpdateService}
                     onCancel={() => setEditingEntry(null)}
                     onAddLocation={addServiceLocation}
