@@ -30,6 +30,7 @@ export function TravelTracker() {
 
   return (
     <TinyPage
+      tinyId='travel-tracker'
       title='Travel Tracker'
       description="Keep track of all the places you've visited across the US and around the world. Add descriptions and photos to remember your adventures."
       maxWidth='max-w-6xl'

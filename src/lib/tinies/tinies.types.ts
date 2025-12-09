@@ -10,3 +10,7 @@ export interface Tiny {
 	status: 'active' | 'archived' | 'in-progress';
 	route?: string; // optional route for the tiny
 }
+
+export interface TinyVisit {
+	lastVisitedAt: number; // timestamp in milliseconds
+}

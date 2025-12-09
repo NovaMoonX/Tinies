@@ -75,6 +75,7 @@ export function Sayings() {
 
   return (
     <TinyPage
+      tinyId='sayings'
       title='💭 Sayings'
       description='Remember and learn from wise sayings, proverbs, and quotes. Test your knowledge with a quiz, organize by tags, and favorite the ones that matter most.'
     >

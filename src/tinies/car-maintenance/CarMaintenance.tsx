@@ -104,6 +104,7 @@ export function CarMaintenance() {
 
   return (
     <TinyPage
+      tinyId='car-maintenance'
       title='Car Maintenance Tracker'
       description='Keep track of maintenance and service records for all your vehicles. Auto-detect affected parts and manage service locations.'
       maxWidth='max-w-6xl'
