@@ -605,6 +605,86 @@ export function AddServiceEntryForm({
             </div>
           )}
 
+          {issues.length > 0 && (
+            <Disclosure label='Related Issues (Optional)' buttonClassName='text-sm'>
+              <div className='space-y-4 pt-2'>
+                {issues.filter((issue) => issue.status === 'open').length > 0 && (
+                  <div>
+                    <h4 className='mb-2 text-sm font-semibold text-foreground/80'>
+                      Open Issues
+                    </h4>
+                    <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
+                      {issues
+                        .filter((issue) => issue.status === 'open')
+                        .map((issue) => (
+                          <div key={issue.id} className='flex items-start gap-2'>
+                            <Checkbox
+                              checked={selectedIssues.includes(issue.id)}
+                              onCheckedChange={() => handleIssueToggle(issue.id)}
+                            />
+                            <div className='flex-1 min-w-0'>
+                              <div className='flex items-center gap-2 flex-wrap'>
+                                <span className='text-sm font-medium'>{issue.title}</span>
+                                <Badge
+                                  variant='destructive'
+                                  size='xs'
+                                  className='whitespace-nowrap'
+                                >
+                                  Open
+                                </Badge>
+                              </div>
+                              {issue.description && (
+                                <p className='text-xs text-foreground/60'>{issue.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                
+                {issues.filter((issue) => issue.status === 'resolved').length > 0 && (
+                  <div>
+                    <h4 className='mb-2 text-sm font-semibold text-foreground/80'>
+                      Resolved Issues
+                    </h4>
+                    <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
+                      {issues
+                        .filter((issue) => issue.status === 'resolved')
+                        .map((issue) => (
+                          <div key={issue.id} className='flex items-start gap-2'>
+                            <Checkbox
+                              checked={selectedIssues.includes(issue.id)}
+                              onCheckedChange={() => handleIssueToggle(issue.id)}
+                            />
+                            <div className='flex-1 min-w-0'>
+                              <div className='flex items-center gap-2 flex-wrap'>
+                                <span className='text-sm font-medium'>{issue.title}</span>
+                                <Badge
+                                  variant='success'
+                                  size='xs'
+                                  className='whitespace-nowrap'
+                                >
+                                  Resolved
+                                </Badge>
+                              </div>
+                              {issue.description && (
+                                <p className='text-xs text-foreground/60'>{issue.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                
+                <p className='text-xs text-foreground/60'>
+                  Selecting issues will automatically add their affected car parts to this service entry.
+                </p>
+              </div>
+            </Disclosure>
+          )}
+
           <div>
             <label className='mb-2 block text-sm font-medium'>Title</label>
             <Input
@@ -806,41 +886,6 @@ export function AddServiceEntryForm({
             selectedParts={selectedParts}
             onTogglePart={togglePart}
           />
-
-          {issues.length > 0 && (
-            <div>
-              <label className='mb-2 block text-sm font-medium'>
-                Related Issues (Optional)
-              </label>
-              <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
-                {issues.map((issue) => (
-                  <div key={issue.id} className='flex items-start gap-2'>
-                    <Checkbox
-                      checked={selectedIssues.includes(issue.id)}
-                      onCheckedChange={() => handleIssueToggle(issue.id)}
-                    />
-                    <div className='flex-1'>
-                      <div className='flex items-center gap-2'>
-                        <span className='text-sm font-medium'>{issue.title}</span>
-                        <Badge
-                          variant={issue.status === 'open' ? 'destructive' : 'success'}
-                          size='xs'
-                        >
-                          {issue.status === 'open' ? 'Open' : 'Resolved'}
-                        </Badge>
-                      </div>
-                      {issue.description && (
-                        <p className='text-xs text-foreground/60'>{issue.description}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className='mt-1 text-xs text-foreground/60'>
-                Selecting issues will automatically add their affected car parts to this service entry.
-              </p>
-            </div>
-          )}
 
           <div className='flex gap-2'>
             <Button onClick={handleSubmit} className='flex-1'>
@@ -1070,6 +1115,86 @@ export function EditServiceEntryForm({
         </div>
       )}
 
+      {issues.length > 0 && (
+        <Disclosure label='Related Issues (Optional)' buttonClassName='text-sm'>
+          <div className='space-y-4 pt-2'>
+            {issues.filter((issue) => issue.status === 'open').length > 0 && (
+              <div>
+                <h4 className='mb-2 text-sm font-semibold text-foreground/80'>
+                  Open Issues
+                </h4>
+                <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
+                  {issues
+                    .filter((issue) => issue.status === 'open')
+                    .map((issue) => (
+                      <div key={issue.id} className='flex items-start gap-2'>
+                        <Checkbox
+                          checked={selectedIssues.includes(issue.id)}
+                          onCheckedChange={() => handleIssueToggle(issue.id)}
+                        />
+                        <div className='flex-1 min-w-0'>
+                          <div className='flex items-center gap-2 flex-wrap'>
+                            <span className='text-sm font-medium'>{issue.title}</span>
+                            <Badge
+                              variant='destructive'
+                              size='xs'
+                              className='whitespace-nowrap'
+                            >
+                              Open
+                            </Badge>
+                          </div>
+                          {issue.description && (
+                            <p className='text-xs text-foreground/60'>{issue.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+            
+            {issues.filter((issue) => issue.status === 'resolved').length > 0 && (
+              <div>
+                <h4 className='mb-2 text-sm font-semibold text-foreground/80'>
+                  Resolved Issues
+                </h4>
+                <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
+                  {issues
+                    .filter((issue) => issue.status === 'resolved')
+                    .map((issue) => (
+                      <div key={issue.id} className='flex items-start gap-2'>
+                        <Checkbox
+                          checked={selectedIssues.includes(issue.id)}
+                          onCheckedChange={() => handleIssueToggle(issue.id)}
+                        />
+                        <div className='flex-1 min-w-0'>
+                          <div className='flex items-center gap-2 flex-wrap'>
+                            <span className='text-sm font-medium'>{issue.title}</span>
+                            <Badge
+                              variant='success'
+                              size='xs'
+                              className='whitespace-nowrap'
+                            >
+                              Resolved
+                            </Badge>
+                          </div>
+                          {issue.description && (
+                            <p className='text-xs text-foreground/60'>{issue.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+            
+            <p className='text-xs text-foreground/60'>
+              Selecting issues will automatically add their affected car parts to this service entry.
+            </p>
+          </div>
+        </Disclosure>
+      )}
+
       <div>
         <label className='mb-2 block text-sm font-medium'>Title</label>
         <Input
@@ -1271,41 +1396,6 @@ export function EditServiceEntryForm({
         selectedParts={selectedParts}
         onTogglePart={togglePart}
       />
-
-      {issues.length > 0 && (
-        <div>
-          <label className='mb-2 block text-sm font-medium'>
-            Related Issues (Optional)
-          </label>
-          <div className='space-y-2 rounded-lg border border-border bg-muted/30 p-3'>
-            {issues.map((issue) => (
-              <div key={issue.id} className='flex items-start gap-2'>
-                <Checkbox
-                  checked={selectedIssues.includes(issue.id)}
-                  onCheckedChange={() => handleIssueToggle(issue.id)}
-                />
-                <div className='flex-1'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-sm font-medium'>{issue.title}</span>
-                    <Badge
-                      variant={issue.status === 'open' ? 'destructive' : 'success'}
-                      size='xs'
-                    >
-                      {issue.status === 'open' ? 'Open' : 'Resolved'}
-                    </Badge>
-                  </div>
-                  {issue.description && (
-                    <p className='text-xs text-foreground/60'>{issue.description}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className='mt-1 text-xs text-foreground/60'>
-            Selecting issues will automatically add their affected car parts to this service entry.
-          </p>
-        </div>
-      )}
 
       <div className='flex gap-2'>
         <Button onClick={handleSubmit} className='flex-1'>
