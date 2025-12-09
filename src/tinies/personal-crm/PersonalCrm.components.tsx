@@ -2,6 +2,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Input,
   Label,
   Modal,
@@ -48,6 +49,11 @@ export function ContactCard({ contact, onClick, onDelete }: ContactCardProps) {
           <div className='flex items-start justify-between'>
             <div className='flex-1'>
               <h3 className='mb-1 text-lg font-semibold'>{contact.name}</h3>
+              {contact.headline && (
+                <p className='text-foreground/70 mb-2 text-sm italic'>
+                  {contact.headline}
+                </p>
+              )}
               <Badge variant='secondary' className='text-xs'>
                 {getRelationshipTypeLabel(contact.relationshipType)}
               </Badge>
@@ -162,6 +168,14 @@ export function ContactDetailsModal({
         {/* Contact Information */}
         <div className='space-y-4'>
           <h3 className='font-semibold'>Contact Information</h3>
+
+          {contact.phones.length === 0 &&
+            contact.emails.length === 0 &&
+            !contact.birthday && (
+              <p className='text-foreground/60 text-sm italic'>
+                No contact information available
+              </p>
+            )}
 
           {contact.phones.length > 0 && (
             <div className='space-y-2'>
@@ -376,6 +390,7 @@ export function AddContactModal({
 }: AddContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
+    headline: '',
     relationshipType: 'friend' as RelationshipType,
     phone: '',
     phoneLabel: 'mobile',
@@ -389,6 +404,7 @@ export function AddContactModal({
 
     const newContact: Omit<Contact, 'id' | 'dateAdded'> = {
       name: formData.name,
+      headline: formData.headline || null,
       relationshipType: formData.relationshipType,
       phones: formData.phone
         ? [
@@ -421,6 +437,7 @@ export function AddContactModal({
     // Reset form
     setFormData({
       name: '',
+      headline: '',
       relationshipType: 'friend',
       phone: '',
       phoneLabel: 'mobile',
@@ -442,6 +459,18 @@ export function AddContactModal({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder='Enter name'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Headline</label>
+          <Input
+            name='headline'
+            value={formData.headline}
+            onChange={(e) =>
+              setFormData({ ...formData, headline: e.target.value })
+            }
+            placeholder='e.g., Senior Developer at Tech Corp'
           />
         </div>
 
@@ -662,12 +691,12 @@ export function ArtifactDetailsModal({
               href={artifact.content}
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary flex items-center gap-2 hover:underline'
+              className='text-primary flex items-center gap-2 break-words hover:underline'
               onClick={(e) => e.stopPropagation()}
             >
-              <span className='text-lg'>🔗</span>
-              {artifact.content}
-              <span className='text-lg'>↗️</span>
+              <span className='flex-shrink-0 text-lg'>🔗</span>
+              <span className='break-all'>{artifact.content}</span>
+              <span className='flex-shrink-0 text-lg'>↗️</span>
             </a>
           ) : artifact.type === 'photo' ? (
             <img
@@ -715,17 +744,16 @@ export function ArtifactDetailsModal({
           <h3 className='font-semibold'>Comments</h3>
 
           {artifact.comments.length > 0 && (
-            <div className='bg-muted/20 max-h-64 space-y-3 overflow-y-auto rounded-lg p-4'>
+            <div className='max-h-64 space-y-3 overflow-y-auto p-2'>
               {artifact.comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className='bg-background rounded-lg p-3 shadow-sm'
-                >
-                  <p className='mb-1 text-sm font-medium'>
-                    {getContactName(comment.contactId)}
-                  </p>
-                  <p className='mb-1 text-sm'>{comment.text}</p>
-                  <p className='text-foreground/50 text-xs'>
+                <div key={comment.id} className='flex flex-col gap-1'>
+                  <div className='bg-primary/10 max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2'>
+                    <p className='mb-1 text-xs font-semibold text-primary'>
+                      {getContactName(comment.contactId)}
+                    </p>
+                    <p className='text-sm leading-relaxed'>{comment.text}</p>
+                  </div>
+                  <p className='text-foreground/50 ml-2 text-xs'>
                     {formatDate(comment.dateAdded)}
                   </p>
                 </div>
@@ -801,12 +829,14 @@ interface AddArtifactModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (artifact: Omit<Artifact, 'id' | 'dateAdded'>) => void;
+  contacts: Contact[];
 }
 
 export function AddArtifactModal({
   isOpen,
   onClose,
   onAdd,
+  contacts,
 }: AddArtifactModalProps) {
   const [formData, setFormData] = useState({
     type: 'text' as ArtifactType,
@@ -989,6 +1019,35 @@ export function AddArtifactModal({
               }
             />
           )}
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>
+            Associate Contacts
+          </label>
+          <div className='bg-muted/30 max-h-48 space-y-2 overflow-y-auto rounded-lg p-3'>
+            {contacts.length > 0 ? (
+              contacts.map((contact) => (
+                <div key={contact.id} className='flex items-center gap-2'>
+                  <Checkbox
+                    checked={formData.contactIds.includes(contact.id)}
+                    onCheckedChange={(checked) => {
+                      const newContactIds = checked
+                        ? [...formData.contactIds, contact.id]
+                        : formData.contactIds.filter((id) => id !== contact.id);
+                      setFormData({ ...formData, contactIds: newContactIds });
+                    }}
+                    size={16}
+                  />
+                  <Label className='cursor-pointer text-sm'>
+                    {contact.name}
+                  </Label>
+                </div>
+              ))
+            ) : (
+              <p className='text-foreground/60 text-sm'>No contacts available</p>
+            )}
+          </div>
         </div>
 
         <div>
@@ -1492,6 +1551,7 @@ export function EditContactModal({
 }: EditContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
+    headline: '',
     relationshipType: 'friend' as RelationshipType,
     phone: '',
     phoneLabel: 'mobile',
@@ -1505,6 +1565,7 @@ export function EditContactModal({
     if (contact) {
       setFormData({
         name: contact.name,
+        headline: contact.headline || '',
         relationshipType: contact.relationshipType,
         phone: contact.phones[0]?.number || '',
         phoneLabel: contact.phones[0]?.label || 'mobile',
@@ -1520,6 +1581,7 @@ export function EditContactModal({
 
     const updates: Partial<Contact> = {
       name: formData.name,
+      headline: formData.headline || null,
       relationshipType: formData.relationshipType,
       phones: formData.phone
         ? [
@@ -1558,6 +1620,18 @@ export function EditContactModal({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder='Enter name'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Headline</label>
+          <Input
+            name='headline'
+            value={formData.headline}
+            onChange={(e) =>
+              setFormData({ ...formData, headline: e.target.value })
+            }
+            placeholder='e.g., Senior Developer at Tech Corp'
           />
         </div>
 
@@ -1671,6 +1745,7 @@ interface EditArtifactModalProps {
   onClose: () => void;
   artifact: Artifact | null;
   onSave: (updates: Partial<Artifact>) => void;
+  contacts: Contact[];
 }
 
 export function EditArtifactModal({
@@ -1678,12 +1753,14 @@ export function EditArtifactModal({
   onClose,
   artifact,
   onSave,
+  contacts,
 }: EditArtifactModalProps) {
   const [formData, setFormData] = useState({
     type: 'text' as ArtifactType,
     title: '',
     description: '',
     content: '',
+    contactIds: [] as string[],
     tags: '',
   });
   const [photoInputMethod, setPhotoInputMethod] = useState<'url' | 'upload'>(
@@ -1698,6 +1775,7 @@ export function EditArtifactModal({
         title: artifact.title,
         description: artifact.description,
         content: artifact.content,
+        contactIds: artifact.contactIds,
         tags: artifact.tags.join(', '),
       });
     }
@@ -1719,6 +1797,7 @@ export function EditArtifactModal({
       title: formData.title,
       description: formData.description,
       content: formData.content,
+      contactIds: formData.contactIds,
       tags: formData.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -1859,6 +1938,35 @@ export function EditArtifactModal({
               }
             />
           )}
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>
+            Associate Contacts
+          </label>
+          <div className='bg-muted/30 max-h-48 space-y-2 overflow-y-auto rounded-lg p-3'>
+            {contacts.length > 0 ? (
+              contacts.map((contact) => (
+                <div key={contact.id} className='flex items-center gap-2'>
+                  <Checkbox
+                    checked={formData.contactIds.includes(contact.id)}
+                    onCheckedChange={(checked) => {
+                      const newContactIds = checked
+                        ? [...formData.contactIds, contact.id]
+                        : formData.contactIds.filter((id) => id !== contact.id);
+                      setFormData({ ...formData, contactIds: newContactIds });
+                    }}
+                    size={16}
+                  />
+                  <Label className='cursor-pointer text-sm'>
+                    {contact.name}
+                  </Label>
+                </div>
+              ))
+            ) : (
+              <p className='text-foreground/60 text-sm'>No contacts available</p>
+            )}
+          </div>
         </div>
 
         <div>

@@ -394,12 +394,14 @@ export function PersonalCrm() {
         isOpen={isAddArtifactModalOpen}
         onClose={() => setIsAddArtifactModalOpen(false)}
         onAdd={handleAddArtifact}
+        contacts={contacts}
       />
 
       <EditArtifactModal
         isOpen={isEditArtifactModalOpen}
         onClose={() => setIsEditArtifactModalOpen(false)}
         artifact={selectedArtifact}
+        contacts={contacts}
         onSave={(updates) => {
           if (selectedArtifact) {
             handleEditArtifact(selectedArtifact.id, updates);

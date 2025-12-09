@@ -29,6 +29,7 @@ export interface ContactNote {
 export interface Contact {
   id: string;
   name: string;
+  headline: string | null; // Brief headline/tagline for the contact
   phones: PhoneNumber[];
   emails: Email[];
   birthday: string | null; // ISO date string
