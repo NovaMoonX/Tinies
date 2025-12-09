@@ -66,6 +66,7 @@ export function RecipeBook() {
 
   return (
     <TinyPage
+      tinyId='recipe-book'
       title='📖 Recipe Book'
       description='Your personal collection of favorite recipes. Search by name, filter by cook time, prep time, and recipe type. Add your own recipes with custom ingredients.'
     >

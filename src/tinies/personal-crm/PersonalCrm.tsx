@@ -274,6 +274,7 @@ export function PersonalCrm() {
 
   return (
     <TinyPage
+      tinyId='personal-crm'
       title='👥 Personal CRM'
       description='Manage your personal and professional relationships. Track contacts, save artifacts (links, notes, photos), and remember the important details that make relationships meaningful.'
     >
