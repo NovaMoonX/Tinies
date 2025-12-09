@@ -4,9 +4,14 @@ import {
   Button,
   Input,
   Modal,
+  Select,
 } from '@moondreamsdev/dreamer-ui/components';
 import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@hooks/useAuth';
+import { getTinyVisits } from '@lib/firebase';
+
+type SortOption = 'alphabetical' | 'alphabetical-reverse' | 'date-created' | 'date-created-reverse' | 'last-visited' | 'last-visited-reverse';
 
 interface TiniesFiltersProps {
   tinies: Tiny[];
@@ -14,14 +19,34 @@ interface TiniesFiltersProps {
 }
 
 function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     new Set(),
   );
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>(
+    user ? 'last-visited' : 'alphabetical'
+  );
+  const [tinyVisits, setTinyVisits] = useState<Record<string, { lastVisitedAt: number }> | null>(null);
 
-  const filteredTinies = useMemo(() => {
+  // Load tiny visits when user is authenticated
+  useEffect(() => {
+    if (user) {
+      getTinyVisits(user.uid).then((visits) => {
+        setTinyVisits(visits);
+      });
+      // Update default sort when user logs in
+      setSortOption('last-visited');
+    } else {
+      setTinyVisits(null);
+      // Update default sort when user logs out
+      setSortOption('alphabetical');
+    }
+  }, [user]);
+
+  const filteredAndSortedTinies = useMemo(() => {
     let filtered = tinies;
 
     // Filter by search query
@@ -50,13 +75,48 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
       );
     }
 
-    return filtered;
-  }, [tinies, searchQuery, selectedTags, selectedCategories]);
+    // Sort the filtered results
+    const sorted = [...filtered];
+    switch (sortOption) {
+      case 'alphabetical':
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'alphabetical-reverse':
+        sorted.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case 'date-created':
+        sorted.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        break;
+      case 'date-created-reverse':
+        sorted.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        break;
+      case 'last-visited':
+        if (tinyVisits) {
+          sorted.sort((a, b) => {
+            const aVisit = tinyVisits[a.id]?.lastVisitedAt || 0;
+            const bVisit = tinyVisits[b.id]?.lastVisitedAt || 0;
+            return bVisit - aVisit; // Most recent first
+          });
+        }
+        break;
+      case 'last-visited-reverse':
+        if (tinyVisits) {
+          sorted.sort((a, b) => {
+            const aVisit = tinyVisits[a.id]?.lastVisitedAt || 0;
+            const bVisit = tinyVisits[b.id]?.lastVisitedAt || 0;
+            return aVisit - bVisit; // Least recent first
+          });
+        }
+        break;
+    }
 
-  // Update parent component when filtered tinies change
+    return sorted;
+  }, [tinies, searchQuery, selectedTags, selectedCategories, sortOption, tinyVisits]);
+
+  // Update parent component when filtered/sorted tinies change
   useEffect(() => {
-    onFilteredTiniesChange(filteredTinies);
-  }, [filteredTinies, onFilteredTiniesChange]);
+    onFilteredTiniesChange(filteredAndSortedTinies);
+  }, [filteredAndSortedTinies, onFilteredTiniesChange]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) => {
@@ -115,6 +175,24 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
               rounded='full'
               onChange={(e) => setSearchQuery(e.target.value)}
               className='focus:border-primary/80! px-3 py-2 shadow-sm md:px-6 md:py-4 md:text-lg'
+            />
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className='w-full max-w-2xl'>
+            <Select
+              value={sortOption}
+              onChange={(value) => setSortOption(value as SortOption)}
+              options={[
+                { value: 'alphabetical', text: 'Alphabetical (A-Z)' },
+                { value: 'alphabetical-reverse', text: 'Alphabetical (Z-A)' },
+                { value: 'date-created', text: 'Date Created (Oldest First)' },
+                { value: 'date-created-reverse', text: 'Date Created (Newest First)' },
+                ...(user ? [
+                  { value: 'last-visited', text: 'Last Visited (Recent First)' },
+                  { value: 'last-visited-reverse', text: 'Last Visited (Oldest First)' },
+                ] : []),
+              ]}
             />
           </div>
 
@@ -191,7 +269,7 @@ function TiniesFilters({ tinies, onFilteredTiniesChange }: TiniesFiltersProps) {
         {/* Results count */}
         <div className='flex h-fit items-center justify-center gap-2'>
           <span className='opacity-60'>
-            Showing {filteredTinies.length} of {tinies.length}
+            Showing {filteredAndSortedTinies.length} of {tinies.length}
           </span>
 
           {/* Clear filters button for desktop */}
