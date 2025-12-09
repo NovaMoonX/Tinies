@@ -4,6 +4,7 @@ export const SAMPLE_CONTACTS: Contact[] = [
   {
     id: 'contact-1',
     name: 'Sarah Johnson',
+    headline: 'Senior Product Manager at TechCorp',
     phones: [
       { id: 'phone-1', label: 'mobile', number: '(555) 123-4567' },
       { id: 'phone-2', label: 'work', number: '(555) 987-6543' },
@@ -39,6 +40,7 @@ export const SAMPLE_CONTACTS: Contact[] = [
   {
     id: 'contact-2',
     name: 'Michael Chen',
+    headline: 'Team Lead & Full-Stack Developer',
     phones: [{ id: 'phone-3', label: 'mobile', number: '(555) 234-5678' }],
     emails: [{ id: 'email-3', label: 'personal', address: 'mchen@email.com' }],
     birthday: '1988-11-22',
@@ -59,6 +61,7 @@ export const SAMPLE_CONTACTS: Contact[] = [
   {
     id: 'contact-3',
     name: 'Emily Rodriguez',
+    headline: 'Certified Yoga Instructor',
     phones: [{ id: 'phone-4', label: 'mobile', number: '(555) 345-6789' }],
     emails: [
       { id: 'email-4', label: 'personal', address: 'emily.r@email.com' },

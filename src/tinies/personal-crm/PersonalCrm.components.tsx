@@ -49,6 +49,11 @@ export function ContactCard({ contact, onClick, onDelete }: ContactCardProps) {
           <div className='flex items-start justify-between'>
             <div className='flex-1'>
               <h3 className='mb-1 text-lg font-semibold'>{contact.name}</h3>
+              {contact.headline && (
+                <p className='text-foreground/70 mb-2 text-sm italic'>
+                  {contact.headline}
+                </p>
+              )}
               <Badge variant='secondary' className='text-xs'>
                 {getRelationshipTypeLabel(contact.relationshipType)}
               </Badge>
@@ -377,6 +382,7 @@ export function AddContactModal({
 }: AddContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
+    headline: '',
     relationshipType: 'friend' as RelationshipType,
     phone: '',
     phoneLabel: 'mobile',
@@ -390,6 +396,7 @@ export function AddContactModal({
 
     const newContact: Omit<Contact, 'id' | 'dateAdded'> = {
       name: formData.name,
+      headline: formData.headline || null,
       relationshipType: formData.relationshipType,
       phones: formData.phone
         ? [
@@ -422,6 +429,7 @@ export function AddContactModal({
     // Reset form
     setFormData({
       name: '',
+      headline: '',
       relationshipType: 'friend',
       phone: '',
       phoneLabel: 'mobile',
@@ -443,6 +451,18 @@ export function AddContactModal({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder='Enter name'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Headline</label>
+          <Input
+            name='headline'
+            value={formData.headline}
+            onChange={(e) =>
+              setFormData({ ...formData, headline: e.target.value })
+            }
+            placeholder='e.g., Senior Developer at Tech Corp'
           />
         </div>
 
@@ -1523,6 +1543,7 @@ export function EditContactModal({
 }: EditContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
+    headline: '',
     relationshipType: 'friend' as RelationshipType,
     phone: '',
     phoneLabel: 'mobile',
@@ -1536,6 +1557,7 @@ export function EditContactModal({
     if (contact) {
       setFormData({
         name: contact.name,
+        headline: contact.headline || '',
         relationshipType: contact.relationshipType,
         phone: contact.phones[0]?.number || '',
         phoneLabel: contact.phones[0]?.label || 'mobile',
@@ -1551,6 +1573,7 @@ export function EditContactModal({
 
     const updates: Partial<Contact> = {
       name: formData.name,
+      headline: formData.headline || null,
       relationshipType: formData.relationshipType,
       phones: formData.phone
         ? [
@@ -1589,6 +1612,18 @@ export function EditContactModal({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder='Enter name'
+          />
+        </div>
+
+        <div>
+          <label className='mb-1 block text-sm font-medium'>Headline</label>
+          <Input
+            name='headline'
+            value={formData.headline}
+            onChange={(e) =>
+              setFormData({ ...formData, headline: e.target.value })
+            }
+            placeholder='e.g., Senior Developer at Tech Corp'
           />
         </div>
 
