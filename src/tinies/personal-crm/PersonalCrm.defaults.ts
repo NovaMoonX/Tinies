@@ -34,6 +34,7 @@ export const defaultContactNote: ContactNote = {
 export const defaultContact: Contact = {
   id: '',
   name: '',
+  headline: null,
   phones: [],
   emails: [],
   birthday: null,
