@@ -1,12 +1,15 @@
 import { Tiny } from '@/lib/tinies';
 import { Badge, Button, Card } from '@moondreamsdev/dreamer-ui/components';
 import { BadgeVariant } from 'node_modules/@moondreamsdev/dreamer-ui/dist/src/components/badge/variants';
+import { useNavigate } from 'react-router-dom';
 
 interface TinyCardProps {
   tiny: Tiny;
 }
 
 function TinyCard({ tiny }: TinyCardProps) {
+  const navigate = useNavigate();
+
   const formattedDate = new Date(tiny.startDate).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -26,7 +29,14 @@ function TinyCard({ tiny }: TinyCardProps) {
 
   const header = (
     <div className='flex items-start justify-between gap-2'>
-      <h3 className='text-foreground text-xl font-semibold'>{tiny.title}</h3>
+      <h3
+        role='button'
+        aria-label={`check out tiny ${tiny.title}`}
+        className='text-foreground text-xl font-semibold hover:cursor-pointer hover:underline'
+        onClick={() => navigate(tiny.route || '')}
+      >
+        {tiny.title}
+      </h3>
       {tiny.status !== 'active' && (
         <Badge variant={getBadgeVariant(tiny.status)} className='text-nowrap'>
           {tiny.status}
