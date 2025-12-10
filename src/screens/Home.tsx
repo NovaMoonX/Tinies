@@ -8,7 +8,7 @@ function Home() {
   const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(ALL_TINIES);
 
   return (
-    <div className='min-h-screen w-screen p-4 pt-16 md:p-8 md:pt-32'>
+    <div className='min-h-screen w-screen p-4 pt-36 md:p-8 md:pt-40'>
       <div className='mx-auto max-w-7xl space-y-8'>
         {/* Header */}
         <div className='space-y-2 text-center'>
