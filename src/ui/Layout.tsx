@@ -20,22 +20,30 @@ function Layout() {
 
   return (
     <div className='page transition-colors duration-200'>
-      <div className='bg-background fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 shadow-sm md:py-4'>
-        <ThemeToggle />
-        <div className='flex items-center gap-3'>
-          {user ? (
-            <div className='flex items-center gap-2'>
-              <span className='text-sm'>
-                Hi, {user.displayName || user.email}
-              </span>
-              <Button variant='tertiary' onClick={handleLogout}>
-                Logout
+      <div className='fixed top-0 right-0 left-0 z-50'>
+        <div className='bg-background flex items-center justify-between px-4 py-2 md:py-4'>
+          <ThemeToggle />
+          <div className='flex items-center gap-3'>
+            {user ? (
+              <div className='flex items-center gap-2'>
+                <span className='text-sm'>
+                  Hi, {user.displayName || user.email}
+                </span>
+                <Button variant='tertiary' onClick={handleLogout}>
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant='tertiary'
+                onClick={() => setIsLoginModalOpen(true)}
+              >
+                Log In
               </Button>
-            </div>
-          ) : (
-            <Button variant='tertiary' onClick={() => setIsLoginModalOpen(true)}>Log In</Button>
-          )}
+            )}
+          </div>
         </div>
+        <div className='min-h-8 w-screen bg-gradient-to-b from-background to-transparent' />
       </div>
 
       <AuthModal
