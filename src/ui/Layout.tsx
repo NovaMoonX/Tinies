@@ -19,7 +19,7 @@ function Layout() {
   };
 
   return (
-    <div className='page transition-colors duration-200'>
+    <div className='page transition-colors duration-200 pb-10'>
       <div className='fixed top-0 right-0 left-0 z-50'>
         <div className='bg-background flex items-center justify-between px-4 py-2 md:py-4'>
           <ThemeToggle />
@@ -43,7 +43,7 @@ function Layout() {
             )}
           </div>
         </div>
-        <div className='min-h-8 w-screen bg-gradient-to-b from-background to-transparent' />
+        <div className='from-background min-h-8 w-screen bg-gradient-to-b to-transparent' />
       </div>
 
       <AuthModal
@@ -52,6 +52,10 @@ function Layout() {
       />
 
       <Outlet />
+
+      <div className='fixed right-0 bottom-0 left-0 z-50'>
+        <div className='from-background min-h-8 w-screen bg-gradient-to-t to-transparent' />
+      </div>
     </div>
   );
 }
