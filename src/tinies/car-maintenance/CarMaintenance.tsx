@@ -160,6 +160,7 @@ export function CarMaintenance() {
                     issues={carIssues}
                     onAdd={addServiceEntry}
                     onAddLocation={addServiceLocation}
+                    onUpdateIssue={updateIssue}
                   />
                 ) : (
                   <EditServiceEntryForm
@@ -170,6 +171,7 @@ export function CarMaintenance() {
                     onUpdate={handleUpdateService}
                     onCancel={() => setEditingEntry(null)}
                     onAddLocation={addServiceLocation}
+                    onUpdateIssue={updateIssue}
                   />
                 )}
 

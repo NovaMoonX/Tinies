@@ -403,6 +403,10 @@ interface AddServiceEntryFormProps {
     email: string,
     notes: string,
   ) => string;
+  onUpdateIssue: (
+    issueId: string,
+    updates: Partial<{ status: 'open' | 'resolved' }>,
+  ) => void;
 }
 
 export function AddServiceEntryForm({
@@ -412,6 +416,7 @@ export function AddServiceEntryForm({
   issues,
   onAdd,
   onAddLocation,
+  onUpdateIssue,
 }: AddServiceEntryFormProps) {
   const [showForm, setShowForm] = useState(false);
   const [isRoutine, setIsRoutine] = useState(true);
@@ -476,6 +481,20 @@ export function AddServiceEntryForm({
       const allParts = Array.from(new Set([...autoDetectedParts, ...issueCarParts, ...selectedParts]));
       setSelectedParts(allParts);
       
+      // Auto-generate title based on selected issues
+      if (newSelected.length > 0) {
+        const selectedIssueObjects = issues.filter((issue) =>
+          newSelected.includes(issue.id),
+        );
+        const issueTitles = selectedIssueObjects
+          .map((issue) => `"${issue.title}"`)
+          .join(', ');
+        setTitle(`[Resolve ${issueTitles}]`);
+      } else if (!isRoutine || !serviceType) {
+        // Clear title if no issues selected and no routine service type
+        setTitle('');
+      }
+      
       return newSelected;
     });
   };
@@ -503,6 +522,16 @@ export function AddServiceEntryForm({
 
   const handleSubmit = () => {
     if (!title.trim()) return;
+
+    // Mark open issues as resolved
+    const openIssues = selectedIssues.filter((issueId) => {
+      const issue = issues.find((i) => i.id === issueId);
+      return issue && issue.status === 'open';
+    });
+    
+    openIssues.forEach((issueId) => {
+      onUpdateIssue(issueId, { status: 'resolved' });
+    });
 
     onAdd(
       carId,
@@ -555,55 +584,6 @@ export function AddServiceEntryForm({
       ) : (
         <div className='space-y-4 rounded-lg border border-border bg-background p-6'>
           <h3 className='text-lg font-semibold'>New Service Entry</h3>
-
-          <div>
-            <label className='mb-2 block text-sm font-medium'>Service Type</label>
-            <RadioGroup
-              value={isRoutine ? 'routine' : 'custom'}
-              onChange={(value: string) => setIsRoutine(value === 'routine')}
-              options={[
-                { value: 'routine', label: 'Routine Service' },
-                { value: 'custom', label: 'Custom Service' },
-              ]}
-            />
-          </div>
-
-          {isRoutine && (
-            <div>
-              <label className='mb-2 block text-sm font-medium'>Service Type</label>
-              <select
-                className='w-full rounded-md border border-border bg-background px-3 py-2'
-                value={serviceType}
-                onChange={(e) => {
-                  const selectedType = e.target.value;
-                  setServiceType(selectedType);
-                  if (selectedType) {
-                    // Format: "Service Type (MM/DD/YYYY)"
-                    const formattedDate = new Date(date).toLocaleDateString('en-US');
-                    setTitle(`${selectedType} (${formattedDate})`);
-                    // Auto-detect parts when service type changes
-                    setTimeout(() => {
-                      // Auto-detect using imported function
-                      const detectedPartIds = autoDetectCarParts(
-                        `${selectedType} (${formattedDate})`,
-                        description,
-                        notes,
-                        allCarParts,
-                      );
-                      setSelectedParts(detectedPartIds);
-                    }, 0);
-                  }
-                }}
-              >
-                <option value=''>Select a service type...</option>
-                {ROUTINE_SERVICE_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {issues.length > 0 && (
             <Disclosure label='Related Issues (Optional)' buttonClassName='text-sm'>
@@ -683,6 +663,55 @@ export function AddServiceEntryForm({
                 </p>
               </div>
             </Disclosure>
+          )}
+
+          <div>
+            <label className='mb-2 block text-sm font-medium'>Service Type</label>
+            <RadioGroup
+              value={isRoutine ? 'routine' : 'custom'}
+              onChange={(value: string) => setIsRoutine(value === 'routine')}
+              options={[
+                { value: 'routine', label: 'Routine Service' },
+                { value: 'custom', label: 'Custom Service' },
+              ]}
+            />
+          </div>
+
+          {isRoutine && (
+            <div>
+              <label className='mb-2 block text-sm font-medium'>Service Type</label>
+              <select
+                className='w-full rounded-md border border-border bg-background px-3 py-2'
+                value={serviceType}
+                onChange={(e) => {
+                  const selectedType = e.target.value;
+                  setServiceType(selectedType);
+                  if (selectedType) {
+                    // Format: "Service Type (MM/DD/YYYY)"
+                    const formattedDate = new Date(date).toLocaleDateString('en-US');
+                    setTitle(`${selectedType} (${formattedDate})`);
+                    // Auto-detect parts when service type changes
+                    setTimeout(() => {
+                      // Auto-detect using imported function
+                      const detectedPartIds = autoDetectCarParts(
+                        `${selectedType} (${formattedDate})`,
+                        description,
+                        notes,
+                        allCarParts,
+                      );
+                      setSelectedParts(detectedPartIds);
+                    }, 0);
+                  }
+                }}
+              >
+                <option value=''>Select a service type...</option>
+                {ROUTINE_SERVICE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
 
           <div>
@@ -937,6 +966,10 @@ interface EditServiceEntryFormProps {
     email: string,
     notes: string,
   ) => string;
+  onUpdateIssue: (
+    issueId: string,
+    updates: Partial<{ status: 'open' | 'resolved' }>,
+  ) => void;
 }
 
 export function EditServiceEntryForm({
@@ -947,6 +980,7 @@ export function EditServiceEntryForm({
   onUpdate,
   onCancel,
   onAddLocation,
+  onUpdateIssue,
 }: EditServiceEntryFormProps) {
   const [isRoutine, setIsRoutine] = useState(entry.isRoutine);
   const [serviceType, setServiceType] = useState(entry.serviceType);
@@ -1010,6 +1044,20 @@ export function EditServiceEntryForm({
       const allParts = Array.from(new Set([...autoDetectedParts, ...issueCarParts, ...selectedParts]));
       setSelectedParts(allParts);
       
+      // Auto-generate title based on selected issues
+      if (newSelected.length > 0) {
+        const selectedIssueObjects = issues.filter((issue) =>
+          newSelected.includes(issue.id),
+        );
+        const issueTitles = selectedIssueObjects
+          .map((issue) => `"${issue.title}"`)
+          .join(', ');
+        setTitle(`[Resolve ${issueTitles}]`);
+      } else if (!isRoutine || !serviceType) {
+        // Clear title if no issues selected and no routine service type
+        setTitle('');
+      }
+      
       return newSelected;
     });
   };
@@ -1038,6 +1086,16 @@ export function EditServiceEntryForm({
   const handleSubmit = () => {
     if (!title.trim()) return;
 
+    // Mark open issues as resolved
+    const openIssues = selectedIssues.filter((issueId) => {
+      const issue = issues.find((i) => i.id === issueId);
+      return issue && issue.status === 'open';
+    });
+    
+    openIssues.forEach((issueId) => {
+      onUpdateIssue(issueId, { status: 'resolved' });
+    });
+
     onUpdate(entry.id, {
       serviceType: isRoutine ? serviceType : 'Custom',
       isRoutine,
@@ -1065,55 +1123,6 @@ export function EditServiceEntryForm({
   return (
     <div className='space-y-4 rounded-lg border border-border bg-background p-6'>
       <h3 className='text-lg font-semibold'>Edit Service Entry</h3>
-
-      <div>
-        <label className='mb-2 block text-sm font-medium'>Service Type</label>
-        <RadioGroup
-          value={isRoutine ? 'routine' : 'custom'}
-          onChange={(value: string) => setIsRoutine(value === 'routine')}
-          options={[
-            { value: 'routine', label: 'Routine Service' },
-            { value: 'custom', label: 'Custom Service' },
-          ]}
-        />
-      </div>
-
-      {isRoutine && (
-        <div>
-          <label className='mb-2 block text-sm font-medium'>Service Type</label>
-          <select
-            className='w-full rounded-md border border-border bg-background px-3 py-2'
-            value={serviceType}
-            onChange={(e) => {
-              const selectedType = e.target.value;
-              setServiceType(selectedType);
-              if (selectedType) {
-                // Format: "Service Type (MM/DD/YYYY)"
-                const formattedDate = new Date(date).toLocaleDateString('en-US');
-                setTitle(`${selectedType} (${formattedDate})`);
-                // Auto-detect parts when service type changes
-                setTimeout(() => {
-                  // Auto-detect using imported function
-                  const detectedPartIds = autoDetectCarParts(
-                    `${selectedType} (${formattedDate})`,
-                    description,
-                    notes,
-                    allCarParts,
-                  );
-                  setSelectedParts(detectedPartIds);
-                }, 0);
-              }
-            }}
-          >
-            <option value=''>Select a service type...</option>
-            {ROUTINE_SERVICE_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {issues.length > 0 && (
         <Disclosure label='Related Issues (Optional)' buttonClassName='text-sm'>
@@ -1193,6 +1202,55 @@ export function EditServiceEntryForm({
             </p>
           </div>
         </Disclosure>
+      )}
+
+      <div>
+        <label className='mb-2 block text-sm font-medium'>Service Type</label>
+        <RadioGroup
+          value={isRoutine ? 'routine' : 'custom'}
+          onChange={(value: string) => setIsRoutine(value === 'routine')}
+          options={[
+            { value: 'routine', label: 'Routine Service' },
+            { value: 'custom', label: 'Custom Service' },
+          ]}
+        />
+      </div>
+
+      {isRoutine && (
+        <div>
+          <label className='mb-2 block text-sm font-medium'>Service Type</label>
+          <select
+            className='w-full rounded-md border border-border bg-background px-3 py-2'
+            value={serviceType}
+            onChange={(e) => {
+              const selectedType = e.target.value;
+              setServiceType(selectedType);
+              if (selectedType) {
+                // Format: "Service Type (MM/DD/YYYY)"
+                const formattedDate = new Date(date).toLocaleDateString('en-US');
+                setTitle(`${selectedType} (${formattedDate})`);
+                // Auto-detect parts when service type changes
+                setTimeout(() => {
+                  // Auto-detect using imported function
+                  const detectedPartIds = autoDetectCarParts(
+                    `${selectedType} (${formattedDate})`,
+                    description,
+                    notes,
+                    allCarParts,
+                  );
+                  setSelectedParts(detectedPartIds);
+                }, 0);
+              }
+            }}
+          >
+            <option value=''>Select a service type...</option>
+            {ROUTINE_SERVICE_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
       <div>
