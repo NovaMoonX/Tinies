@@ -4,6 +4,7 @@ import {
   CarMaintenanceData,
   CarPart,
   FileAttachment,
+  Issue,
   ServiceEntry,
   ServiceLocation,
 } from './CarMaintenance.types';
@@ -24,6 +25,7 @@ import {
   defaultCarMaintenanceData,
   defaultCarPart,
   defaultFileAttachment,
+  defaultIssue,
   defaultServiceEntry,
   defaultServiceLocation,
 } from './CarMaintenance.defaults';
@@ -38,6 +40,7 @@ export function useCarMaintenance() {
     [],
   );
   const [customCarParts, setCustomCarParts] = useState<CarPart[]>([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
 
   const resetData = useCallback(() => {
     setCars([]);
@@ -45,6 +48,7 @@ export function useCarMaintenance() {
     setServiceEntries([]);
     setServiceLocations([]);
     setCustomCarParts([]);
+    setIssues([]);
   }, []);
 
   // Load data from Firebase on mount
@@ -84,11 +88,17 @@ export function useCarMaintenance() {
         withDefaults(part, defaultCarPart),
       );
       
+      // Normalize each individual issue
+      const normalizedIssues = normalized.issues.map((issue) =>
+        withDefaults(issue, defaultIssue),
+      );
+      
       setCars(normalizedCars);
       setSelectedCar(normalized.selectedCar);
       setServiceEntries(normalizedServiceEntries);
       setServiceLocations(normalizedServiceLocations);
       setCustomCarParts(normalizedCustomCarParts);
+      setIssues(normalizedIssues);
     }
   }, [loadedData]);
 
@@ -99,6 +109,7 @@ export function useCarMaintenance() {
     serviceEntries,
     serviceLocations,
     customCarParts,
+    issues,
   };
   useTinyDataSaver(FIREBASE_TINY_PATH.CAR_MAINTENANCE, dataToSave, isLoaded);
 
@@ -214,6 +225,7 @@ export function useCarMaintenance() {
       notes: string,
       attachments: FileAttachment[],
       manualCarParts: string[],
+      issueIds: string[],
     ) => {
       // Auto-detect car parts from title, description, and notes
       const autoDetectedParts = autoDetectCarParts(
@@ -223,9 +235,14 @@ export function useCarMaintenance() {
         allCarParts,
       );
 
-      // Combine manual and auto-detected parts (remove duplicates)
+      // Get car parts from selected issues
+      const issueCarParts = issues
+        .filter((issue) => issueIds.includes(issue.id))
+        .flatMap((issue) => issue.carParts);
+
+      // Combine manual, auto-detected, and issue parts (remove duplicates)
       const allPartIds = Array.from(
-        new Set([...manualCarParts, ...autoDetectedParts]),
+        new Set([...manualCarParts, ...autoDetectedParts, ...issueCarParts]),
       );
 
       const newEntry: ServiceEntry = {
@@ -243,10 +260,11 @@ export function useCarMaintenance() {
         notes,
         attachments,
         carParts: allPartIds,
+        issueIds,
       };
       setServiceEntries((prev) => [newEntry, ...prev]);
     },
-    [allCarParts],
+    [allCarParts, issues],
   );
 
   const deleteServiceEntry = useCallback((entryId: string) => {
@@ -386,6 +404,115 @@ export function useCarMaintenance() {
     [],
   );
 
+  // Issue operations
+  const addIssue = useCallback(
+    (
+      carId: string,
+      title: string,
+      description: string,
+      carParts: string[],
+      notes: string,
+    ) => {
+      const newIssue: Issue = {
+        id: generateId(),
+        carId,
+        title,
+        description,
+        carParts,
+        createdAt: Date.now(),
+        status: 'open',
+        notes,
+      };
+      setIssues((prev) => [newIssue, ...prev]);
+      return newIssue.id;
+    },
+    [],
+  );
+
+  const deleteIssue = useCallback((issueId: string) => {
+    setIssues((prev) => prev.filter((issue) => issue.id !== issueId));
+    // Remove this issue from all service entries
+    setServiceEntries((prev) =>
+      prev.map((entry) => ({
+        ...entry,
+        issueIds: entry.issueIds.filter((id) => id !== issueId),
+      })),
+    );
+  }, []);
+
+  const updateIssue = useCallback(
+    (issueId: string, updates: Partial<Omit<Issue, 'id' | 'carId' | 'createdAt'>>) => {
+      setIssues((prev) =>
+        prev.map((issue) =>
+          issue.id === issueId ? { ...issue, ...updates } : issue,
+        ),
+      );
+    },
+    [],
+  );
+
+  const getIssue = useCallback(
+    (issueId: string) => {
+      const result = issues.find((issue) => issue.id === issueId);
+      return result;
+    },
+    [issues],
+  );
+
+  const getIssuesForCar = useCallback(
+    (carId: string) => {
+      const result = issues.filter((issue) => issue.carId === carId);
+      return result;
+    },
+    [issues],
+  );
+
+  const assignIssueToServiceEntry = useCallback(
+    (serviceEntryId: string, issueId: string) => {
+      const issue = issues.find((i) => i.id === issueId);
+      if (!issue) return;
+
+      setServiceEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== serviceEntryId) return entry;
+
+          // Add issue to service entry
+          const updatedIssueIds = entry.issueIds.includes(issueId)
+            ? entry.issueIds
+            : [...entry.issueIds, issueId];
+
+          // Merge car parts from issue (avoid duplicates)
+          const mergedCarParts = Array.from(
+            new Set([...entry.carParts, ...issue.carParts]),
+          );
+
+          return {
+            ...entry,
+            issueIds: updatedIssueIds,
+            carParts: mergedCarParts,
+          };
+        }),
+      );
+    },
+    [issues],
+  );
+
+  const unassignIssueFromServiceEntry = useCallback(
+    (serviceEntryId: string, issueId: string) => {
+      setServiceEntries((prev) =>
+        prev.map((entry) =>
+          entry.id === serviceEntryId
+            ? {
+                ...entry,
+                issueIds: entry.issueIds.filter((id) => id !== issueId),
+              }
+            : entry,
+        ),
+      );
+    },
+    [],
+  );
+
   return {
     // State
     cars,
@@ -393,6 +520,7 @@ export function useCarMaintenance() {
     serviceEntries,
     serviceLocations,
     allCarParts,
+    issues,
 
     // Car operations
     addCar,
@@ -416,6 +544,15 @@ export function useCarMaintenance() {
     addCustomCarPart,
     deleteCustomCarPart,
     updateServiceCarParts,
+
+    // Issue operations
+    addIssue,
+    deleteIssue,
+    updateIssue,
+    getIssue,
+    getIssuesForCar,
+    assignIssueToServiceEntry,
+    unassignIssueFromServiceEntry,
 
     // File operations
     uploadAttachment,

@@ -3,6 +3,7 @@ import {
   CarMaintenanceData,
   CarPart,
   FileAttachment,
+  Issue,
   ServiceEntry,
   ServiceLocation,
 } from './CarMaintenance.types';
@@ -13,6 +14,7 @@ export const defaultCarMaintenanceData: CarMaintenanceData = {
   serviceEntries: [],
   serviceLocations: [],
   customCarParts: [],
+  issues: [],
 };
 
 export const defaultCar: Car = {
@@ -67,5 +69,17 @@ export const defaultServiceEntry: ServiceEntry = {
   notes: '',
   attachments: [],
   carParts: [],
+  issueIds: [],
+};
+
+export const defaultIssue: Issue = {
+  id: '',
+  carId: '',
+  title: '',
+  description: '',
+  carParts: [],
+  createdAt: 0,
+  status: 'open',
+  notes: '',
 };
 
