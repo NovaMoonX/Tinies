@@ -2,10 +2,15 @@ import { ALL_TINIES, Tiny } from '@/lib/tinies';
 import TiniesFilters from '@components/TiniesFilters';
 import TinyCard from '@components/TinyCard';
 import { APP_TITLE } from '@lib/app';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function Home() {
   const [filteredTinies, setFilteredTinies] = useState<Tiny[]>(ALL_TINIES);
+
+  // Set document title for home page
+  useEffect(() => {
+    document.title = 'Tinies';
+  }, []);
 
   return (
     <div className='min-h-screen w-screen p-4 pt-36 md:p-8 md:pt-40'>
