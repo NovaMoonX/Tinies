@@ -417,6 +417,20 @@ export function NoteModal({
     setTags(initialNote?.tags || []);
   }, [initialNote]);
 
+  // Reset form state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setTitle('');
+      setContent('');
+      setList(null);
+      setIsListMode(false);
+      setEmoji('');
+      setColor('default');
+      setTags([]);
+      setTagInput('');
+    }
+  }, [isOpen]);
+
   const handleSave = () => {
     onSave({
       title,
