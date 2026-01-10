@@ -22,6 +22,17 @@ export function TinyPage({
 }: TinyPageProps) {
   const { user } = useAuth();
 
+  // Update document title when page is mounted
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = `${title} - Tinies`;
+    
+    // Cleanup: reset to default title when unmounting
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [title]);
+
   // Log visit when page is mounted and user is authenticated
   useEffect(() => {
     if (user) {
