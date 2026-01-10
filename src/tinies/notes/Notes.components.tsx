@@ -20,6 +20,7 @@ import { formatDate, getDaysUntilDeletion, parseTextForUrls } from './Notes.util
 interface NoteCardProps {
   note: Note;
   onClick: () => void;
+  onEdit: () => void;
   onTogglePin: () => void;
   onArchive: () => void;
   onUnarchive: () => void;
@@ -31,6 +32,7 @@ interface NoteCardProps {
 export function NoteCard({
   note,
   onClick,
+  onEdit,
   onTogglePin,
   onArchive,
   onUnarchive,
@@ -56,9 +58,20 @@ export function NoteCard({
           <div className='flex items-center gap-2'>
             {note.emoji && <span className='text-2xl'>{note.emoji}</span>}
           </div>
-          <div className='flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+          <div className='flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100'>
             {note.status === 'active' && (
               <>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  variant='outline'
+                  size='sm'
+                  title='Edit note'
+                >
+                  ✏️
+                </Button>
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -99,6 +112,17 @@ export function NoteCard({
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
+                    onEdit();
+                  }}
+                  variant='outline'
+                  size='sm'
+                  title='Edit note'
+                >
+                  ✏️
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onUnarchive();
                   }}
                   variant='outline'
@@ -122,6 +146,17 @@ export function NoteCard({
             )}
             {note.status === 'trashed' && (
               <>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  variant='outline'
+                  size='sm'
+                  title='Edit note'
+                >
+                  ✏️
+                </Button>
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -417,9 +452,9 @@ export function NoteModal({
     setTags(initialNote?.tags || []);
   }, [initialNote]);
 
-  // Reset form state when modal closes
+  // Reset form state when modal closes (only for add mode)
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen && mode === 'add') {
       setTitle('');
       setContent('');
       setList(null);
@@ -429,7 +464,7 @@ export function NoteModal({
       setTags([]);
       setTagInput('');
     }
-  }, [isOpen]);
+  }, [isOpen, mode]);
 
   const handleSave = () => {
     onSave({

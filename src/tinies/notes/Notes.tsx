@@ -167,7 +167,13 @@ export function Notes() {
     setIsViewModalOpen(true);
   };
 
+  const handleEditNote = (note: Note) => {
+    setSelectedNote(note);
+    setIsEditModalOpen(true);
+  };
+
   const handleEditFromView = () => {
+    // Keep selectedNote state, just switch modals
     setIsViewModalOpen(false);
     setIsEditModalOpen(true);
   };
@@ -214,6 +220,7 @@ export function Notes() {
                     key={note.id}
                     note={note}
                     onClick={() => handleNoteClick(note)}
+                    onEdit={() => handleEditNote(note)}
                     onTogglePin={() => handleTogglePin(note.id)}
                     onArchive={() => handleArchive(note.id)}
                     onUnarchive={() => handleUnarchive(note.id)}
@@ -240,6 +247,7 @@ export function Notes() {
                     key={note.id}
                     note={note}
                     onClick={() => handleNoteClick(note)}
+                    onEdit={() => handleEditNote(note)}
                     onTogglePin={() => handleTogglePin(note.id)}
                     onArchive={() => handleArchive(note.id)}
                     onUnarchive={() => handleUnarchive(note.id)}
