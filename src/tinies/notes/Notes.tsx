@@ -3,7 +3,7 @@ import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useState } from 'react';
 import { Note, NoteFilters } from './Notes.types';
-import { FilterSection, NoteCard, NoteModal } from './Notes.components';
+import { FilterSection, NoteCard, NoteModal, ViewNoteModal } from './Notes.components';
 import {
   filterNotes,
   generateNoteId,
@@ -17,6 +17,7 @@ export function Notes() {
   const { notes, setNotes } = useNotesData();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filters, setFilters] = useState<NoteFilters>({
     searchQuery: '',
@@ -163,6 +164,11 @@ export function Notes() {
 
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditFromView = () => {
+    setIsViewModalOpen(false);
     setIsEditModalOpen(true);
   };
 
@@ -268,6 +274,19 @@ export function Notes() {
         mode='add'
         allTags={allTags}
       />
+
+      {/* View Note Modal */}
+      {selectedNote && (
+        <ViewNoteModal
+          note={selectedNote}
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedNote(null);
+          }}
+          onEdit={handleEditFromView}
+        />
+      )}
 
       {/* Edit Note Modal */}
       {selectedNote && (

@@ -146,3 +146,43 @@ export function getDaysUntilDeletion(note: Note): number | null {
   const result = Math.max(0, daysRemaining);
   return result;
 }
+
+/**
+ * Parse text and identify URLs
+ * Returns an array of segments, each marked as either text or URL
+ */
+export function parseTextForUrls(text: string): Array<{ type: 'text' | 'url'; content: string }> {
+  // URL regex pattern that matches http, https, and www URLs
+  const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+  const segments: Array<{ type: 'text' | 'url'; content: string }> = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = urlPattern.exec(text)) !== null) {
+    // Add text before the URL
+    if (match.index > lastIndex) {
+      segments.push({
+        type: 'text',
+        content: text.substring(lastIndex, match.index),
+      });
+    }
+
+    // Add the URL
+    segments.push({
+      type: 'url',
+      content: match[0],
+    });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after the last URL
+  if (lastIndex < text.length) {
+    segments.push({
+      type: 'text',
+      content: text.substring(lastIndex),
+    });
+  }
+
+  return segments.length > 0 ? segments : [{ type: 'text', content: text }];
+}
