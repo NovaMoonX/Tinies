@@ -19,6 +19,7 @@ export function Notes() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editOpenedFromView, setEditOpenedFromView] = useState(false);
   const [filters, setFilters] = useState<NoteFilters>({
     searchQuery: '',
     selectedTags: [],
@@ -85,8 +86,18 @@ export function Notes() {
     };
 
     setNotes(notes.map((n) => (n.id === selectedNote.id ? noteWithUpdatedTime : n)));
-    setSelectedNote(null);
+    
+    // Update selectedNote to reflect the changes
+    setSelectedNote(noteWithUpdatedTime);
     setIsEditModalOpen(false);
+    
+    // If edit was opened from view modal, return to view modal
+    if (editOpenedFromView) {
+      setIsViewModalOpen(true);
+      setEditOpenedFromView(false);
+    } else {
+      setSelectedNote(null);
+    }
   };
 
   const handleTogglePin = (id: string) => {
@@ -169,12 +180,14 @@ export function Notes() {
 
   const handleEditNote = (note: Note) => {
     setSelectedNote(note);
+    setEditOpenedFromView(false);
     setIsEditModalOpen(true);
   };
 
   const handleEditFromView = () => {
     // Keep selectedNote state, just switch modals
     setIsViewModalOpen(false);
+    setEditOpenedFromView(true);
     setIsEditModalOpen(true);
   };
 
@@ -302,7 +315,14 @@ export function Notes() {
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            setSelectedNote(null);
+            
+            // If edit was opened from view modal, return to view modal
+            if (editOpenedFromView) {
+              setIsViewModalOpen(true);
+              setEditOpenedFromView(false);
+            } else {
+              setSelectedNote(null);
+            }
           }}
           onSave={handleUpdateNote}
           initialNote={selectedNote}
