@@ -767,7 +767,7 @@ export function ViewNoteModal({
         </div>
 
         {/* Content or List */}
-        <div className='max-h-96 overflow-y-auto'>
+        <div className='max-h-96 overflow-y-auto overflow-x-hidden'>
           {note.list && note.list.length > 0 ? (
             <ul className='space-y-2'>
               {note.list.map((item, index) => (
@@ -775,12 +775,12 @@ export function ViewNoteModal({
                   <span className='text-foreground/50 mt-0.5 font-extrabold'>
                     •
                   </span>
-                  <span className='flex-1'>{item}</span>
+                  <span className='flex-1 break-words'>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className='whitespace-pre-wrap text-base'>
+            <div className='whitespace-pre-wrap break-words text-base'>
               {renderContentWithLinks(note.content)}
             </div>
           )}
