@@ -15,11 +15,12 @@ import { join } from '@moondreamsdev/dreamer-ui/utils';
 import { useEffect, useState } from 'react';
 import { NOTE_COLORS } from './Notes.data';
 import { Note, NoteColor, NoteFilters, NoteStatus } from './Notes.types';
-import { formatDate, getDaysUntilDeletion } from './Notes.utils';
+import { formatDate, getDaysUntilDeletion, parseTextForUrls } from './Notes.utils';
 
 interface NoteCardProps {
   note: Note;
   onClick: () => void;
+  onEdit: () => void;
   onTogglePin: () => void;
   onArchive: () => void;
   onUnarchive: () => void;
@@ -31,6 +32,7 @@ interface NoteCardProps {
 export function NoteCard({
   note,
   onClick,
+  onEdit,
   onTogglePin,
   onArchive,
   onUnarchive,
@@ -56,9 +58,20 @@ export function NoteCard({
           <div className='flex items-center gap-2'>
             {note.emoji && <span className='text-2xl'>{note.emoji}</span>}
           </div>
-          <div className='flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+          <div className='flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100'>
             {note.status === 'active' && (
               <>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  variant='outline'
+                  size='sm'
+                  title='Edit note'
+                >
+                  ✏️
+                </Button>
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -99,6 +112,17 @@ export function NoteCard({
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
+                    onEdit();
+                  }}
+                  variant='outline'
+                  size='sm'
+                  title='Edit note'
+                >
+                  ✏️
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onUnarchive();
                   }}
                   variant='outline'
@@ -122,6 +146,17 @@ export function NoteCard({
             )}
             {note.status === 'trashed' && (
               <>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  variant='outline'
+                  size='sm'
+                  title='Edit note'
+                >
+                  ✏️
+                </Button>
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -417,9 +452,9 @@ export function NoteModal({
     setTags(initialNote?.tags || []);
   }, [initialNote]);
 
-  // Reset form state when modal closes
+  // Reset form state when modal closes (only for add mode)
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen && mode === 'add') {
       setTitle('');
       setContent('');
       setList(null);
@@ -429,7 +464,7 @@ export function NoteModal({
       setTags([]);
       setTagInput('');
     }
-  }, [isOpen]);
+  }, [isOpen, mode]);
 
   const handleSave = () => {
     onSave({
@@ -653,6 +688,136 @@ export function NoteModal({
           </Button>
           <Button onClick={onClose} variant='outline' className='flex-1'>
             Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+interface ViewNoteModalProps {
+  note: Note;
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+}
+
+export function ViewNoteModal({
+  note,
+  isOpen,
+  onClose,
+  onEdit,
+}: ViewNoteModalProps) {
+  const colorConfig = NOTE_COLORS.find((c) => c.value === note.color);
+
+  // Split content into lines and process each line for URLs
+  const renderContentWithLinks = (text: string) => {
+    const lines = text.split('\n');
+    
+    return lines.map((line, lineIndex) => {
+      const segments = parseTextForUrls(line);
+      
+      return (
+        <span key={lineIndex}>
+          {segments.map((segment, segIndex) => {
+            if (segment.type === 'url') {
+              // Add https:// if the URL starts with www.
+              const href = segment.content.startsWith('www.') 
+                ? `https://${segment.content}` 
+                : segment.content;
+              
+              return (
+                <a
+                  key={segIndex}
+                  href={href}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary underline hover:text-primary/80'
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {segment.content}
+                </a>
+              );
+            }
+            return <span key={segIndex}>{segment.content}</span>;
+          })}
+          {lineIndex < lines.length - 1 && <br />}
+        </span>
+      );
+    });
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title='View Note'>
+      <div className='space-y-4'>
+        {/* Header with emoji and title */}
+        <div
+          className={join(
+            'rounded-lg border p-4',
+            colorConfig?.class,
+            colorConfig?.borderClass,
+          )}
+        >
+          <div className='flex items-start gap-3'>
+            {note.emoji && <span className='text-3xl'>{note.emoji}</span>}
+            <h2 className='flex-1 text-2xl font-bold'>
+              {note.title || 'Untitled'}
+            </h2>
+          </div>
+        </div>
+
+        {/* Content or List */}
+        <div className='max-h-96 overflow-y-auto overflow-x-hidden'>
+          {note.list && note.list.length > 0 ? (
+            <ul className='space-y-2'>
+              {note.list.map((item, index) => (
+                <li key={index} className='flex items-start gap-2'>
+                  <span className='text-foreground/50 mt-0.5 font-extrabold'>
+                    •
+                  </span>
+                  <span className='flex-1 break-words'>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className='whitespace-pre-wrap break-words text-base'>
+              {renderContentWithLinks(note.content)}
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {note.tags.length > 0 && (
+          <div>
+            <Label className='mb-2 block text-sm font-medium'>Tags</Label>
+            <div className='flex flex-wrap gap-2'>
+              {note.tags.map((tag) => (
+                <Badge key={tag} variant='secondary'>
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Metadata */}
+        <div className='text-foreground/60 space-y-1 text-sm'>
+          <div>Created: {new Date(note.createdAt).toLocaleString()}</div>
+          <div>Last edited: {formatDate(note.lastEditedAt)}</div>
+          {note.status === 'trashed' && note.trashedAt && (
+            <div className='text-destructive'>
+              Trashed: {new Date(note.trashedAt).toLocaleString()}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className='flex gap-2'>
+          <Button onClick={onEdit} className='flex-1'>
+            Edit Note
+          </Button>
+          <Button onClick={onClose} variant='outline' className='flex-1'>
+            Close
           </Button>
         </div>
       </div>

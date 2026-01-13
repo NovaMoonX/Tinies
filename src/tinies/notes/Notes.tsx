@@ -3,7 +3,7 @@ import { useActionModal } from '@moondreamsdev/dreamer-ui/hooks';
 import { Plus } from '@moondreamsdev/dreamer-ui/symbols';
 import { useEffect, useMemo, useState } from 'react';
 import { Note, NoteFilters } from './Notes.types';
-import { FilterSection, NoteCard, NoteModal } from './Notes.components';
+import { FilterSection, NoteCard, NoteModal, ViewNoteModal } from './Notes.components';
 import {
   filterNotes,
   generateNoteId,
@@ -17,7 +17,9 @@ export function Notes() {
   const { notes, setNotes } = useNotesData();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editOpenedFromView, setEditOpenedFromView] = useState(false);
   const [filters, setFilters] = useState<NoteFilters>({
     searchQuery: '',
     selectedTags: [],
@@ -84,8 +86,18 @@ export function Notes() {
     };
 
     setNotes(notes.map((n) => (n.id === selectedNote.id ? noteWithUpdatedTime : n)));
-    setSelectedNote(null);
+    
+    // Update selectedNote to reflect the changes
+    setSelectedNote(noteWithUpdatedTime);
     setIsEditModalOpen(false);
+    
+    // If edit was opened from view modal, return to view modal
+    if (editOpenedFromView) {
+      setIsViewModalOpen(true);
+      setEditOpenedFromView(false);
+    } else {
+      setSelectedNote(null);
+    }
   };
 
   const handleTogglePin = (id: string) => {
@@ -163,6 +175,19 @@ export function Notes() {
 
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditNote = (note: Note) => {
+    setSelectedNote(note);
+    setEditOpenedFromView(false);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditFromView = () => {
+    // Keep selectedNote state, just switch modals
+    setIsViewModalOpen(false);
+    setEditOpenedFromView(true);
     setIsEditModalOpen(true);
   };
 
@@ -208,6 +233,7 @@ export function Notes() {
                     key={note.id}
                     note={note}
                     onClick={() => handleNoteClick(note)}
+                    onEdit={() => handleEditNote(note)}
                     onTogglePin={() => handleTogglePin(note.id)}
                     onArchive={() => handleArchive(note.id)}
                     onUnarchive={() => handleUnarchive(note.id)}
@@ -234,6 +260,7 @@ export function Notes() {
                     key={note.id}
                     note={note}
                     onClick={() => handleNoteClick(note)}
+                    onEdit={() => handleEditNote(note)}
                     onTogglePin={() => handleTogglePin(note.id)}
                     onArchive={() => handleArchive(note.id)}
                     onUnarchive={() => handleUnarchive(note.id)}
@@ -269,13 +296,33 @@ export function Notes() {
         allTags={allTags}
       />
 
+      {/* View Note Modal */}
+      {selectedNote && (
+        <ViewNoteModal
+          note={selectedNote}
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedNote(null);
+          }}
+          onEdit={handleEditFromView}
+        />
+      )}
+
       {/* Edit Note Modal */}
       {selectedNote && (
         <NoteModal
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            setSelectedNote(null);
+            
+            // If edit was opened from view modal, return to view modal
+            if (editOpenedFromView) {
+              setIsViewModalOpen(true);
+              setEditOpenedFromView(false);
+            } else {
+              setSelectedNote(null);
+            }
           }}
           onSave={handleUpdateNote}
           initialNote={selectedNote}
