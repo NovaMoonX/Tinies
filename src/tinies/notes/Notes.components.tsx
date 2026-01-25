@@ -46,13 +46,13 @@ export function NoteCard({
   return (
     <Card
       className={join(
-        'group relative h-fit border transition-all hover:shadow-lg',
+        'group relative h-fit overflow-hidden border transition-all hover:shadow-lg',
         colorConfig?.class,
         colorConfig?.borderClass,
       )}
       padding={8}
     >
-      <div className='flex h-full flex-col p-4'>
+      <div className='flex h-full flex-col overflow-hidden p-4'>
         {/* Header with emoji and actions */}
         <div className='mb-2 flex items-start justify-between gap-2'>
           <div className='flex items-center gap-2'>
@@ -186,7 +186,7 @@ export function NoteCard({
 
         {/* Title */}
         <h3
-          className='mb-2 cursor-pointer text-lg font-semibold'
+          className='mb-2 cursor-pointer break-all text-lg font-semibold'
           onClick={onClick}
         >
           {note.title || 'Untitled'}
@@ -199,7 +199,7 @@ export function NoteCard({
               {note.list.slice(0, 5).map((item, index) => (
                 <li key={index} className='flex items-start gap-1'>
                   <span className='text-foreground/50 font-extrabold'>•</span>
-                  <span className='line-clamp-1'>{item}</span>
+                  <span className='line-clamp-1 break-all'>{item}</span>
                 </li>
               ))}
             </ul>
@@ -211,7 +211,7 @@ export function NoteCard({
           </div>
         ) : (
           <p
-            className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer text-sm whitespace-pre-wrap'
+            className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer break-all text-sm whitespace-pre-wrap'
             onClick={onClick}
           >
             {note.content}
@@ -775,12 +775,12 @@ export function ViewNoteModal({
                   <span className='text-foreground/50 mt-0.5 font-extrabold'>
                     •
                   </span>
-                  <span className='flex-1 break-words'>{item}</span>
+                  <span className='flex-1 break-all'>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className='whitespace-pre-wrap break-words text-base'>
+            <div className='break-all whitespace-pre-wrap text-base'>
               {renderContentWithLinks(note.content)}
             </div>
           )}
