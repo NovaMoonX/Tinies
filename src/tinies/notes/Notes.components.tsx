@@ -775,12 +775,12 @@ export function ViewNoteModal({
                   <span className='text-foreground/50 mt-0.5 font-extrabold'>
                     •
                   </span>
-                  <span className='flex-1 break-words'>{item}</span>
+                  <span className='flex-1 break-all'>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className='whitespace-pre-wrap break-words text-base'>
+            <div className='break-all whitespace-pre-wrap text-base'>
               {renderContentWithLinks(note.content)}
             </div>
           )}
