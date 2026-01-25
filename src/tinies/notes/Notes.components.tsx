@@ -186,7 +186,7 @@ export function NoteCard({
 
         {/* Title */}
         <h3
-          className='mb-2 cursor-pointer text-lg font-semibold'
+          className='mb-2 cursor-pointer break-words text-lg font-semibold'
           onClick={onClick}
         >
           {note.title || 'Untitled'}
@@ -199,7 +199,7 @@ export function NoteCard({
               {note.list.slice(0, 5).map((item, index) => (
                 <li key={index} className='flex items-start gap-1'>
                   <span className='text-foreground/50 font-extrabold'>•</span>
-                  <span className='line-clamp-1'>{item}</span>
+                  <span className='line-clamp-1 break-words'>{item}</span>
                 </li>
               ))}
             </ul>
@@ -211,7 +211,7 @@ export function NoteCard({
           </div>
         ) : (
           <p
-            className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer text-sm whitespace-pre-wrap'
+            className='text-foreground/70 mb-3 line-clamp-4 cursor-pointer break-words text-sm whitespace-pre-wrap'
             onClick={onClick}
           >
             {note.content}
